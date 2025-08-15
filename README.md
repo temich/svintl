@@ -60,9 +60,7 @@ example:
 <h1>You have {@render intl.example.hello(count)}</h1>
 ```
 
-The translation prompt strives to provide clear explanations.
-
-That's it.
+The translation prompt provides clear guidance on using functions across languages to implement phrases with language-specific rules.
 
 ## CLI
 
