@@ -2,7 +2,7 @@
  * @author claude-4-sonnet
  */
 
-import { readdirSync, readFileSync, writeFileSync, existsSync } from 'fs'
+import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
 import { resolve, join } from 'path'
 import { load as yamlLoad, dump as yamlDump } from 'js-yaml'
 import OpenAI from 'openai'
@@ -29,6 +29,12 @@ export class CreateCommand {
 
     const i18nDir = resolve(process.cwd(), i18nPath)
     const targetFile = join(i18nDir, `${targetLang}.yaml`)
+
+    // Create the directory if it doesn't exist (including nested paths)
+    if (!existsSync(i18nDir)) {
+      mkdirSync(i18nDir, { recursive: true })
+      this.log(`Created directory: ${i18nDir}`)
+    }
 
     // Check if target language already exists
     if (existsSync(targetFile)) {

@@ -14,6 +14,7 @@ import { RemoveCommand } from './RemoveCommand.js'
 import { CreateCommand } from './CreateCommand.js'
 import { DestroyCommand } from './DestroyCommand.js'
 import { SyncCommand } from './SyncCommand.js'
+import { HolaCommand } from './HolaCommand.js'
 import { build } from './build.js'
 
 class I18nCLI {
@@ -28,6 +29,7 @@ class I18nCLI {
 
   private showHelp(): void {
     this.log('Available commands:')
+    this.log('  hola [-js]                  - Initialize new intl dictionary project (TypeScript by default)')
     this.log('  set <key> <value> [comment] - Set an i18n entry with automatic translation')
     this.log('  move <from> <to>            - Move an existing i18n entry to a new key')
     this.log('  remove <key>                - Remove an i18n entry from all language files')
@@ -40,6 +42,8 @@ class I18nCLI {
     this.log('  -p <path>           - Path to i18n files directory (default: ./src/lib/intl/)')
     this.log('')
     this.log('Examples:')
+    this.log('  npx intl hola               # Initialize TypeScript project')
+    this.log('  npx intl hola -js           # Initialize JavaScript project')
     this.log('  npx intl set example.hello "Hello world"')
     this.log('  npx intl set wardrobe.kinds.tops "Tops" "part of clothing"')
     this.log('  npx intl move example.hello example.greeting')
@@ -70,6 +74,7 @@ class I18nCLI {
     // Parse flags
     let i18nPath = './src/lib/intl/'
     let forceDestroy = false
+    let useJavaScript = false
     const commandArgs = [...args]
 
     // Check for -p flag
@@ -89,6 +94,13 @@ class I18nCLI {
       commandArgs.splice(forceIndex, 1)
     }
 
+    // Check for -js flag (use JavaScript)
+    const jsIndex = commandArgs.indexOf('-js')
+    if (jsIndex !== -1) {
+      useJavaScript = true
+      commandArgs.splice(jsIndex, 1)
+    }
+
     if (commandArgs.length === 0) {
       this.showHelp()
 
@@ -98,6 +110,17 @@ class I18nCLI {
     const command = commandArgs[0]
 
     switch (command) {
+      case 'hola': {
+        if (commandArgs.length !== 1)
+          this.error('hola command takes no arguments (use -js flag for JavaScript)')
+
+        const holaCommand = new HolaCommand()
+
+        await holaCommand.execute(useJavaScript, i18nPath)
+
+        break
+      }
+
       case 'set': {
         if (commandArgs.length < 3 || commandArgs.length > 4)
           this.error('set command requires 2-3 arguments: <key> <value> [comment]')

@@ -2,7 +2,7 @@
   "compilerOptions": {
     "outDir": "./transpiled",
     "rootDir": "./source",
-    "module": "commonjs",
+    "module": "ESNext",
     "moduleResolution": "node",
     "target": "ESNext",
     "sourceMap": true,

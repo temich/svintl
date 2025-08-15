@@ -1,0 +1,8 @@
+import { readable } from 'svelte/store'
+import { create } from 'svintl'
+import { dictionaries, languages } from './built.js'
+
+const language = readable('en')
+const intl = create(dictionaries, language)
+
+export { intl, dictionaries, languages, language }

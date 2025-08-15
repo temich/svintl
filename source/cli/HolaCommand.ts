@@ -1,0 +1,79 @@
+/**
+ * @author claude-4-sonnet
+ */
+
+import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs'
+import { resolve, join } from 'path'
+import { build } from './build.js'
+
+export class HolaCommand {
+  private log(message: string): void {
+    console.log(message)
+  }
+
+  private error(message: string): never {
+    console.error(`❌ ${message}`)
+    process.exit(1)
+  }
+
+  async execute(useJavaScript: boolean = false, i18nPath = './src/lib/intl/'): Promise<void> {
+    this.log('🌟 Initializing new intl dictionary project...')
+
+    const i18nDir = resolve(process.cwd(), i18nPath)
+
+    // 1. Create dictionary directory
+    if (!existsSync(i18nDir)) {
+      mkdirSync(i18nDir, { recursive: true })
+      this.log(`✓ Created directory: ${i18nDir}`)
+    } else {
+      this.log(`✓ Directory already exists: ${i18nDir}`)
+    }
+
+    // 2. Create index file based on template
+    const indexFile = join(i18nDir, 'index.ts')
+    if (existsSync(indexFile)) {
+      this.log(`⚠️ Index file already exists: ${indexFile}`)
+    } else {
+      const templateFile = useJavaScript ? 'js' : 'ts'
+      // Get the path to the intl package root (2 levels up from transpiled/cli)
+      const packageRoot = resolve(__dirname, '..', '..')
+      const templatePath = join(packageRoot, 'index', templateFile)
+
+      if (!existsSync(templatePath)) {
+        this.error(`Template file not found: ${templatePath}`)
+      }
+
+      const templateContent = readFileSync(templatePath, 'utf8')
+      writeFileSync(indexFile, templateContent)
+      this.log(`✓ Created ${useJavaScript ? 'JavaScript' : 'TypeScript'} index file: ${indexFile}`)
+    }
+
+    // 3. Create empty en dictionary
+    const enFile = join(i18nDir, 'en.yaml')
+    if (existsSync(enFile)) {
+      this.log(`⚠️ English dictionary already exists: ${enFile}`)
+    } else {
+      const emptyDict = `# English dictionary
+# Add your translations here
+# Example:
+# hello: "Hello"
+# greeting:
+#   welcome: "Welcome to our app"
+{}
+`
+      writeFileSync(enFile, emptyDict)
+      this.log(`✓ Created empty English dictionary: ${enFile}`)
+    }
+
+    // 4. Build
+    this.log('🔨 Building dictionaries...')
+    build(i18nPath)
+
+    this.log('🎉 Project initialization complete!')
+    this.log('')
+    this.log('Next steps:')
+    this.log('  1. Add translations to en.yaml')
+    this.log('  2. Run "npx intl create <lang>" to add more languages')
+    this.log('  3. Import and use intl in your app from the index file')
+  }
+}
