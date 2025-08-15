@@ -11,8 +11,8 @@ module.exports = [
   }),
   {
     plugins: {
-      import: importPlugin
-    }
+      import: importPlugin,
+    },
   },
   {
     rules: {
@@ -60,13 +60,13 @@ module.exports = [
         {
           blankLine: 'always',
           prev: '*',
-          next: 'break'
+          next: 'break',
         },
         {
           blankLine: 'always',
           prev: '*',
-          next: 'continue'
-        }
+          next: 'continue',
+        },
       ],
       'import/order': ['error', {
         groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'type'],
