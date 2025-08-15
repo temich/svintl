@@ -1,0 +1,33 @@
+{
+  "name": "svelte-intl",
+  "version": "0.0.1",
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "Internationalization for Svelte",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:temich/svelte-intl.git"
+  },
+  "homepage": "git@github.com:temich/svelte-intl#readme",
+  "main": "transpiled/index.js",
+  "types": "transpiled/index.d.ts",
+  "scripts": {
+    "prepare": "husky",
+    "prepublishOnly": "rm -rf transpiled tsconfig.tsbuildinfo && tsc",
+    "lint": "eslint .",
+    "format": "eslint . --fix",
+    "test": "node --test && npm run lint",
+    "bump": "npx -y npm-check-updates --target minor -u && npm install"
+  },
+  "peerDependencies": {
+    "typescript": "^5.9.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "eslint": "^9.33.0",
+    "eslint-plugin-import": "^2.32.0",
+    "husky": "^9.1.7",
+    "neostandard": "^0.12.2"
+  }
+}
