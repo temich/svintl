@@ -1,6 +1,9 @@
 # Internationalization for Svelte
 
-A type-safe, developer-friendly internationalization library for Svelte with automatic translation support (via OpenAI).
+Developer-friendly internationalization library for Svelte.
+
+- Bulk dictionary manipulation
+- Automatic translation via OpenAI
 
 ## TL;DR
 
@@ -20,7 +23,51 @@ npx intl create es # create a new language dictionary
 <h1>{@render intl.example.hello()}</h1>
 ```
 
+## Dictionary format
+
+The dictionary is an object with an arbitrary structure, where strings are located at the leaves.
+
+```yaml
+example:
+  hello: "Hello world"
+```
+
+```svelte
+<h1>{@render intl.example.hello()}</h1>
+```
+
+Values can be specified as JavaScript functions using the following syntax:
+
+```yaml
+example:
+  hello: |
+    !js
+    () => 'Hello world'
+```
+
+> This looks weird, suggestions [are welcome](https://github.com/temich/svintl/issues/).
+
+Functions can accept arguments:
+
+```yaml
+example:
+  hello: |
+    !js
+    (count) => `${count || 'No'} item${count === 1 ? '' : 's'}`
+```
+
+```svelte
+<h1>You have {@render intl.example.hello(count)}</h1>
+```
+
+The translation prompt strives to provide clear explanations.
+
+That's it.
+
 ## CLI
+
+> Translations are powered by OpenAI. Ensure you set the `OPENAI_API_KEY` in your environment variables.
+> `.env` file is supported.
 
 ```bash
 npx intl
@@ -40,46 +87,42 @@ npx intl hola
 npx intl create es
 ```
 
-Create a new language dictionary.
+Creates a new language dictionary.
 
 ```bash
 npx intl set example.hello "Hello world"
+npx intl set wardrobe.tops "Tops" "Clothing"
 ```
 
-Create a new translation entry.
+Creates a new translation entry with optional context.
 
 ```bash
 npx intl move example.hello example.greeting.welcome
 ```
 
-Move a translation entry.
+Moves a translation entry.
 
 ```bash
 npx intl remove example.hello
 ```
 
-Remove a translation entry.
+Removes a translation entry.
 
 ```bash
 npx intl destroy es
 ```
 
-Delete a language dictionary.
+Deletes a language dictionary.
 
 ```bash
 npx intl sync en
+npx intl sync en example.hello # sync specific key
 ```
 
-Sync (re-translate) all languages using source language dictionary.
-
-```bash
-npx intl sync en example.hello
-```
-
-Sync specific key across all languages.
+Syncs (re-translates) all languages using the source language dictionary.
 
 ```bash
 npx intl build
 ```
 
-Rebuild (after manual changes).
+Rebuilds (likely after manual changes).
