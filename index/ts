@@ -1,9 +1,9 @@
-import { readable } from 'svelte/store'
+import { writable } from 'svelte/store'
 import { create } from 'svintl'
 import { dictionaries, languages } from './built.js'
 import type { Language, Dictionary } from './types'
 
-const language = readable<Language>('en')
+const language = writable<Language>('en')
 const intl = create(dictionaries, language) as Dictionary
 
 export { intl, dictionaries, languages, language }
