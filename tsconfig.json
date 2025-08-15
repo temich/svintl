@@ -2,19 +2,14 @@
   "compilerOptions": {
     "outDir": "./transpiled",
     "rootDir": "./source",
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "target": "ESNext",
     "sourceMap": true,
     "declaration": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "incremental": true,
     "strict": true,
-    "experimentalDecorators": true,
     "noImplicitOverride": true,
     "allowJs": true,
-    "forceConsistentCasingInFileNames": true
   },
   "include": [
     "source/**/*"

@@ -8,14 +8,14 @@
  */
 
 import 'dotenv/config'
-import { SetCommand } from './SetCommand.js'
-import { MoveCommand } from './MoveCommand.js'
-import { RemoveCommand } from './RemoveCommand.js'
-import { CreateCommand } from './CreateCommand.js'
-import { DestroyCommand } from './DestroyCommand.js'
-import { SyncCommand } from './SyncCommand.js'
-import { HolaCommand } from './HolaCommand.js'
-import { build } from './build.js'
+import { SetCommand } from './SetCommand'
+import { MoveCommand } from './MoveCommand'
+import { RemoveCommand } from './RemoveCommand'
+import { CreateCommand } from './CreateCommand'
+import { DestroyCommand } from './DestroyCommand'
+import { SyncCommand } from './SyncCommand'
+import { HolaCommand } from './HolaCommand'
+import { build } from './build'
 
 class I18nCLI {
   private log(message: string): void {

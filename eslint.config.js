@@ -8,8 +8,9 @@ module.exports = [
   ...neostandard({
     ts: true,
     ignores: [
-      'source/cli/**/*',
-      'example/**/*',
+      'source/cli/**',
+      'bin/**',
+      'example/**',
       ...neostandard.resolveIgnoresFromGitignore(),
     ],
   }),

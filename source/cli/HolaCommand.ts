@@ -4,7 +4,7 @@
 
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs'
 import { resolve, join } from 'path'
-import { build } from './build.js'
+import { build } from './build'
 
 export class HolaCommand {
   private log(message: string): void {
