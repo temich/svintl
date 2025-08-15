@@ -12,6 +12,9 @@
   "homepage": "git@github.com:temich/svintl#readme",
   "main": "transpiled/index.js",
   "types": "transpiled/index.d.ts",
+  "bin": {
+    "intl": "transpiled/cli/index.js"
+  },
   "scripts": {
     "prepare": "husky",
     "prepublishOnly": "rm -rf transpiled tsconfig.tsbuildinfo && tsc",
@@ -21,14 +24,20 @@
     "bump": "npx -y npm-check-updates --target minor -u && npm install"
   },
   "peerDependencies": {
-    "typescript": "^5",
-    "svelte": "*"
+    "svelte": "*",
+    "typescript": "^5"
   },
   "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^24.3.0",
     "eslint": "^9.33.0",
     "eslint-plugin-import": "^2.32.0",
     "husky": "^9.1.7",
     "neostandard": "^0.12.2"
+  },
+  "dependencies": {
+    "dotenv": "^17",
+    "js-yaml": "^4",
+    "openai": "^5"
   }
 }

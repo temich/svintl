@@ -1,3 +1,4 @@
 node_modules/
 transpiled/
 tsconfig.tsbuildinfo
+.env

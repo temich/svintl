@@ -7,7 +7,10 @@ const neostandard = require('neostandard')
 module.exports = [
   ...neostandard({
     ts: true,
-    ignores: neostandard.resolveIgnoresFromGitignore(),
+    ignores: [
+      'source/cli/**/*',
+      ...neostandard.resolveIgnoresFromGitignore(),
+    ],
   }),
   {
     plugins: {
