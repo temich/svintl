@@ -9,6 +9,7 @@ module.exports = [
     ts: true,
     ignores: [
       'source/cli/**/*',
+      'example/**/*',
       ...neostandard.resolveIgnoresFromGitignore(),
     ],
   }),
