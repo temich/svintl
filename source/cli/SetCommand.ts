@@ -62,37 +62,40 @@ export class SetCommand {
         messages: [
           {
             role: 'system',
-            content: `You are a professional translator for an internationalization system. 
+            content: `You are a professional translator for an internationalization system. You will receive text in ANY language and must translate it to ALL specified target languages.
 
 IMPORTANT RULES:
-1. If the input starts with "!js", it's a JavaScript function that returns localized strings
-2. For !js functions: Keep the "!js" tag but ADAPT the JavaScript logic to match target language grammar rules
-3. You can modify conditions, logic, and structure to fit the target language's pluralization and grammar rules
-4. For regular text: Translate normally considering the provided context
-5. Always maintain the exact same function parameters (don't change parameter names or count)
-6. Use DOUBLE QUOTES for all string literals to avoid JavaScript syntax errors
-7. Translate ALL parts of compound phrases completely - do not leave any English words
-8. Return translations in JSON format as requested
+1. DETECT the input language automatically - do not assume it's English
+2. If the input starts with "!js", it's a JavaScript function that returns localized strings
+3. For !js functions: Keep the "!js" tag but ADAPT the JavaScript logic to match each target language's grammar rules
+4. You can modify conditions, logic, and structure to fit each target language's pluralization and grammar rules
+5. For regular text: Translate from the detected source language to each target language
+6. Always maintain the exact same function parameters (don't change parameter names or count)
+7. Use DOUBLE QUOTES for all string literals to avoid JavaScript syntax errors
+8. Translate ALL parts of compound phrases completely
+9. Return translations in JSON format as requested
 
-GRAMMAR ADAPTATION EXAMPLES:
+GRAMMAR ADAPTATION EXAMPLES (any source language):
 
-English to Russian (simple → complex pluralization):
-Input: "!js\\n(count) => count === 1 ? '1 item' : \`\${count} items\`"
+Source language to Russian (any → complex pluralization):
+Input: "!js\\n(count) => count === 1 ? 'one item' : \`\${count} items\`"
 Russian: "!js\\n(count) => { const rem = count % 10; const tens = Math.floor(count / 10) % 10; if (tens === 1) return \`\${count} предметов\`; if (rem === 1) return \`\${count} предмет\`; if (rem >= 2 && rem <= 4) return \`\${count} предмета\`; return \`\${count} предметов\`; }"
 
-English to German (simple → simple pluralization):
-Input: "!js\\n(count) => count === 1 ? '1 item' : \`\${count} items\`"
-German: "!js\\n(count) => count === 1 ? \"1 Artikel\" : \`\${count} Artikel\`"
+Source language to German (any → simple pluralization):
+Input: "!js\\n(count) => count === 1 ? 'une chose' : \`\${count} choses\`" (French)
+German: "!js\\n(count) => count === 1 ? \"1 Ding\" : \`\${count} Dinge\`"
 
-Russian to English (complex → simple pluralization):
+Russian to other languages (complex → simpler pluralization):
 Input: "!js\\n(count) => { const rem = count % 10; if (rem === 1) return '1 предмет'; return \`\${count} предметов\`; }"
 English: "!js\\n(count) => count === 1 ? \"1 item\" : \`\${count} items\`"
+French: "!js\\n(count) => count === 1 ? \"1 article\" : \`\${count} articles\`"
 
 CRITICAL: 
+- Automatically detect the source language from input text
 - Always use double quotes (") for string literals in JavaScript, never single quotes (')
 - For !js functions, ALWAYS include the "!js" tag at the beginning of each translation
 - Escape quotes properly in JSON: use \\" for literal quotes in the function
-- ADAPT the logic to match target language grammar, don't just translate strings
+- ADAPT the logic to match each target language's grammar, don't just translate strings
 - Keep the same function parameters but change conditions and return values as needed
 
 Target languages: ${allLanguages.join(', ')}
