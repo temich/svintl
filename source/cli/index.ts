@@ -15,6 +15,7 @@ import { CreateCommand } from './CreateCommand'
 import { DestroyCommand } from './DestroyCommand'
 import { SyncCommand } from './SyncCommand'
 import { HolaCommand } from './HolaCommand'
+import { ConstCommand } from './ConstCommand'
 import { build } from './build'
 
 class I18nCLI {
@@ -31,6 +32,7 @@ class I18nCLI {
     this.log('Available commands:')
     this.log('  hola [-js]                  - Initialize new intl dictionary project (TypeScript by default)')
     this.log('  set <key> <value> [comment] - Set an i18n entry with automatic translation')
+    this.log('  const <key> <value>         - Set the same value in all dictionaries without translation')
     this.log('  move <from> <to>            - Move an existing i18n entry to a new key')
     this.log('  remove <key>                - Remove an i18n entry from all language files')
     this.log('  create <lang> [source]      - Create new language dictionary from source (default: en)')
@@ -46,6 +48,7 @@ class I18nCLI {
     this.log('  npx intl hola -js           # Initialize JavaScript project')
     this.log('  npx intl set example.hello "Hello world"')
     this.log('  npx intl set wardrobe.kinds.tops "Tops" "part of clothing"')
+    this.log('  npx intl const example.hello "Hello"')
     this.log('  npx intl move example.hello example.greeting')
     this.log('  npx intl remove example.greeting')
     this.log('  npx intl create jp          # Create Japanese from English')
@@ -129,6 +132,17 @@ class I18nCLI {
         const comment = commandArgs.length === 4 ? commandArgs[3] : undefined
 
         await setCommand.execute(commandArgs[1], commandArgs[2], comment, i18nPath)
+
+        break
+      }
+
+      case 'const': {
+        if (commandArgs.length !== 3)
+          this.error('const command requires exactly 2 arguments: <key> <value>')
+
+        const constCommand = new ConstCommand()
+
+        await constCommand.execute(commandArgs[1], commandArgs[2], i18nPath)
 
         break
       }

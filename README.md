@@ -95,6 +95,12 @@ npx intl set wardrobe.tops "Tops" "Clothing"
 Creates a new translation entry with optional context.
 
 ```bash
+npx intl const example.hello "Hello"
+```
+
+Sets the same value in all dictionaries without translation.
+
+```bash
 npx intl move example.hello example.greeting.welcome
 ```
 
