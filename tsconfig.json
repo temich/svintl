@@ -10,6 +10,9 @@
     "strict": true,
     "noImplicitOverride": true,
     "allowJs": true,
+    "module": "ESNext",
+    "target": "ES2022",
+    "moduleResolution": "node"
   },
   "include": [
     "source/**/*"

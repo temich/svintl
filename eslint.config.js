@@ -1,10 +1,7 @@
-'use strict'
+import importPlugin from 'eslint-plugin-import'
+import neostandard from 'neostandard'
 
-// @ts-expect-error
-const importPlugin = require('eslint-plugin-import')
-const neostandard = require('neostandard')
-
-module.exports = [
+export default [
   ...neostandard({
     ts: true,
     ignores: [

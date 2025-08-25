@@ -1,6 +1,6 @@
 {
   "name": "svintl",
-  "version": "0.1.6",
+  "version": "0.1.8",
   "publishConfig": {
     "access": "public"
   },
@@ -10,8 +10,8 @@
     "url": "git+ssh://git@github.com/temich/svintl.git"
   },
   "homepage": "git@github.com:temich/svintl#readme",
+  "type": "module",
   "main": "transpiled/index.js",
-  "module": "transpiled/index.js",
   "types": "transpiled/index.d.ts",
   "bin": {
     "intl": "bin/intl.cjs"
