@@ -67,7 +67,6 @@ export class MoveCommand {
           this.updateLanguageFile(filePath, to, values[lang])
           // Remove from old location
           this.removeKey(filePath, from)
-          this.log(`✓ Updated ${file}`)
         } catch (error) {
           this.error(`Failed to update ${file}: ${error}`)
         }
@@ -83,7 +82,7 @@ export class MoveCommand {
       this.warn(`Failed to move context: ${error}`)
     }
 
-    this.log(`✅ Successfully moved "${from}" to "${to}" in all language files`)
+    this.log(`✅ Saved`)
 
     // Auto-build dictionaries
     build(i18nPath)

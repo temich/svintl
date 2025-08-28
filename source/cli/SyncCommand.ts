@@ -94,7 +94,6 @@ export class SyncCommand {
       for (const file of languageFiles) {
         const lang = file.replace('.yaml', '')
         this.updateSingleKey(join(i18nDir, file), specificKey, sourceEntry.value)
-        this.log(`✓ Updated ${lang} (copied from source)`)
       }
       return
     }
@@ -154,7 +153,6 @@ CRITICAL: ADAPT the logic to match target language grammar, don't just translate
             const translation = translations[lang] || sourceEntry.value
 
             this.updateSingleKey(join(i18nDir, file), specificKey, translation)
-            this.log(`✓ Updated ${lang}`)
           }
         } catch (parseError) {
           this.warn('Failed to parse translation response, using source value')
@@ -162,7 +160,6 @@ CRITICAL: ADAPT the logic to match target language grammar, don't just translate
           for (const file of languageFiles) {
             const lang = file.replace('.yaml', '')
             this.updateSingleKey(join(i18nDir, file), specificKey, sourceEntry.value)
-            this.log(`✓ Updated ${lang} (fallback)`)
           }
         }
       } else {
@@ -171,7 +168,6 @@ CRITICAL: ADAPT the logic to match target language grammar, don't just translate
         for (const file of languageFiles) {
           const lang = file.replace('.yaml', '')
           this.updateSingleKey(join(i18nDir, file), specificKey, sourceEntry.value)
-          this.log(`✓ Updated ${lang} (fallback)`)
         }
       }
     } catch (error) {
@@ -180,11 +176,10 @@ CRITICAL: ADAPT the logic to match target language grammar, don't just translate
       for (const file of languageFiles) {
         const lang = file.replace('.yaml', '')
         this.updateSingleKey(join(i18nDir, file), specificKey, sourceEntry.value)
-        this.log(`✓ Updated ${lang} (fallback)`)
       }
     }
 
-    this.log(`✅ Synced key "${specificKey}" to all languages`)
+    this.log(`✅ Translated`)
   }
 
   private async syncAllEntries(
@@ -236,8 +231,6 @@ CRITICAL: ADAPT the logic to match target language grammar, don't just translate
 
       const addCount = tasksForLang.filter(t => t.action === 'add').length
       const updateCount = tasksForLang.filter(t => t.action === 'update').length
-
-      this.log(`${lang}: ${addCount} new, ${updateCount} updated entries`)
     }
 
     // Check if OpenAI is available
@@ -248,11 +241,10 @@ CRITICAL: ADAPT the logic to match target language grammar, don't just translate
         if (tasks.length > 0) {
           const targetFile = join(i18nDir, `${lang}.yaml`)
           this.applySyncTasks(targetFile, tasks, false)
-          this.log(`✓ Updated ${lang} (${tasks.length} entries, copied from source)`)
         }
       }
 
-      this.log('✅ Sync completed (no translation)')
+      this.log('✅ Translated')
       return
     }
 
@@ -261,11 +253,8 @@ CRITICAL: ADAPT the logic to match target language grammar, don't just translate
 
     for (const [lang, tasks] of Object.entries(syncTasks)) {
       if (tasks.length === 0) {
-        this.log(`✓ ${lang} already up to date`)
         continue
       }
-
-      this.log(`Translating ${tasks.length} entries for ${lang}...`)
 
       // Process in batches of 10
       const batchSize = 10
@@ -339,9 +328,7 @@ CRITICAL: ADAPT the logic to match target language grammar, don't just translate
                 })
               }
 
-              if (batches.length > 1) {
-                this.log(`${progress}✓ Translated batch ${i + 1}`)
-              }
+
             } catch (parseError) {
               this.warn(`${progress}Failed to parse response, using source values`)
               translatedTasks.push(...batch)
@@ -364,10 +351,9 @@ CRITICAL: ADAPT the logic to match target language grammar, don't just translate
       // Apply the translated tasks
       const targetFile = join(i18nDir, `${lang}.yaml`)
       this.applySyncTasks(targetFile, translatedTasks, true)
-      this.log(`✓ Updated ${lang} (${translatedTasks.length} entries)`)
     }
 
-    this.log('✅ Sync completed')
+    this.log('✅ Translated')
   }
 
   private updateSingleKey(filePath: string, key: string, value: string): void {

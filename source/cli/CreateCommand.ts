@@ -115,15 +115,11 @@ export class CreateCommand {
       batches.push(entries.slice(i, i + batchSize))
     }
 
-    this.log(`Translating in ${batches.length} batches of up to ${batchSize} entries each...`)
-
     const translatedEntries: Record<string, string> = {}
 
     for (let i = 0; i < batches.length; i++) {
       const batch = batches[i]
       const progress = `[${i + 1}/${batches.length}]`
-
-      this.log(`${progress} Translating batch ${i + 1} (${batch.length} entries)...`)
 
       try {
         const batchObject = batch.reduce((obj, { key, value }) => {
@@ -199,7 +195,7 @@ Use this context information to provide more accurate translations.` : ''}`,
               }
             }
 
-            this.log(`${progress} ✓ Completed batch ${i + 1}`)
+
           } catch (parseError) {
             this.warn(`${progress} Failed to parse response for batch ${i + 1}, using source values`)
             for (const { key, value } of batch) {
@@ -236,7 +232,7 @@ Use this context information to provide more accurate translations.` : ''}`,
     })
 
     writeFileSync(targetFile, yamlContent)
-    this.log(`✅ Created ${targetFile} with ${entries.length} translated entries`)
+    this.log(`✅ Translated`)
 
     // Rebuild dictionaries
     build(i18nPath)

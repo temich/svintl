@@ -145,7 +145,6 @@ For !js functions:
           for (const lang of allLanguages) {
             if (parsedTranslations[lang]) {
               translations[lang] = parsedTranslations[lang]
-              this.log(`✓ Translated to ${lang}`)
             } else {
               this.warn(`No translation received for ${lang}, using original value as fallback`)
               translations[lang] = value // fallback to original value
@@ -185,13 +184,12 @@ For !js functions:
 
       try {
         this.updateLanguageFile(filePath, key, translations[lang])
-        this.log(`✓ Updated ${file}`)
       } catch (error) {
         this.error(`Failed to update ${file}: ${error}`)
       }
     }
 
-    this.log(`✅ Successfully set "${key}" in all language files`)
+    this.log(`✅ Translated`)
 
     // Auto-build dictionaries
     build(i18nPath)

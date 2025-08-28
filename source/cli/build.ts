@@ -130,9 +130,7 @@ export function build(i18nPath = './src/lib/intl/'): void {
 
     try {
       const dictionary = load(filePath)
-
       dictionaries[lang] = dictionary
-      console.log(`✓ Processed ${lang}.yaml`)
     } catch (error) {
       console.error(`❌ Failed to process ${lang}.yaml:`, error)
       throw error
@@ -158,6 +156,5 @@ export const languages = ${JSON.stringify(Object.keys(dictionaries))};
   writeFileSync(jsOutputPath, jsContent)
   writeFileSync(tsOutputPath, tsContent)
 
-  console.log(`✅ Built dictionaries for ${languageFiles.length} languages → built.js & types.ts`)
-  console.log(`   Languages: ${Object.keys(dictionaries).join(', ')}`)
+  console.log(`✅ Built`)
 }

@@ -60,10 +60,7 @@ export class RemoveCommand {
           })
 
           writeFileSync(filePath, yamlContent)
-          this.log(`✓ Removed from ${file}`)
           removedCount++
-        } else {
-          this.warn(`Key "${key}" not found in ${file}`)
         }
       } catch (error) {
         this.error(`Failed to process ${file}: ${error}`)
@@ -84,7 +81,7 @@ export class RemoveCommand {
       this.warn(`Failed to remove context: ${error}`)
     }
 
-    this.log(`✅ Successfully removed "${key}" from ${removedCount} language files`)
+    this.log(`✅ Saved`)
 
     // Rebuild dictionaries
     build(i18nPath)
