@@ -6,8 +6,11 @@ import { readdirSync, readFileSync, writeFileSync } from 'fs'
 import { resolve, join } from 'path'
 import { load as yamlLoad, dump as yamlDump } from 'js-yaml'
 import { build } from './build'
+import { ContextFileManager } from './context'
 
 export class RemoveCommand {
+  private contextManager = new ContextFileManager()
+
   private log(message: string): void {
     console.log(message)
   }
@@ -69,6 +72,16 @@ export class RemoveCommand {
 
     if (removedCount === 0) {
       this.error(`Key "${key}" was not found in any language files`)
+    }
+
+    // Remove context entry if it exists
+    try {
+      const removed = this.contextManager.removeContextEntry(i18nPath, key)
+      if (removed) {
+        this.log(`✓ Removed context for "${key}"`)
+      }
+    } catch (error) {
+      this.warn(`Failed to remove context: ${error}`)
     }
 
     this.log(`✅ Successfully removed "${key}" from ${removedCount} language files`)

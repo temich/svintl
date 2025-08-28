@@ -9,8 +9,11 @@ import { readFileSync, writeFileSync, readdirSync } from 'fs'
 import { join, resolve } from 'path'
 import { load as yamlLoad, dump as yamlDump } from 'js-yaml'
 import { build } from './build'
+import { ContextFileManager } from './context'
 
 export class MoveCommand {
+  private contextManager = new ContextFileManager()
+
   private log(message: string): void {
     console.log(message)
   }
@@ -68,6 +71,16 @@ export class MoveCommand {
         } catch (error) {
           this.error(`Failed to update ${file}: ${error}`)
         }
+    }
+
+    // Move context entry if it exists
+    try {
+      const moved = this.contextManager.moveContextEntry(i18nPath, from, to)
+      if (moved) {
+        this.log(`✓ Moved context from "${from}" to "${to}"`)
+      }
+    } catch (error) {
+      this.warn(`Failed to move context: ${error}`)
     }
 
     this.log(`✅ Successfully moved "${from}" to "${to}" in all language files`)

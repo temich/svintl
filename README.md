@@ -62,6 +62,26 @@ example:
 
 The translation prompt provides clear guidance on using functions across languages to implement phrases with language-specific rules.
 
+### Context
+
+Translation contexts are automatically saved when using the `set` command with a comment parameter. These contexts enhance translation accuracy when creating new language dictionaries.
+
+```bash
+npx intl set app.welcome "Welcome to our application" "greeting shown on homepage"
+```
+
+Contexts are stored in `context.yaml` alongside your language files:
+
+```yaml
+inputs:
+  app:
+    welcome:
+      input: "Welcome to our application"
+      context: "greeting shown on homepage"
+```
+
+When creating new languages with `npx intl create <lang>`, saved contexts are automatically used to provide more accurate translations by giving the AI translator additional context about how each phrase is used.
+
 ## CLI
 
 > Translations are powered by OpenAI. Ensure you set the `OPENAI_API_KEY` in your environment variables.

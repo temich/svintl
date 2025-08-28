@@ -7,8 +7,11 @@ import { resolve, join } from 'path'
 import { load as yamlLoad, dump as yamlDump } from 'js-yaml'
 import OpenAI from 'openai'
 import { build } from './build'
+import { ContextFileManager } from './context'
 
 export class CreateCommand {
+  private contextManager = new ContextFileManager()
+
   private log(message: string): void {
     console.log(message)
   }
@@ -77,7 +80,14 @@ export class CreateCommand {
 
     // Extract all key-value pairs for translation
     const entries = this.extractEntries(sourceData)
+
+    // Get saved contexts for enriched translation
+    const savedContexts = this.contextManager.getAllContextEntries(i18nPath)
+
     this.log(`Found ${entries.length} entries to translate`)
+    if (Object.keys(savedContexts).length > 0) {
+      this.log(`Found ${Object.keys(savedContexts).length} saved contexts for enhanced translation`)
+    }
 
     if (entries.length === 0) {
       // Create empty target file
@@ -117,8 +127,25 @@ export class CreateCommand {
 
       try {
         const batchObject = batch.reduce((obj, { key, value }) => {
-          obj[key] = value
+          // Check if we have saved context for this key
+          const savedContext = savedContexts[key]
+          if (savedContext && savedContext.context) {
+            // Use the original input with context if available
+            obj[key] = savedContext.input
+          } else {
+            // Use the source language value
+            obj[key] = value
+          }
           return obj
+        }, {} as Record<string, string>)
+
+        // Build contexts for this batch
+        const batchContexts = batch.reduce((contexts, { key }) => {
+          const savedContext = savedContexts[key]
+          if (savedContext && savedContext.context) {
+            contexts[key] = savedContext.context
+          }
+          return contexts
         }, {} as Record<string, string>)
 
         const completion = await openai.chat.completions.create({
@@ -133,12 +160,19 @@ IMPORTANT RULES:
 2. For regular text: translate normally
 3. Use DOUBLE QUOTES for all string literals in JavaScript functions
 4. Return ONLY a JSON object with the same keys but translated values
+5. Pay special attention to any provided context information to ensure accurate translation
 
 Target language: ${targetLang}
 
 For !js functions example:
 Input: "!js\\n(count) => count === 1 ? \\"1 item\\" : \`\${count} items\`"
-Output: "!js\\n(count) => count === 1 ? \\"[translation]\\" : \`\${count} [translation]\`"`,
+Output: "!js\\n(count) => count === 1 ? \\"[translation]\\" : \`\${count} [translation]\`"
+
+${Object.keys(batchContexts).length > 0 ? `
+CONTEXT INFORMATION for this batch:
+${Object.entries(batchContexts).map(([key, context]) => `- "${key}": ${context}`).join('\n')}
+
+Use this context information to provide more accurate translations.` : ''}`,
             },
             {
               role: 'user',

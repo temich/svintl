@@ -1,18 +1,30 @@
 /**
  * Auto-generated TypeScript definitions for i18n dictionaries
- * Generated at: 2025-08-18T19:11:19.874Z
+ * Generated at: 2025-08-28T18:04:16.732Z
  * 
  * @author claude-4-sonnet
  */
 
 import type { Snippet } from 'svelte'
 
-export type Language = 'en'
+export type Language = 'en' | 'fr'
 
 export type Dictionary = {
       hello: Snippet
       bye: Snippet
       example: {
         hello: Snippet
+      }
+      foo: {
+        bar: Snippet
+      }
+      debug: {
+
+      }
+      welcome: {
+        message: Snippet
+      }
+      app: {
+        title: Snippet
       }
     }

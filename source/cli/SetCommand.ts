@@ -10,10 +10,13 @@ import { join, resolve } from 'path'
 import { load as yamlLoad, dump as yamlDump } from 'js-yaml'
 import OpenAI from 'openai'
 import { build } from './build'
+import { ContextFileManager } from './context'
 
 // OpenAI will be told the target is a language code
 
 export class SetCommand {
+  private contextManager = new ContextFileManager()
+
   private log(message: string): void {
     console.log(message)
   }
@@ -28,15 +31,23 @@ export class SetCommand {
   }
 
   async execute(key: string, value: string, comment?: string, i18nPath = './src/lib/intl/'): Promise<void> {
+    const commentText = comment ? ` (${comment})` : ''
+    this.log(`Setting "${key}" with value "${value}"${commentText}...`)
+
+    // Store input and context in context.yaml first (before API key check)
+    try {
+      this.contextManager.setContextEntry(i18nPath, key, value, comment)
+      this.log(`✓ Saved input and context to context.yaml`)
+    } catch (error) {
+      this.warn(`Failed to save context: ${error}`)
+    }
+
     if (!process.env.OPENAI_API_KEY)
       this.error('OPENAI_API_KEY environment variable is required')
 
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     })
-
-    const commentText = comment ? ` (${comment})` : ''
-    this.log(`Setting "${key}" with value "${value}"${commentText}...`)
 
     // Get all language files
     const i18nDir = resolve(process.cwd(), i18nPath)
