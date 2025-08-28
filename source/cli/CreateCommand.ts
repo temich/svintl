@@ -8,6 +8,7 @@ import { load as yamlLoad, dump as yamlDump } from 'js-yaml'
 import OpenAI from 'openai'
 import { build } from './build'
 import { ContextFileManager } from './context'
+import { validateLanguageTag, getNativeLanguageName } from './bcp47'
 
 export class CreateCommand {
   private contextManager = new ContextFileManager()
@@ -26,8 +27,10 @@ export class CreateCommand {
   }
 
   async execute(targetLang: string, sourceLang?: string, i18nPath = './src/lib/intl/'): Promise<void> {
-    if (!/^[a-z]{2}$/.test(targetLang)) {
-      this.error('Language code must be exactly 2 lowercase letters (e.g., jp, fr, de)')
+    // Validate BCP 47 language tag
+    const validationError = validateLanguageTag(targetLang)
+    if (validationError) {
+      this.error(validationError)
     }
 
     const i18nDir = resolve(process.cwd(), i18nPath)
@@ -44,15 +47,24 @@ export class CreateCommand {
       this.error(`Language "${targetLang}" already exists at ${targetFile}`)
     }
 
-    // Get existing language files
+    // Get existing language files (now supporting BCP 47)
     const existingFiles = readdirSync(i18nDir)
-      .filter(file => file.match(/^[a-z]{2}\.yaml$/))
+      .filter(file => file.endsWith('.yaml'))
 
     if (existingFiles.length === 0) {
-      // No existing languages - create empty file
-      this.log(`Creating empty language file for "${targetLang}"...`)
-      writeFileSync(targetFile, '# Empty language dictionary\n{}\n')
-      this.log(`✅ Created ${targetFile}`)
+      // No existing languages - create file with native key
+      this.log(`Creating language file for "${targetLang}"...`)
+      const nativeName = getNativeLanguageName(targetLang)
+      const initialContent = {
+        native: nativeName
+      }
+      const yamlContent = yamlDump(initialContent, {
+        lineWidth: -1,
+        quotingType: '"',
+        forceQuotes: false,
+      })
+      writeFileSync(targetFile, yamlContent)
+      this.log(`✅ Created ${targetFile} with native name: ${nativeName}`)
       build(i18nPath)
       return
     }
@@ -78,8 +90,9 @@ export class CreateCommand {
     const sourceContent = readFileSync(sourceFile, 'utf8')
     const sourceData = yamlLoad(sourceContent) as any
 
-    // Extract all key-value pairs for translation
-    const entries = this.extractEntries(sourceData)
+    // Extract all key-value pairs for translation (excluding native key)
+    const { native, ...sourceDataWithoutNative } = sourceData
+    const entries = this.extractEntries(sourceDataWithoutNative)
 
     // Get saved contexts for enriched translation
     const savedContexts = this.contextManager.getAllContextEntries(i18nPath)
@@ -90,9 +103,18 @@ export class CreateCommand {
     }
 
     if (entries.length === 0) {
-      // Create empty target file
-      writeFileSync(targetFile, '# Empty language dictionary\n{}\n')
-      this.log(`✅ Created empty ${targetFile}`)
+      // Create file with just native key
+      const nativeName = getNativeLanguageName(targetLang)
+      const initialContent = {
+        native: nativeName
+      }
+      const yamlContent = yamlDump(initialContent, {
+        lineWidth: -1,
+        quotingType: '"',
+        forceQuotes: false,
+      })
+      writeFileSync(targetFile, yamlContent)
+      this.log(`✅ Created ${targetFile} with native name: ${nativeName}`)
       build(i18nPath)
       return
     }
@@ -100,8 +122,13 @@ export class CreateCommand {
     // Check if OpenAI is available for translation
     if (!process.env.OPENAI_API_KEY) {
       this.warn('OPENAI_API_KEY not found - copying source language without translation')
-      writeFileSync(targetFile, yamlDump(sourceData))
-      this.log(`✅ Created ${targetFile} (copy of ${sourceLanguage})`)
+      // Add native key to copied data (excluding source native key)
+      const dataWithNative = {
+        native: getNativeLanguageName(targetLang),
+        ...sourceDataWithoutNative
+      }
+      writeFileSync(targetFile, yamlDump(dataWithNative))
+      this.log(`✅ Created ${targetFile} (copy of ${sourceLanguage} with native name)`)
       build(i18nPath)
       return
     }
@@ -224,8 +251,14 @@ Use this context information to provide more accurate translations.` : ''}`,
     // Reconstruct the nested structure
     const translatedData = this.reconstructStructure(translatedEntries)
 
+    // Add native key at the top level
+    const finalData = {
+      native: getNativeLanguageName(targetLang),
+      ...translatedData
+    }
+
     // Write the translated dictionary
-    const yamlContent = yamlDump(translatedData, {
+    const yamlContent = yamlDump(finalData, {
       lineWidth: -1,
       quotingType: '"',
       forceQuotes: false,

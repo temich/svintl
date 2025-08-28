@@ -55,16 +55,18 @@ export class HolaCommand {
     if (existsSync(enFile)) {
       this.log(`⚠️ English dictionary already exists: ${enFile}`)
     } else {
-      const emptyDict = `# English dictionary
+      const initialDict = `# English dictionary
+# The 'native' key contains the language name in its own language
+native: English
+
 # Add your translations here
 # Example:
 # hello: "Hello"
 # greeting:
 #   welcome: "Welcome to our app"
-{}
 `
-      writeFileSync(enFile, emptyDict)
-      this.log(`✓ Created empty English dictionary: ${enFile}`)
+      writeFileSync(enFile, initialDict)
+      this.log(`✓ Created English dictionary with native name: ${enFile}`)
     }
 
     // 4. Build
