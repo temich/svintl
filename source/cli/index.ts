@@ -9,7 +9,7 @@
 
 import 'dotenv/config'
 import { SetCommand } from './SetCommand'
-import { PluralCommand } from './PluralCommand'
+import { UnitCommand } from './UnitCommand'
 import { MoveCommand } from './MoveCommand'
 import { RemoveCommand } from './RemoveCommand'
 import { CreateCommand } from './CreateCommand'
@@ -33,7 +33,7 @@ class I18nCLI {
     this.log('Available commands:')
     this.log('  hola [-js]                  - Initialize new intl dictionary project (TypeScript by default)')
     this.log('  set <key> <value> [comment] - Set an i18n entry with automatic translation')
-    this.log('  plural <key> <value> [comment] - Create pluralized i18n entries for all languages')
+    this.log('  unit <key> <value> [comment] - Create pluralized i18n entries for all languages')
     this.log('  const <key> <value>         - Set the same value in all dictionaries without translation')
     this.log('  move <from> <to>            - Move an existing i18n entry to a new key')
     this.log('  remove <key>                - Remove an i18n entry from all language files')
@@ -50,7 +50,7 @@ class I18nCLI {
     this.log('  npx intl hola -js           # Initialize JavaScript project')
     this.log('  npx intl set example.hello "Hello world"')
     this.log('  npx intl set wardrobe.kinds.tops "Tops" "part of clothing"')
-    this.log('  npx intl plural items.count "item" "things you can count"')
+    this.log('  npx intl unit items.count "item" "things you can count"')
     this.log('  npx intl const example.hello "Hello"')
     this.log('  npx intl move example.hello example.greeting')
     this.log('  npx intl remove example.greeting')
@@ -139,14 +139,14 @@ class I18nCLI {
         break
       }
 
-      case 'plural': {
+      case 'unit': {
         if (commandArgs.length < 3 || commandArgs.length > 4)
-          this.error('plural command requires 2-3 arguments: <key> <value> [comment]')
+          this.error('unit command requires 2-3 arguments: <key> <value> [comment]')
 
-        const pluralCommand = new PluralCommand()
+        const unitCommand = new UnitCommand()
         const comment = commandArgs.length === 4 ? commandArgs[3] : undefined
 
-        await pluralCommand.execute(commandArgs[1], commandArgs[2], comment, i18nPath)
+        await unitCommand.execute(commandArgs[1], commandArgs[2], comment, i18nPath)
 
         break
       }

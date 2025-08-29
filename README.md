@@ -161,7 +161,7 @@ npx intl set wardrobe.tops "Tops" "Clothing"
 Creates a new translation entry with optional context.
 
 ```bash
-npx intl plural items.count "item"
+npx intl unit items.count "item"
 ```
 
 Creates pluralized translation entries for all languages using the object-based format. The system automatically generates appropriate plural forms for each language based on their pluralization rules.

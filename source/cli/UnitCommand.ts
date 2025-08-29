@@ -1,5 +1,5 @@
 /**
- * CLI command for creating pluralized i18n entries using Intl.PluralRules
+ * CLI command for creating unit/pluralized i18n entries using Intl.PluralRules
  * Creates translations for all plural categories (one, few, many, other) for each language
  *
  * @author claude-4-sonnet
@@ -7,7 +7,7 @@
 
 import { BaseTranslationCommand } from './BaseTranslationCommand'
 
-export class PluralCommand extends BaseTranslationCommand {
+export class UnitCommand extends BaseTranslationCommand {
 
   async execute(key: string, input: string, comment?: string, i18nPath = './src/lib/intl/'): Promise<void> {
     const commentText = comment ? ` (${comment})` : ''
