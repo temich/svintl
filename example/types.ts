@@ -1,6 +1,6 @@
 /**
  * Auto-generated TypeScript definitions for i18n dictionaries
- * Generated at: 2025-08-29T06:20:43.126Z
+ * Generated at: 2025-08-29T06:24:01.071Z
  * 
  * @author claude-4-sonnet
  */

@@ -67,6 +67,45 @@ example:
 
 The translation prompt provides clear guidance on using functions across languages to implement phrases with language-specific rules.
 
+### Pluralization
+
+For pluralized content, use arrays containing objects with named plural forms. This format automatically generates functions that use `Intl.PluralRules` for proper pluralization:
+
+```yaml
+items:
+  count:
+    - one: item
+      other: items
+
+product:
+  count:
+    - one: product
+      other: products
+```
+
+For languages with complex pluralization rules (like Russian), include all required forms:
+
+```yaml
+# Russian pluralization
+product:
+  count:
+    - one: товар      # 1, 21, 31, 41...
+      few: товара     # 2-4, 22-24, 32-34...
+      many: товаров   # 0, 5-20, 25-30...
+      other: товаров  # fallback
+```
+
+The array format `[{ one: '...', other: '...' }]` serves as an indicator for pluralization. The system automatically:
+
+- Detects the array-with-object format
+- Generates optimized functions using direct property access
+- Eliminates the need for CLDR ordering complexity
+- Supports all standard plural categories: `zero`, `one`, `two`, `few`, `many`, `other`
+
+```svelte
+<p>You have {@render intl.items.count(itemCount)}</p>
+```
+
 ### Context
 
 Translation contexts are automatically saved when using the `set` command with a comment parameter. These contexts enhance translation accuracy when creating new language dictionaries.
@@ -120,6 +159,12 @@ npx intl set wardrobe.tops "Tops" "Clothing"
 ```
 
 Creates a new translation entry with optional context.
+
+```bash
+npx intl plural items.count "item"
+```
+
+Creates pluralized translation entries for all languages using the object-based format. The system automatically generates appropriate plural forms for each language based on their pluralization rules.
 
 ```bash
 npx intl const example.hello "Hello"
