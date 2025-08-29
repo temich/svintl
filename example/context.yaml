@@ -1,0 +1,18 @@
+inputs:
+  items:
+    count:
+      input: item
+      context: things you can count
+    message:
+      input: message
+      context: communication unit
+    notification:
+      input: notification
+      context: system alert
+  product:
+    count:
+      input: product
+      context: item for sale
+  test:
+    cars:
+      input: car

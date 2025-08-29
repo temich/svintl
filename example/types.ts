@@ -1,13 +1,13 @@
 /**
  * Auto-generated TypeScript definitions for i18n dictionaries
- * Generated at: 2025-08-28T18:04:16.732Z
+ * Generated at: 2025-08-29T06:20:43.126Z
  * 
  * @author claude-4-sonnet
  */
 
 import type { Snippet } from 'svelte'
 
-export type Language = 'en' | 'fr'
+export type Language = 'en' | 'fr' | 'ru'
 
 export type Dictionary = {
       hello: Snippet
@@ -15,16 +15,28 @@ export type Dictionary = {
       example: {
         hello: Snippet
       }
-      foo: {
-        bar: Snippet
+      items: {
+        count: {
+          0: {
+            one: Snippet
+            other: Snippet
+          }
+        }
       }
-      debug: {
-
+      product: {
+        count: {
+          0: {
+            one: Snippet
+            other: Snippet
+          }
+        }
       }
-      welcome: {
-        message: Snippet
-      }
-      app: {
-        title: Snippet
+      test: {
+        cars: {
+          0: {
+            one: Snippet
+            other: Snippet
+          }
+        }
       }
     }

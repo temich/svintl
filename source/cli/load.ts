@@ -48,8 +48,24 @@ function processNode(node: any): any {
     return node
   }
 
-  if (Array.isArray(node))
+  if (Array.isArray(node)) {
+    // Check if this is a plural forms array (contains objects with plural form keys)
+    if (node.length === 1 && typeof node[0] === 'object' && node[0] !== null && !Array.isArray(node[0])) {
+      const pluralForms = node[0]
+      // Check if this looks like a plural forms object (has keys like 'one', 'other', etc.)
+      const pluralKeys = Object.keys(pluralForms)
+      const knownPluralCategories = ['zero', 'one', 'two', 'few', 'many', 'other']
+      const hasValidPluralKeys = pluralKeys.some(key => knownPluralCategories.includes(key))
+
+      if (hasValidPluralKeys) {
+        // This is a plural forms array, convert to function
+
+        return createPluralFunction(pluralForms)
+      }
+    }
+
     return node.map(processNode)
+  }
 
   if (typeof node === 'object') {
     const result: any = {}
@@ -61,4 +77,39 @@ function processNode(node: any): any {
   }
 
   return node
+}
+
+/**
+ * Create a plural function from object-based plural forms
+ * Converts { one: 'item', other: 'items' } to a function that uses Intl.PluralRules
+ */
+function createPluralFunction(pluralForms: Record<string, string>): Function {
+  const formsJson = JSON.stringify(pluralForms)
+
+  // Create a function template that uses object property access instead of array indexing
+  const functionCode = `
+    (count) => {
+      const forms = ${formsJson};
+      const lang = "__LANG__"; // This will be replaced by the build system
+      const pluralRules = new Intl.PluralRules(lang);
+      const rule = pluralRules.select(count);
+      
+      // Direct object property access - no CLDR ordering needed!
+      if (forms[rule]) {
+        return forms[rule];
+      }
+      
+      // Fallback priority: other > one > first available
+      return forms.other || forms.one || Object.values(forms)[0] || '';
+    }
+  `.trim()
+
+  try {
+    // eslint-disable-next-line no-eval
+    return eval(`(${functionCode})`)
+  } catch (error) {
+    console.warn(`Failed to create plural function:`, error)
+    // Return a simple fallback function
+    return (count: number) => Object.values(pluralForms)[0] || ''
+  }
 }

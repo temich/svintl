@@ -2,3 +2,15 @@ hello: Hello
 bye: Bye
 example:
   hello: Hello
+items:
+  count:
+    - one: item
+      other: items
+product:
+  count:
+    - one: product
+      other: products
+test:
+  cars:
+    - one: car
+      other: cars
