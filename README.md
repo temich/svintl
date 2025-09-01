@@ -27,8 +27,6 @@ npx intl create es # create a new language dictionary
 
 The dictionary is an object with an arbitrary structure, where strings are located at the leaves.
 
-**Every dictionary must contain a `native` key** with the language name written in that language:
-
 ```yaml
 native: English
 example:
@@ -38,8 +36,6 @@ example:
 ```svelte
 <h1>{@render intl.example.hello()}</h1>
 ```
-
-**Language names must be valid BCP 47 language tags** (e.g., `en`, `es`, `fr`, `en-US`, `pt-BR`, `zh-CN`). Invalid language tags will result in an error.
 
 Values can be specified as JavaScript functions using the following syntax:
 
@@ -152,6 +148,8 @@ npx intl create pt-BR
 ```
 
 Creates a new language dictionary. Language codes must be valid BCP 47 language tags. The new dictionary will automatically include a `native` key with the language name in that language.
+
+Dictionary names must be valid BCP 47 language tags.
 
 ```bash
 npx intl set example.hello "Hello world"
