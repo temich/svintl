@@ -8,6 +8,10 @@ Developer-friendly internationalization library for Svelte.
 ## TL;DR
 
 ```bash
+npm i svintl -D
+```
+
+```bash
 npx intl hola # initialize dictionaries in default location
 npx intl set example.hello "Hello world" # set a translation
 npx intl create es # create a new language dictionary
