@@ -19,6 +19,7 @@
   "files": [
     "transpiled/**/*",
     "bin/**/*",
+    "index/**/*",
     "README.md"
   ],
   "scripts": {
