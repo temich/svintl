@@ -49,7 +49,7 @@ export class CreateCommand {
 
     // Get existing language files (now supporting BCP 47)
     const existingFiles = readdirSync(i18nDir)
-      .filter(file => file.endsWith('.yaml'))
+      .filter(file => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))
 
     if (existingFiles.length === 0) {
       // No existing languages - create file with native key

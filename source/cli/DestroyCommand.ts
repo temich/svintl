@@ -5,6 +5,7 @@
 import { unlinkSync, existsSync } from 'fs'
 import { resolve, join } from 'path'
 import { build } from './build'
+import { validateLanguageTag } from './bcp47'
 
 export class DestroyCommand {
   private log(message: string): void {
@@ -21,8 +22,10 @@ export class DestroyCommand {
   }
 
   async execute(targetLang: string, force = false, i18nPath = './src/lib/intl/'): Promise<void> {
-    if (!/^[a-z]{2}$/.test(targetLang)) {
-      this.error('Language code must be exactly 2 lowercase letters (e.g., jp, fr, de)')
+    // Validate BCP 47 language tag
+    const validationError = validateLanguageTag(targetLang)
+    if (validationError) {
+      this.error(validationError)
     }
 
     const i18nDir = resolve(process.cwd(), i18nPath)

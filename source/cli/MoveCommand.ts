@@ -34,7 +34,7 @@ export class MoveCommand {
     const i18nDir = resolve(process.cwd(), i18nPath)
 
     const languageFiles = readdirSync(i18nDir)
-      .filter(file => file.match(/^[a-z]{2}\.yaml$/))
+      .filter(file => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))
 
     // First, extract values from all files
     const values: Record<string, string> = {}
