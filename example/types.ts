@@ -1,6 +1,6 @@
 /**
  * Auto-generated TypeScript definitions for i18n dictionaries
- * Generated at: 2025-08-29T06:24:01.071Z
+ * Generated at: 2025-09-24T10:13:45.186Z
  * 
  * @author claude-4-sonnet
  */
@@ -16,27 +16,12 @@ export type Dictionary = {
         hello: Snippet
       }
       items: {
-        count: {
-          0: {
-            one: Snippet
-            other: Snippet
-          }
-        }
+        count: Snippet<[any]>
       }
       product: {
-        count: {
-          0: {
-            one: Snippet
-            other: Snippet
-          }
-        }
+        count: Snippet<[any]>
       }
       test: {
-        cars: {
-          0: {
-            one: Snippet
-            other: Snippet
-          }
-        }
+        cars: Snippet<[any]>
       }
     }

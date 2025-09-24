@@ -133,9 +133,9 @@ export function build(i18nPath = './src/lib/intl/'): void {
 
   const i18nDir = resolve(process.cwd(), i18nPath)
 
-  // Get all YAML language files
+  // Get all YAML language files (supporting BCP 47 format like en-US, zh-CN, etc.)
   const languageFiles = readdirSync(i18nDir)
-    .filter(file => file.match(/^[a-z]{2}\.yaml$/))
+    .filter(file => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))
 
   if (languageFiles.length === 0) {
     console.log('❌ No YAML language files found')
