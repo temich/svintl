@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/temich/svintl/compare/v1.2.0...v1.3.0) (2025-09-25)
+
+
+### Features
+
+* rename `language` to `locale` throughout codebase ([#4](https://github.com/temich/svintl/issues/4)) ([f3ce006](https://github.com/temich/svintl/commit/f3ce00644c705bf501162258e2e2dc54d0812595))
+
 # [1.2.0](https://github.com/temich/svintl/compare/v1.1.1...v1.2.0) (2025-09-25)
 
 
