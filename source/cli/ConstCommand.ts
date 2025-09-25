@@ -5,20 +5,10 @@
  * @author claude-4-sonnet
  */
 
-import { readFileSync, writeFileSync, readdirSync } from 'fs'
-import { join, resolve } from 'path'
-import { load as yamlLoad, dump as yamlDump } from 'js-yaml'
-import { build } from './build'
+import { TranslationService } from './TranslationService'
 
 export class ConstCommand {
-  private log(message: string): void {
-    console.log(message)
-  }
-
-  private error(message: string): never {
-    console.error(`❌ ${message}`)
-    process.exit(1)
-  }
+  private translationService = new TranslationService()
 
   async execute(key: string, value: string, i18nPath = './src/lib/intl/'): Promise<void> {
     this.translationService.log(`Setting constant "${key}" with value "${value}" in all dictionaries...`)

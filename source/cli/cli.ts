@@ -60,7 +60,7 @@ const cli = yargs(hideBin(process.argv))
       })
   }, async (argv) => {
     const setCommand = new SetCommand()
-    await setCommand.execute(argv.key, argv.value, argv.comment, argv.path)
+    await setCommand.execute(argv.key!, argv.value!, argv.comment, argv.path)
   })
   .command('unit <key> <value> [comment]', 'Create pluralized i18n entries', (yargs) => {
     return yargs
@@ -78,7 +78,7 @@ const cli = yargs(hideBin(process.argv))
       })
   }, async (argv) => {
     const unitCommand = new UnitCommand()
-    await unitCommand.execute(argv.key, argv.value, argv.comment, argv.path)
+    await unitCommand.execute(argv.key!, argv.value!, argv.comment, argv.path)
   })
   .command('const <key> <value>', 'Set same value in all dictionaries', (yargs) => {
     return yargs
@@ -92,7 +92,7 @@ const cli = yargs(hideBin(process.argv))
       })
   }, async (argv) => {
     const constCommand = new ConstCommand()
-    await constCommand.execute(argv.key, argv.value, argv.path)
+    await constCommand.execute(argv.key!, argv.value!, argv.path)
   })
   .command('move <from> <to>', 'Move translation key', (yargs) => {
     return yargs
@@ -106,7 +106,7 @@ const cli = yargs(hideBin(process.argv))
       })
   }, async (argv) => {
     const moveCommand = new MoveCommand()
-    await moveCommand.execute(argv.from, argv.to, argv.path)
+    await moveCommand.execute(argv.from!, argv.to!, argv.path)
   })
   .command('remove <key>', 'Remove translation key', (yargs) => {
     return yargs
@@ -116,7 +116,7 @@ const cli = yargs(hideBin(process.argv))
       })
   }, async (argv) => {
     const removeCommand = new RemoveCommand()
-    await removeCommand.execute(argv.key, argv.path)
+    await removeCommand.execute(argv.key!, argv.path)
   })
   .command('create <lang> [source]', 'Create new language dictionary', (yargs) => {
     return yargs
@@ -131,7 +131,7 @@ const cli = yargs(hideBin(process.argv))
       })
   }, async (argv) => {
     const createCommand = new CreateCommand()
-    await createCommand.execute(argv.lang, argv.source, argv.path)
+    await createCommand.execute(argv.lang!, argv.source, argv.path)
   })
   .command('destroy <lang>', 'Delete language dictionary', (yargs) => {
     return yargs
@@ -147,7 +147,7 @@ const cli = yargs(hideBin(process.argv))
       })
   }, async (argv) => {
     const destroyCommand = new DestroyCommand()
-    await destroyCommand.execute(argv.lang, argv.yes, argv.path)
+    await destroyCommand.execute(argv.lang!, argv.yes, argv.path)
   })
   .command('sync <source> [key]', 'Sync languages with source changes', (yargs) => {
     return yargs
@@ -161,7 +161,7 @@ const cli = yargs(hideBin(process.argv))
       })
   }, async (argv) => {
     const syncCommand = new SyncCommand()
-    await syncCommand.execute(argv.source, argv.key, argv.path)
+    await syncCommand.execute(argv.source!, argv.key, argv.path)
   })
   .command('context [value]', 'Manage global project translation context', (yargs) => {
     return yargs
@@ -175,7 +175,7 @@ const cli = yargs(hideBin(process.argv))
     await contextCommand.execute(contextArgs, argv.path)
   })
   .command('build', 'Build YAML dictionaries into JavaScript', {}, async (argv) => {
-    build(argv.path)
+    build(argv.path as string)
   })
   .demandCommand(1, 'You need at least one command before moving on')
   .help()

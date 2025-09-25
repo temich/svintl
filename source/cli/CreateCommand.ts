@@ -2,29 +2,11 @@
  * @author claude-4-sonnet
  */
 
-import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
-import { resolve, join } from 'path'
-import { load as yamlLoad, dump as yamlDump } from 'js-yaml'
-import OpenAI from 'openai'
-import { build } from './build'
-import { ContextFileManager } from './context'
+import { TranslationService } from './TranslationService'
 import { validateLanguageTag, getNativeLanguageName } from './bcp47'
 
 export class CreateCommand {
-  private contextManager = new ContextFileManager()
-
-  private log(message: string): void {
-    console.log(message)
-  }
-
-  private warn(message: string): void {
-    console.warn(`⚠️  ${message}`)
-  }
-
-  private error(message: string): never {
-    console.error(`❌ ${message}`)
-    process.exit(1)
-  }
+  private translationService = new TranslationService()
 
   async execute(targetLang: string, sourceLang?: string, i18nPath = './src/lib/intl/'): Promise<void> {
     // Validate BCP 47 language tag
