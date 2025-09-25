@@ -15,24 +15,24 @@ export class UnitCommand {
     const commentText = comment ? ` (${comment})` : ''
     logger.log(`Creating plural forms for "${key}" with input "${input}"${commentText}...`)
 
-    // Get language information
-    const { languageFiles, allLanguages, i18nDir } = this.translationService.getLanguageInfo(i18nPath)
-    logger.log(`Creating pluralized translations for ${allLanguages.length} languages...`)
+    // Get locale information
+    const { localeFiles, allLocales, i18nDir } = this.translationService.getLocaleInfo(i18nPath)
+    logger.log(`Creating pluralized translations for ${allLocales.length} locales...`)
 
     // Create system prompt for pluralization
     const systemPrompt = `You are a professional translator specialized in creating pluralized translations for an internationalization system using Intl.PluralRules.
 
-Your task is to create plural forms for ALL supported plural categories for each target language according to Unicode CLDR pluralization rules.
+Your task is to create plural forms for ALL supported plural categories for each target locale according to Unicode CLDR pluralization rules.
 
 IMPORTANT RULES:
-1. DETECT the input language automatically from the provided text
-2. For each target language, create translations as OBJECTS with named plural form keys: {"one": "...", "other": "..."}
-3. Only include the plural categories that are actually used by each language - skip unused categories
-4. Use proper language-specific pluralization patterns and grammar that sound natural and commonly used
+1. DETECT the input locale automatically from the provided text
+2. For each target locale, create translations as OBJECTS with named plural form keys: {"one": "...", "other": "..."}
+3. Only include the plural categories that are actually used by each locale - skip unused categories
+4. Use proper locale-specific pluralization patterns and grammar that sound natural and commonly used
 5. The input text represents a concept that needs to be pluralized (e.g., "item", "message", "user")
-6. Return a JSON object where each language contains an object with named plural forms
+6. Return a JSON object where each locale contains an object with named plural forms
 
-LANGUAGE-SPECIFIC PLURAL RULES (use only the categories needed for each language):
+LOCALE-SPECIFIC PLURAL RULES (use only the categories needed for each locale):
 - English: {"one": "...", "other": "..."}
 - Russian: {"one": "...", "few": "...", "many": "...", "other": "..."}
 - Polish: {"one": "...", "few": "...", "many": "...", "other": "..."}
@@ -61,25 +61,25 @@ Output:
 }
 
 CRITICAL REQUIREMENTS:
-- Return objects with named plural form keys for each language
-- Only include categories that exist for each language (skip unused ones)
+- Return objects with named plural form keys for each locale
+- Only include categories that exist for each locale (skip unused ones)
 - Use proper grammatical forms for each category
 - Maintain semantic consistency across all translations
 - Follow Unicode CLDR pluralization rules exactly
-- Return JSON with language codes as keys and objects as values
+- Return JSON with locale codes as keys and objects as values
 
-Target languages: \${allLanguages}
+Target locales: \${allLocales}
 
 Return ONLY a JSON object with the structure shown above.`
 
     // Translate using OpenAI
     const projectContext = this.translationService.contextManagerInstance.getGlobalContext(i18nPath)
-    const translations = await this.translationService.translateWithOpenAI(input, allLanguages, systemPrompt, comment, projectContext)
+    const translations = await this.translationService.translateWithOpenAI(input, allLocales, systemPrompt, comment, projectContext)
 
     // Transform the translations to handle objects from OpenAI
     const objectTranslations: Record<string, Record<string, string>> = {}
 
-    for (const lang of allLanguages) {
+    for (const lang of allLocales) {
       const translation = translations[lang]
 
       // Check if translation is already an object (from OpenAI's response)
@@ -116,12 +116,12 @@ Return ONLY a JSON object with the structure shown above.`
 
     // Convert objects to the new array-with-object format for YAML storage
     const yamlTranslations: Record<string, Array<Record<string, string>>> = {}
-    for (const lang of allLanguages) {
+    for (const lang of allLocales) {
       yamlTranslations[lang] = [objectTranslations[lang]]
     }
 
-    // Update all language files with object plural data
-    this.translationService.updateAllLanguageFiles(languageFiles, i18nDir, key, yamlTranslations)
+    // Update all locale files with object plural data
+    this.translationService.updateAllLocaleFiles(localeFiles, i18nDir, key, yamlTranslations)
 
     // Store context and build
     this.translationService.finalize(i18nPath, key, input, comment)

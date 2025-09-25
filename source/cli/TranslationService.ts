@@ -20,17 +20,17 @@ export class TranslationService {
   }
 
   /**
-   * Get all language files and codes from i18n directory
+   * Get all locale files and codes from i18n directory
    */
-  getLanguageInfo(i18nPath: string): { languageFiles: string[], allLanguages: string[], i18nDir: string } {
+  getLocaleInfo(i18nPath: string): { localeFiles: string[], allLocales: string[], i18nDir: string } {
     const i18nDir = resolve(process.cwd(), i18nPath)
     
     // Check if directory exists and provide user-friendly error
     try {
-      const languageFiles = readdirSync(i18nDir).filter(file => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))
-      const allLanguages = languageFiles.map(file => file.replace('.yaml', ''))
+      const localeFiles = readdirSync(i18nDir).filter(file => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))
+      const allLocales = localeFiles.map(file => file.replace('.yaml', ''))
 
-      return { languageFiles, allLanguages, i18nDir }
+      return { localeFiles, allLocales, i18nDir }
     } catch (error: any) {
       if (error.code === 'ENOENT') {
         throw new Error(`Context not found in ${i18nDir}`)
@@ -44,7 +44,7 @@ export class TranslationService {
    */
   async translateWithOpenAI(
     content: string,
-    allLanguages: string[],
+    allLocales: string[],
     systemPrompt: string,
     comment?: string,
     projectContext?: string
@@ -84,7 +84,7 @@ export class TranslationService {
         messages: [
           {
             role: 'system',
-            content: systemPrompt.replace('${allLanguages}', allLanguages.join(', ')),
+            content: systemPrompt.replace('${allLocales}', allLocales.join(', ')),
           },
           {
             role: 'user',
@@ -115,9 +115,9 @@ export class TranslationService {
   }
 
   /**
-   * Update a specific language file with a key-value pair
+   * Update a specific locale file with a key-value pair
    */
-  updateLanguageFile(filePath: string, key: string, value: string | Record<string, string> | string[] | Array<Record<string, string>>): void {
+  updateLocaleFile(filePath: string, key: string, value: string | Record<string, string> | string[] | Array<Record<string, string>>): void {
     // Read and parse YAML file
     const content = readFileSync(filePath, 'utf8')
     const yamlData = yamlLoad(content) as any
@@ -149,9 +149,9 @@ export class TranslationService {
   }
 
   /**
-   * Remove a key from a language file
+   * Remove a key from a locale file
    */
-  removeFromLanguageFile(filePath: string, key: string): boolean {
+  removeFromLocaleFile(filePath: string, key: string): boolean {
     const content = readFileSync(filePath, 'utf8')
     const yamlData = yamlLoad(content) as any
 
@@ -182,20 +182,20 @@ export class TranslationService {
   }
 
   /**
-   * Update all language files with translations
+   * Update all locale files with translations
    */
-  updateAllLanguageFiles(
-    languageFiles: string[],
+  updateAllLocaleFiles(
+    localeFiles: string[],
     i18nDir: string,
     key: string,
     translations: Record<string, string | Record<string, string> | string[] | Array<Record<string, string>>>
   ): void {
-    for (const file of languageFiles) {
+    for (const file of localeFiles) {
       const lang = file.replace('.yaml', '')
       const filePath = join(i18nDir, file)
 
       try {
-        this.updateLanguageFile(filePath, key, translations[lang])
+        this.updateLocaleFile(filePath, key, translations[lang])
       } catch (error) {
         throw new Error(`Failed to update ${file}: ${error}`)
       }

@@ -22,30 +22,30 @@ export class SyncCommand {
       logger.error(validationError)
     }
 
-    const { languageFiles, i18nDir } = this.translationService.getLanguageInfo(i18nPath)
+    const { localeFiles, i18nDir } = this.translationService.getLocaleInfo(i18nPath)
     const sourceFile = `${i18nDir}/${sourceLang}.yaml`
 
-    // Check if source language exists
+    // Check if source locale exists
     const fs = require('fs')
     if (!fs.existsSync(sourceFile)) {
-      logger.error(`Source language "${sourceLang}" does not exist at ${sourceFile}`)
+      logger.error(`Source locale "${sourceLang}" does not exist at ${sourceFile}`)
     }
 
-    // Get target languages (all except source)
-    const targetLanguages = languageFiles
+    // Get target locales (all except source)
+    const targetLocales = localeFiles
       .map(file => file.replace('.yaml', ''))
       .filter(lang => lang !== sourceLang)
 
-    if (targetLanguages.length === 0) {
-      logger.error(`No target languages found to sync. Source "${sourceLang}" is the only language.`)
+    if (targetLocales.length === 0) {
+      logger.error(`No target locales found to sync. Source "${sourceLang}" is the only locale.`)
     }
 
-    logger.log(`Syncing ${targetLanguages.length} languages with "${sourceLang}" source...`)
+    logger.log(`Syncing ${targetLocales.length} locales with "${sourceLang}" source...`)
 
     if (specificKey) {
-      await this.syncSpecificKey(sourceLang, specificKey, targetLanguages, i18nDir)
+      await this.syncSpecificKey(sourceLang, specificKey, targetLocales, i18nDir)
     } else {
-      await this.syncAllKeys(sourceLang, targetLanguages, i18nDir)
+      await this.syncAllKeys(sourceLang, targetLocales, i18nDir)
     }
 
     logger.log(`✅ Translated`)
@@ -54,7 +54,7 @@ export class SyncCommand {
     require('./build').build(i18nPath)
   }
 
-  private async syncSpecificKey(sourceLang: string, specificKey: string, targetLanguages: string[], i18nDir: string): Promise<void> {
+  private async syncSpecificKey(sourceLang: string, specificKey: string, targetLocales: string[], i18nDir: string): Promise<void> {
     const fs = require('fs')
     const yaml = require('js-yaml')
     
@@ -64,47 +64,47 @@ export class SyncCommand {
 
     const sourceValue = this.extractValue(sourceData, specificKey)
     if (sourceValue === undefined) {
-      logger.error(`Key "${specificKey}" not found in source language "${sourceLang}"`)
+      logger.error(`Key "${specificKey}" not found in source locale "${sourceLang}"`)
     }
 
-    logger.log(`Syncing key "${specificKey}" to ${targetLanguages.length} languages...`)
+    logger.log(`Syncing key "${specificKey}" to ${targetLocales.length} locales...`)
 
     if (!process.env.OPENAI_API_KEY) {
       logger.warn('OPENAI_API_KEY not found - copying source value without translation')
 
-      for (const lang of targetLanguages) {
+      for (const lang of targetLocales) {
         const targetFile = `${i18nDir}/${lang}.yaml`
-        this.translationService.updateLanguageFile(targetFile, specificKey, sourceValue!)
+        this.translationService.updateLocaleFile(targetFile, specificKey, sourceValue!)
       }
       return
     }
 
     // Translate using OpenAI
-    const systemPrompt = `You are a professional translator. Translate the given text to the specified languages. Return ONLY a JSON object with language codes as keys and translations as values.`
+    const systemPrompt = `You are a professional translator. Translate the given text to the specified locales. Return ONLY a JSON object with locale codes as keys and translations as values.`
 
     try {
       const translations = await this.translationService.translateWithOpenAI(
         sourceValue!,
-        targetLanguages,
+        targetLocales,
         systemPrompt
       )
 
-      for (const lang of targetLanguages) {
+      for (const lang of targetLocales) {
         const targetFile = `${i18nDir}/${lang}.yaml`
         const translation = translations[lang] || sourceValue!
-        this.translationService.updateLanguageFile(targetFile, specificKey, translation)
+        this.translationService.updateLocaleFile(targetFile, specificKey, translation)
       }
     } catch (error) {
       logger.warn(`Translation failed: ${error}`)
       // Fallback to source values
-      for (const lang of targetLanguages) {
+      for (const lang of targetLocales) {
         const targetFile = `${i18nDir}/${lang}.yaml`
-        this.translationService.updateLanguageFile(targetFile, specificKey, sourceValue!)
+        this.translationService.updateLocaleFile(targetFile, specificKey, sourceValue!)
       }
     }
   }
 
-  private async syncAllKeys(sourceLang: string, targetLanguages: string[], i18nDir: string): Promise<void> {
+  private async syncAllKeys(sourceLang: string, targetLocales: string[], i18nDir: string): Promise<void> {
     const fs = require('fs')
     const yaml = require('js-yaml')
     
@@ -125,10 +125,10 @@ export class SyncCommand {
     if (!process.env.OPENAI_API_KEY) {
       logger.warn('OPENAI_API_KEY not found - copying source values without translation')
 
-      for (const lang of targetLanguages) {
+      for (const lang of targetLocales) {
         const targetFile = `${i18nDir}/${lang}.yaml`
         for (const entry of sourceEntries) {
-          this.translationService.updateLanguageFile(targetFile, entry.key, entry.value)
+          this.translationService.updateLocaleFile(targetFile, entry.key, entry.value)
         }
       }
       logger.log('✅ Translated')
@@ -137,10 +137,10 @@ export class SyncCommand {
 
     // In a full implementation, you would batch translate entries
     // For now, we'll just copy source values
-    for (const lang of targetLanguages) {
+    for (const lang of targetLocales) {
       const targetFile = `${i18nDir}/${lang}.yaml`
       for (const entry of sourceEntries) {
-        this.translationService.updateLanguageFile(targetFile, entry.key, entry.value)
+        this.translationService.updateLocaleFile(targetFile, entry.key, entry.value)
       }
     }
 

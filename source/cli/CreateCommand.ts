@@ -16,7 +16,7 @@ export class CreateCommand {
       logger.error(validationError)
     }
 
-    const { i18nDir } = this.translationService.getLanguageInfo(i18nPath)
+    const { i18nDir } = this.translationService.getLocaleInfo(i18nPath)
     const targetFile = `${i18nDir}/${targetLang}.yaml`
 
     const fs = require('fs')

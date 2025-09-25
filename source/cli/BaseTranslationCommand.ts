@@ -29,14 +29,14 @@ export abstract class BaseTranslationCommand {
   }
 
   /**
-   * Get all language files and codes from i18n directory
+   * Get all locale files and codes from i18n directory
    */
-  protected getLanguageInfo(i18nPath: string): { languageFiles: string[], allLanguages: string[], i18nDir: string } {
+  protected getLocaleInfo(i18nPath: string): { localeFiles: string[], allLocales: string[], i18nDir: string } {
     const i18nDir = resolve(process.cwd(), i18nPath)
-    const languageFiles = readdirSync(i18nDir).filter(file => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))
-    const allLanguages = languageFiles.map(file => file.replace('.yaml', ''))
+    const localeFiles = readdirSync(i18nDir).filter(file => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))
+    const allLocales = localeFiles.map(file => file.replace('.yaml', ''))
 
-    return { languageFiles, allLanguages, i18nDir }
+    return { localeFiles, allLocales, i18nDir }
   }
 
   /**
@@ -44,7 +44,7 @@ export abstract class BaseTranslationCommand {
    */
   protected async translateWithOpenAI(
     content: string,
-    allLanguages: string[],
+    allLocales: string[],
     systemPrompt: string,
     comment?: string,
     projectContext?: string
@@ -84,7 +84,7 @@ export abstract class BaseTranslationCommand {
         messages: [
           {
             role: 'system',
-            content: systemPrompt.replace('${allLanguages}', allLanguages.join(', ')),
+            content: systemPrompt.replace('${allLocales}', allLocales.join(', ')),
           },
           {
             role: 'user',
@@ -101,8 +101,8 @@ export abstract class BaseTranslationCommand {
         try {
           const parsedTranslations = JSON.parse(response)
 
-          // Validate and collect translations for all languages
-          for (const lang of allLanguages) {
+          // Validate and collect translations for all locales
+          for (const lang of allLocales) {
             if (parsedTranslations[lang]) {
               translations[lang] = parsedTranslations[lang]
             } else {
@@ -114,25 +114,25 @@ export abstract class BaseTranslationCommand {
           this.warn(`Failed to parse OpenAI response as JSON: ${parseError}`)
           this.warn(`Response was: ${response}`)
 
-          // Fallback to original value for all languages
-          for (const lang of allLanguages) {
+          // Fallback to original value for all locales
+          for (const lang of allLocales) {
             translations[lang] = content
           }
         }
       } else {
-        this.warn('No response from OpenAI, using original value fallback for all languages')
+        this.warn('No response from OpenAI, using original value fallback for all locales')
 
-        // Fallback to original value for all languages
-        for (const lang of allLanguages) {
+        // Fallback to original value for all locales
+        for (const lang of allLocales) {
           translations[lang] = content
         }
       }
     } catch (error) {
       this.warn(`Translation request failed: ${error}`)
-      this.log('Using original value fallback for all languages')
+      this.log('Using original value fallback for all locales')
 
-      // Fallback to original value for all languages
-      for (const lang of allLanguages) {
+      // Fallback to original value for all locales
+      for (const lang of allLocales) {
         translations[lang] = content
       }
     }
@@ -141,9 +141,9 @@ export abstract class BaseTranslationCommand {
   }
 
   /**
-   * Update a specific language file with a key-value pair
+   * Update a specific locale file with a key-value pair
    */
-  protected updateLanguageFile(filePath: string, key: string, value: string | Record<string, string> | string[] | Array<Record<string, string>>): void {
+  protected updateLocaleFile(filePath: string, key: string, value: string | Record<string, string> | string[] | Array<Record<string, string>>): void {
     // Read and parse YAML file
     const content = readFileSync(filePath, 'utf8')
     const yamlData = yamlLoad(content) as any
@@ -175,20 +175,20 @@ export abstract class BaseTranslationCommand {
   }
 
   /**
- * Update all language files with translations
+ * Update all locale files with translations
  */
-  protected updateAllLanguageFiles(
-    languageFiles: string[],
+  protected updateAllLocaleFiles(
+    localeFiles: string[],
     i18nDir: string,
     key: string,
     translations: Record<string, string | Record<string, string> | string[] | Array<Record<string, string>>>
   ): void {
-    for (const file of languageFiles) {
+    for (const file of localeFiles) {
       const lang = file.replace('.yaml', '')
       const filePath = join(i18nDir, file)
 
       try {
-        this.updateLanguageFile(filePath, key, translations[lang])
+        this.updateLocaleFile(filePath, key, translations[lang])
       } catch (error) {
         this.error(`Failed to update ${file}: ${error}`)
       }

@@ -14,15 +14,15 @@ export class MoveCommand {
   async execute(from: string, to: string, i18nPath = './src/lib/intl/'): Promise<void> {
     logger.log(`Moving "${from}" to "${to}"...`)
 
-    // Get language information
-    const { languageFiles, i18nDir } = this.translationService.getLanguageInfo(i18nPath)
+    // Get locale information
+    const { localeFiles, i18nDir } = this.translationService.getLocaleInfo(i18nPath)
 
-    // Store the values from all languages
+    // Store the values from all locales
     const values: Record<string, string> = {}
     let keyExists = false
 
     // First pass: collect all values and check if key exists
-    for (const file of languageFiles) {
+    for (const file of localeFiles) {
       const lang = file.replace('.yaml', '')
       const filePath = `${i18nDir}/${file}`
 
@@ -42,15 +42,15 @@ export class MoveCommand {
     }
 
     // Second pass: move the values
-    for (const file of languageFiles) {
+    for (const file of localeFiles) {
       const lang = file.replace('.yaml', '')
       const filePath = `${i18nDir}/${file}`
 
       if (values[lang]) {
         try {
           // Remove from old location and add to new location
-          this.translationService.removeFromLanguageFile(filePath, from)
-          this.translationService.updateLanguageFile(filePath, to, values[lang])
+          this.translationService.removeFromLocaleFile(filePath, from)
+          this.translationService.updateLocaleFile(filePath, to, values[lang])
           logger.log(`✓ Moved in ${file}`)
         } catch (error) {
           logger.error(`Failed to update ${file}: ${error}`)

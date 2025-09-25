@@ -9,19 +9,19 @@ export class RemoveCommand {
   private translationService = new TranslationService()
 
   async execute(key: string, i18nPath = './src/lib/intl/'): Promise<void> {
-    logger.log(`Removing "${key}" from all language files...`)
+    logger.log(`Removing "${key}" from all locale files...`)
 
-    // Get language information
-    const { languageFiles, i18nDir } = this.translationService.getLanguageInfo(i18nPath)
+    // Get locale information
+    const { localeFiles, i18nDir } = this.translationService.getLocaleInfo(i18nPath)
 
     let keyExists = false
 
-    // Remove key from all language files
-    for (const file of languageFiles) {
+    // Remove key from all locale files
+    for (const file of localeFiles) {
       const filePath = `${i18nDir}/${file}`
 
       try {
-        const removed = this.translationService.removeFromLanguageFile(filePath, key)
+        const removed = this.translationService.removeFromLocaleFile(filePath, key)
         if (removed) {
           logger.log(`✓ Removed from ${file}`)
           keyExists = true
@@ -32,7 +32,7 @@ export class RemoveCommand {
     }
 
     if (!keyExists) {
-      logger.warn(`Key "${key}" not found in any language files`)
+      logger.warn(`Key "${key}" not found in any locale files`)
     }
 
     // Remove context entry if it exists

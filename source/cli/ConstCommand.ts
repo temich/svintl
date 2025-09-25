@@ -13,23 +13,23 @@ export class ConstCommand {
 
   async execute(key: string, value: string, i18nPath = './src/lib/intl/'): Promise<void> {
     try {
-      // Get language information
-      const { languageFiles, i18nDir } = this.translationService.getLanguageInfo(i18nPath)
+      // Get locale information
+      const { localeFiles, i18nDir } = this.translationService.getLocaleInfo(i18nPath)
 
-      if (languageFiles.length === 0) {
-        logger.error(`No language files found in ${i18nDir}. Run 'npx intl hola' first.`)
+      if (localeFiles.length === 0) {
+        logger.error(`No locale files found in ${i18nDir}. Run 'npx intl hola' first.`)
       }
 
-      // Update all language files with the same value
-      for (const file of languageFiles) {
+      // Update all locale files with the same value
+      for (const file of localeFiles) {
         const filePath = `${i18nDir}/${file}`
-        this.translationService.updateLanguageFile(filePath, key, value)
+        this.translationService.updateLocaleFile(filePath, key, value)
       }
 
       // Auto-build dictionaries
       this.translationService.finalize(i18nPath, key, value)
       
-      logger.log(`✅ Set constant "${key}" in ${languageFiles.length} language files`)
+      logger.log(`✅ Set constant "${key}" in ${localeFiles.length} locale files`)
     } catch (error) {
       logger.error(`Failed to set constant: ${error}`)
     }
