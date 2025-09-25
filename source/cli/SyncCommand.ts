@@ -7,6 +7,7 @@ import { resolve, join } from 'path'
 import { load as yamlLoad, dump as yamlDump } from 'js-yaml'
 import OpenAI from 'openai'
 import { build } from './build'
+import { validateLanguageTag } from './bcp47'
 
 interface SyncEntry {
   key: string
@@ -29,8 +30,10 @@ export class SyncCommand {
   }
 
   async execute(sourceLang: string, specificKey?: string, i18nPath = './src/lib/intl/'): Promise<void> {
-    if (!/^[a-z]{2}$/.test(sourceLang)) {
-      this.error('Language code must be exactly 2 lowercase letters (e.g., en, ru, de)')
+    // Validate BCP 47 language tag
+    const validationError = validateLanguageTag(sourceLang)
+    if (validationError) {
+      this.error(validationError)
     }
 
     const i18nDir = resolve(process.cwd(), i18nPath)
@@ -43,7 +46,7 @@ export class SyncCommand {
 
     // Get all target language files (excluding source)
     const languageFiles = readdirSync(i18nDir)
-      .filter(file => file.match(/^[a-z]{2}\.yaml$/))
+      .filter(file => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))
       .filter(file => file !== `${sourceLang}.yaml`)
 
     if (languageFiles.length === 0) {

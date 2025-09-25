@@ -33,7 +33,7 @@ export abstract class BaseTranslationCommand {
    */
   protected getLanguageInfo(i18nPath: string): { languageFiles: string[], allLanguages: string[], i18nDir: string } {
     const i18nDir = resolve(process.cwd(), i18nPath)
-    const languageFiles = readdirSync(i18nDir).filter(file => file.match(/^[a-z]{2}\.yaml$/))
+    const languageFiles = readdirSync(i18nDir).filter(file => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))
     const allLanguages = languageFiles.map(file => file.replace('.yaml', ''))
 
     return { languageFiles, allLanguages, i18nDir }
