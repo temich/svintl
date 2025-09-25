@@ -1,8 +1,9 @@
 /**
- * @author claude-4-sonnet
+ * @author copilot
  */
 
 import { TranslationService } from './TranslationService'
+import { logger } from './logger'
 import { validateLanguageTag } from './bcp47'
 
 interface SyncEntry {
@@ -18,7 +19,7 @@ export class SyncCommand {
     // Validate BCP 47 language tag
     const validationError = validateLanguageTag(sourceLang)
     if (validationError) {
-      this.translationService.error(validationError)
+      logger.error(validationError)
     }
 
     const { languageFiles, i18nDir } = this.translationService.getLanguageInfo(i18nPath)
@@ -27,7 +28,7 @@ export class SyncCommand {
     // Check if source language exists
     const fs = require('fs')
     if (!fs.existsSync(sourceFile)) {
-      this.translationService.error(`Source language "${sourceLang}" does not exist at ${sourceFile}`)
+      logger.error(`Source language "${sourceLang}" does not exist at ${sourceFile}`)
     }
 
     // Get target languages (all except source)
@@ -36,10 +37,10 @@ export class SyncCommand {
       .filter(lang => lang !== sourceLang)
 
     if (targetLanguages.length === 0) {
-      this.translationService.error(`No target languages found to sync. Source "${sourceLang}" is the only language.`)
+      logger.error(`No target languages found to sync. Source "${sourceLang}" is the only language.`)
     }
 
-    this.translationService.log(`Syncing ${targetLanguages.length} languages with "${sourceLang}" source...`)
+    logger.log(`Syncing ${targetLanguages.length} languages with "${sourceLang}" source...`)
 
     if (specificKey) {
       await this.syncSpecificKey(sourceLang, specificKey, targetLanguages, i18nDir)
@@ -47,7 +48,7 @@ export class SyncCommand {
       await this.syncAllKeys(sourceLang, targetLanguages, i18nDir)
     }
 
-    this.translationService.log(`✅ Translated`)
+    logger.log(`✅ Translated`)
 
     // Auto-build dictionaries
     require('./build').build(i18nPath)
@@ -63,13 +64,13 @@ export class SyncCommand {
 
     const sourceValue = this.extractValue(sourceData, specificKey)
     if (sourceValue === undefined) {
-      this.translationService.error(`Key "${specificKey}" not found in source language "${sourceLang}"`)
+      logger.error(`Key "${specificKey}" not found in source language "${sourceLang}"`)
     }
 
-    this.translationService.log(`Syncing key "${specificKey}" to ${targetLanguages.length} languages...`)
+    logger.log(`Syncing key "${specificKey}" to ${targetLanguages.length} languages...`)
 
     if (!process.env.OPENAI_API_KEY) {
-      this.translationService.warn('OPENAI_API_KEY not found - copying source value without translation')
+      logger.warn('OPENAI_API_KEY not found - copying source value without translation')
 
       for (const lang of targetLanguages) {
         const targetFile = `${i18nDir}/${lang}.yaml`
@@ -94,7 +95,7 @@ export class SyncCommand {
         this.translationService.updateLanguageFile(targetFile, specificKey, translation)
       }
     } catch (error) {
-      this.translationService.warn(`Translation failed: ${error}`)
+      logger.warn(`Translation failed: ${error}`)
       // Fallback to source values
       for (const lang of targetLanguages) {
         const targetFile = `${i18nDir}/${lang}.yaml`
@@ -113,16 +114,16 @@ export class SyncCommand {
 
     // Extract all entries from source
     const sourceEntries = this.extractEntries(sourceData)
-    this.translationService.log(`Source has ${sourceEntries.length} entries`)
+    logger.log(`Source has ${sourceEntries.length} entries`)
 
     if (sourceEntries.length === 0) {
-      this.translationService.warn(`No entries found in source language "${sourceLang}"`)
+      logger.warn(`No entries found in source language "${sourceLang}"`)
       return
     }
 
     // For simplicity, copy all source values (in a real implementation, you'd want to translate)
     if (!process.env.OPENAI_API_KEY) {
-      this.translationService.warn('OPENAI_API_KEY not found - copying source values without translation')
+      logger.warn('OPENAI_API_KEY not found - copying source values without translation')
 
       for (const lang of targetLanguages) {
         const targetFile = `${i18nDir}/${lang}.yaml`
@@ -130,7 +131,7 @@ export class SyncCommand {
           this.translationService.updateLanguageFile(targetFile, entry.key, entry.value)
         }
       }
-      this.translationService.log('✅ Translated')
+      logger.log('✅ Translated')
       return
     }
 
@@ -143,7 +144,7 @@ export class SyncCommand {
       }
     }
 
-    this.translationService.log('✅ Translated')
+    logger.log('✅ Translated')
   }
 
   private extractValue(obj: any, path: string): string | undefined {

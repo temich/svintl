@@ -4,7 +4,7 @@
  * Main CLI entry point using yargs for argument parsing
  * General-purpose translation library CLI with minimal descriptions
  *
- * @author claude-4-sonnet
+ * @author copilot
  */
 
 import 'dotenv/config'

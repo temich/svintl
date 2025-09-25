@@ -2,7 +2,7 @@
  * YAML loader with JavaScript function support for i18n files
  * Processes !js tagged multiline strings as executable functions
  *
- * @author claude-4-sonnet
+ * @author copilot
  */
 
 import { readFileSync } from 'fs'

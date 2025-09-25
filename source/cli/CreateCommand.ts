@@ -1,8 +1,9 @@
 /**
- * @author claude-4-sonnet
+ * @author copilot
  */
 
 import { TranslationService } from './TranslationService'
+import { logger } from './logger'
 import { validateLanguageTag, getNativeLanguageName } from './bcp47'
 
 export class CreateCommand {
@@ -12,7 +13,7 @@ export class CreateCommand {
     // Validate BCP 47 language tag
     const validationError = validateLanguageTag(targetLang)
     if (validationError) {
-      this.translationService.error(validationError)
+      logger.error(validationError)
     }
 
     const { i18nDir } = this.translationService.getLanguageInfo(i18nPath)
@@ -25,12 +26,12 @@ export class CreateCommand {
     // Create directory if it doesn't exist
     if (!fs.existsSync(i18nDir)) {
       fs.mkdirSync(i18nDir, { recursive: true })
-      this.translationService.log(`Created directory: ${i18nDir}`)
+      logger.log(`Created directory: ${i18nDir}`)
     }
 
     // Check if target language already exists
     if (fs.existsSync(targetFile)) {
-      this.translationService.error(`Language "${targetLang}" already exists at ${targetFile}`)
+      logger.error(`Language "${targetLang}" already exists at ${targetFile}`)
     }
 
     // Get native language name
@@ -38,7 +39,7 @@ export class CreateCommand {
 
     // If no source language is provided, create minimal file with native name
     if (!sourceLang) {
-      this.translationService.log(`Creating language file for "${targetLang}"...`)
+      logger.log(`Creating language file for "${targetLang}"...`)
 
       const initialContent = {
         native: nativeName,
@@ -53,7 +54,7 @@ export class CreateCommand {
       fs.writeFileSync(targetFile, yamlContent)
 
       require('./build').build(i18nPath)
-      this.translationService.log(`✅ Created ${targetFile} with native name: ${nativeName}`)
+      logger.log(`✅ Created ${targetFile} with native name: ${nativeName}`)
       return
     }
 
@@ -65,14 +66,14 @@ export class CreateCommand {
     if (sourceLang) {
       const sourceFile = path.join(i18nDir, `${sourceLang}.yaml`)
       if (!fs.existsSync(sourceFile)) {
-        this.translationService.error(`Source language "${sourceLang}" does not exist`)
+        logger.error(`Source language "${sourceLang}" does not exist`)
       }
     } else if (!existingFiles.includes('en.yaml')) {
-      this.translationService.error(`No English (en) language found. Please specify source language: npx intl create ${targetLang} <source-lang>`)
+      logger.error(`No English (en) language found. Please specify source language: npx intl create ${targetLang} <source-lang>`)
     }
 
     const sourceLanguage = sourceLang || 'en'
-    this.translationService.log(`Creating "${targetLang}" language from "${sourceLanguage}" source...`)
+    logger.log(`Creating "${targetLang}" language from "${sourceLanguage}" source...`)
 
     // Load source dictionary
     const sourceFile = path.join(i18nDir, `${sourceLanguage}.yaml`)
@@ -86,9 +87,9 @@ export class CreateCommand {
     // Get saved contexts for enriched translation
     const savedContexts = this.translationService.contextManagerInstance.getAllContextEntries(i18nPath)
 
-    this.translationService.log(`Found ${entries.length} entries to translate`)
+    logger.log(`Found ${entries.length} entries to translate`)
     if (Object.keys(savedContexts).length > 0) {
-      this.translationService.log(`Found ${Object.keys(savedContexts).length} saved contexts for enhanced translation`)
+      logger.log(`Found ${Object.keys(savedContexts).length} saved contexts for enhanced translation`)
     }
 
     if (entries.length === 0) {
@@ -105,7 +106,7 @@ export class CreateCommand {
 
       fs.writeFileSync(targetFile, yamlContent)
       require('./build').build(i18nPath)
-      this.translationService.log(`✅ Created ${targetFile} with native name: ${nativeName}`)
+      logger.log(`✅ Created ${targetFile} with native name: ${nativeName}`)
       return
     }
 
@@ -125,7 +126,7 @@ export class CreateCommand {
 
     // Build dictionaries
     require('./build').build(i18nPath)
-    this.translationService.log(`✅ Created ${targetFile} from ${sourceLanguage} with ${entries.length} entries`)
+    logger.log(`✅ Created ${targetFile} from ${sourceLanguage} with ${entries.length} entries`)
   }
 
   private extractEntries(obj: any, prefix = ''): Array<{ key: string; value: string }> {

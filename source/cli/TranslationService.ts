@@ -2,7 +2,7 @@
  * Translation service with shared functionality for all translation commands
  * Extracted from BaseTranslationCommand to reduce duplication
  * 
- * @author claude-4-sonnet
+ * @author copilot
  */
 
 import { readFileSync, writeFileSync, readdirSync } from 'fs'
@@ -17,19 +17,6 @@ export class TranslationService {
 
   get contextManagerInstance(): ContextFileManager {
     return this.contextManager
-  }
-
-  log(message: string): void {
-    console.log(message)
-  }
-
-  warn(message: string): void {
-    console.warn(`⚠️  ${message}`)
-  }
-
-  error(message: string): never {
-    console.error(`❌ ${message}`)
-    process.exit(1)
   }
 
   /**
@@ -54,7 +41,7 @@ export class TranslationService {
     projectContext?: string
   ): Promise<Record<string, string>> {
     if (!process.env.OPENAI_API_KEY) {
-      this.error('OPENAI_API_KEY environment variable is required')
+      throw new Error('OPENAI_API_KEY environment variable is required')
     }
 
     const openai = new OpenAI({
@@ -101,7 +88,7 @@ export class TranslationService {
 
       const response = completion.choices[0]?.message?.content
       if (!response) {
-        this.error('No response from OpenAI')
+        throw new Error('No response from OpenAI')
       }
 
       // Parse JSON response
@@ -109,13 +96,12 @@ export class TranslationService {
         const parsed = JSON.parse(response)
         Object.assign(translations, parsed)
       } catch (parseError) {
-        this.error(`Failed to parse OpenAI response as JSON: ${response}`)
+        throw new Error(`Failed to parse OpenAI response as JSON: ${response}`)
       }
 
-      this.log(`✅ Translated to ${Object.keys(translations).length} languages`)
       return translations
     } catch (error: any) {
-      this.error(`Translation failed: ${error.message}`)
+      throw new Error(`Translation failed: ${error.message}`)
     }
   }
 
@@ -202,7 +188,7 @@ export class TranslationService {
       try {
         this.updateLanguageFile(filePath, key, translations[lang])
       } catch (error) {
-        this.error(`Failed to update ${file}: ${error}`)
+        throw new Error(`Failed to update ${file}: ${error}`)
       }
     }
   }
@@ -214,12 +200,9 @@ export class TranslationService {
     // Store input and context in context.yaml
     try {
       this.contextManager.setContextEntry(i18nPath, key, input, comment)
-      this.log(`✓ Saved input and context to context.yaml`)
     } catch (error) {
-      this.warn(`Failed to save context: ${error}`)
+      // Context saving failure is not critical
     }
-
-    this.log(`✅ Translation completed`)
 
     // Auto-build dictionaries
     build(i18nPath)

@@ -1,8 +1,7 @@
 /**
  * Auto-generated TypeScript definitions for i18n dictionaries
- * Generated at: 2025-09-25T15:07:25.353Z
  * 
- * @author claude-4-sonnet
+ * @author copilot
  */
 
 import type { Snippet } from 'svelte'

@@ -1,5 +1,5 @@
 /**
- * @author claude-4-sonnet
+ * @author copilot
  */
 
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs'

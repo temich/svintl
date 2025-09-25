@@ -2,21 +2,22 @@
  * CLI command for creating unit/pluralized i18n entries using Intl.PluralRules
  * Creates translations for all plural categories (one, few, many, other) for each language
  *
- * @author claude-4-sonnet
+ * @author copilot
  */
 
 import { TranslationService } from './TranslationService'
+import { logger } from './logger'
 
 export class UnitCommand {
   private translationService = new TranslationService()
 
   async execute(key: string, input: string, comment?: string, i18nPath = './src/lib/intl/'): Promise<void> {
     const commentText = comment ? ` (${comment})` : ''
-    this.translationService.log(`Creating plural forms for "${key}" with input "${input}"${commentText}...`)
+    logger.log(`Creating plural forms for "${key}" with input "${input}"${commentText}...`)
 
     // Get language information
     const { languageFiles, allLanguages, i18nDir } = this.translationService.getLanguageInfo(i18nPath)
-    this.translationService.log(`Creating pluralized translations for ${allLanguages.length} languages...`)
+    logger.log(`Creating pluralized translations for ${allLanguages.length} languages...`)
 
     // Create system prompt for pluralization
     const systemPrompt = `You are a professional translator specialized in creating pluralized translations for an internationalization system using Intl.PluralRules.
@@ -98,17 +99,17 @@ Return ONLY a JSON object with the structure shown above.`
             objectTranslations[lang] = parsed
           } else {
             // Fallback: create simple one/other object
-            this.translationService.warn(`Invalid plural structure for ${lang}, using fallback`)
+            logger.warn(`Invalid plural structure for ${lang}, using fallback`)
             objectTranslations[lang] = this.createFallbackPluralObject(translation, lang)
           }
         } catch {
           // Fallback: create simple one/other object
-          this.translationService.warn(`Failed to parse plural structure for ${lang}, using fallback`)
+          logger.warn(`Failed to parse plural structure for ${lang}, using fallback`)
           objectTranslations[lang] = this.createFallbackPluralObject(translation, lang)
         }
       } else {
         // Fallback for any other type
-        this.translationService.warn(`Unexpected translation type for ${lang}, using fallback`)
+        logger.warn(`Unexpected translation type for ${lang}, using fallback`)
         objectTranslations[lang] = this.createFallbackPluralObject(String(translation), lang)
       }
     }

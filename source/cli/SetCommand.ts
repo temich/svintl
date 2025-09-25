@@ -2,21 +2,19 @@
  * CLI command for adding new i18n entries with automatic translation
  * Translates entries to all available languages using OpenAI API
  *
- * @author claude-4-sonnet
+ * @author copilot
  */
 
 import { TranslationService } from './TranslationService'
+import { logger } from './logger'
 
 export class SetCommand {
   private translationService = new TranslationService()
 
   async execute(key: string, value: string, comment?: string, i18nPath = './src/lib/intl/'): Promise<void> {
-    const commentText = comment ? ` (${comment})` : ''
-    this.translationService.log(`Setting "${key}" with value "${value}"${commentText}...`)
-
-    // Get language information
-    const { languageFiles, allLanguages, i18nDir } = this.translationService.getLanguageInfo(i18nPath)
-    this.translationService.log(`Translating to ${allLanguages.length} languages...`)
+    try {
+      // Get language information
+      const { languageFiles, allLanguages, i18nDir } = this.translationService.getLanguageInfo(i18nPath)
 
     // Create system prompt for regular translations
     const systemPrompt = `You are a professional translator for an internationalization system. You will receive text in ANY language and must translate it to ALL specified target languages.
@@ -82,6 +80,11 @@ For !js functions:
 
     // Store context and build
     this.translationService.finalize(i18nPath, key, value, comment)
+    
+    logger.log(`✅ Set "${key}" in ${allLanguages.length} languages`)
+    } catch (error) {
+      logger.error(`Failed to set translation: ${error}`)
+    }
   }
 
 }

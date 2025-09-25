@@ -2,16 +2,17 @@
  * CLI command for moving/renaming i18n entries across all language files
  * Preserves translations while updating key paths
  *
- * @author claude-4-sonnet
+ * @author copilot
  */
 
 import { TranslationService } from './TranslationService'
+import { logger } from './logger'
 
 export class MoveCommand {
   private translationService = new TranslationService()
 
   async execute(from: string, to: string, i18nPath = './src/lib/intl/'): Promise<void> {
-    this.translationService.log(`Moving "${from}" to "${to}"...`)
+    logger.log(`Moving "${from}" to "${to}"...`)
 
     // Get language information
     const { languageFiles, i18nDir } = this.translationService.getLanguageInfo(i18nPath)
@@ -32,12 +33,12 @@ export class MoveCommand {
           keyExists = true
         }
       } catch (error) {
-        this.translationService.warn(`Failed to read ${file}: ${error}`)
+        logger.warn(`Failed to read ${file}: ${error}`)
       }
     }
 
     if (!keyExists) {
-      this.translationService.error(`Key "${from}" not found in any language files`)
+      logger.error(`Key "${from}" not found in any language files`)
     }
 
     // Second pass: move the values
@@ -50,9 +51,9 @@ export class MoveCommand {
           // Remove from old location and add to new location
           this.translationService.removeFromLanguageFile(filePath, from)
           this.translationService.updateLanguageFile(filePath, to, values[lang])
-          this.translationService.log(`✓ Moved in ${file}`)
+          logger.log(`✓ Moved in ${file}`)
         } catch (error) {
-          this.translationService.error(`Failed to update ${file}: ${error}`)
+          logger.error(`Failed to update ${file}: ${error}`)
         }
       }
     }
@@ -61,13 +62,13 @@ export class MoveCommand {
     try {
       const moved = this.translationService.contextManagerInstance.moveContextEntry(i18nPath, from, to)
       if (moved) {
-        this.translationService.log(`✓ Moved context from "${from}" to "${to}"`)
+        logger.log(`✓ Moved context from "${from}" to "${to}"`)
       }
     } catch (error) {
-      this.translationService.warn(`Failed to move context: ${error}`)
+      logger.warn(`Failed to move context: ${error}`)
     }
 
-    this.translationService.log(`✅ Saved`)
+    logger.log(`✅ Saved`)
 
     // Auto-build dictionaries
     require('./build').build(i18nPath)

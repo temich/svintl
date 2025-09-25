@@ -2,7 +2,7 @@
  * Base class for translation commands with common functionality
  * Provides shared utilities for OpenAI translation, file management, and logging
  * 
- * @author claude-4-sonnet
+ * @author copilot
  */
 
 import { readFileSync, writeFileSync, readdirSync } from 'fs'

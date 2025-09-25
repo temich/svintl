@@ -1,8 +1,9 @@
 /**
- * @author claude-4-sonnet
+ * @author copilot
  */
 
 import { TranslationService } from './TranslationService'
+import { logger } from './logger'
 import { validateLanguageTag } from './bcp47'
 
 export class DestroyCommand {
@@ -12,7 +13,7 @@ export class DestroyCommand {
     // Validate BCP 47 language tag
     const validationError = validateLanguageTag(targetLang)
     if (validationError) {
-      this.translationService.error(validationError)
+      logger.error(validationError)
     }
 
     const { i18nDir } = this.translationService.getLanguageInfo(i18nPath)
@@ -21,29 +22,29 @@ export class DestroyCommand {
     // Check if target language exists
     const fs = require('fs')
     if (!fs.existsSync(targetFile)) {
-      this.translationService.error(`Language "${targetLang}" does not exist at ${targetFile}`)
+      logger.error(`Language "${targetLang}" does not exist at ${targetFile}`)
     }
 
     // Ask for confirmation unless force flag is used
     if (!force) {
-      this.translationService.log(`⚠️  This will permanently delete the "${targetLang}" language dictionary.`)
-      this.translationService.log(`File: ${targetFile}`)
-      this.translationService.log('')
-      this.translationService.log('Are you sure? This action cannot be undone.')
-      this.translationService.log('Use the -y flag to skip this confirmation.')
-      this.translationService.error('Operation cancelled. Use -y flag to force deletion.')
+      logger.log(`⚠️  This will permanently delete the "${targetLang}" language dictionary.`)
+      logger.log(`File: ${targetFile}`)
+      logger.log('')
+      logger.log('Are you sure? This action cannot be undone.')
+      logger.log('Use the -y flag to skip this confirmation.')
+      logger.error('Operation cancelled. Use -y flag to force deletion.')
     }
 
     try {
       // Delete the file
       fs.unlinkSync(targetFile)
-      this.translationService.log(`✅ Deleted ${targetFile}`)
+      logger.log(`✅ Deleted ${targetFile}`)
 
       // Rebuild dictionaries
       require('./build').build(i18nPath)
-      this.translationService.log(`✅ Updated dictionaries`)
+      logger.log(`✅ Updated dictionaries`)
     } catch (error) {
-      this.translationService.error(`Failed to delete ${targetFile}: ${error}`)
+      logger.error(`Failed to delete ${targetFile}: ${error}`)
     }
   }
 }

@@ -4,7 +4,7 @@
  * Main CLI entry point - backwards compatibility wrapper
  * Redirects to the new yargs-based CLI
  *
- * @author claude-4-sonnet
+ * @author copilot
  */
 
 import './cli'
