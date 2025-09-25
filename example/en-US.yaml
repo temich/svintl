@@ -13,10 +13,5 @@ product:
     "0":
       one: product
       other: products
-test:
-  cars:
-    "0":
-      one: car
-      other: cars
 buttons:
   catalog: Browse catalog

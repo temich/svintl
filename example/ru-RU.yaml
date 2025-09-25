@@ -13,10 +13,5 @@ product:
     "0":
       one: товар
       other: товары
-test:
-  cars:
-    "0":
-      one: автомобиль
-      other: автомобили
 buttons:
   catalog: Перейти в каталог

@@ -13,9 +13,6 @@ inputs:
     count:
       input: product
       context: item for sale
-  test:
-    cars:
-      input: car
   buttons:
     catalog:
       input: Перейти в каталог
