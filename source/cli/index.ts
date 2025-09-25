@@ -17,6 +17,7 @@ import { DestroyCommand } from './DestroyCommand'
 import { SyncCommand } from './SyncCommand'
 import { HolaCommand } from './HolaCommand'
 import { ConstCommand } from './ConstCommand'
+import { ContextCommand } from './ContextCommand'
 import { build } from './build'
 
 class I18nCLI {
@@ -40,6 +41,7 @@ class I18nCLI {
     this.log('  create <lang> [source]      - Create new language dictionary from source (default: en)')
     this.log('  destroy <lang> [-y]         - Delete language dictionary (with confirmation)')
     this.log('  sync <source> [key]         - Sync all languages with source changes (optionally single key)')
+    this.log('  context [value|--clear]     - Manage global project translation context')
     this.log('  build                       - Build YAML dictionaries into dict.js')
     this.log('')
     this.log('Options:')
@@ -215,6 +217,15 @@ class I18nCLI {
         const specificKey = commandArgs.length === 3 ? commandArgs[2] : undefined
 
         await syncCommand.execute(commandArgs[1], specificKey, i18nPath)
+
+        break
+      }
+
+      case 'context': {
+        const contextCommand = new ContextCommand()
+        const contextArgs = commandArgs.slice(1)
+
+        await contextCommand.execute(contextArgs, i18nPath)
 
         break
       }

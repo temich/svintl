@@ -29,7 +29,10 @@ IMPORTANT RULES:
 6. Always maintain the exact same function parameters (don't change parameter names or count)
 7. Use DOUBLE QUOTES for all string literals to avoid JavaScript syntax errors
 8. Translate ALL parts of compound phrases completely
-9. Return translations in JSON format as requested
+9. Ensure translations sound natural and commonly used within the provided context
+10. For UI elements (buttons, links, menus), choose idiomatic, inviting phrasing that native speakers expect in that scenario
+11. When translating navigation or call-to-action text, prefer natural, inviting prompts that encourage exploration over literal location descriptors
+12. Return translations in JSON format as requested
 
 GRAMMAR ADAPTATION EXAMPLES (any source language):
 
@@ -71,7 +74,8 @@ For !js functions:
 }`
 
     // Translate using OpenAI
-    const translations = await this.translateWithOpenAI(value, allLanguages, systemPrompt, comment)
+    const projectContext = this.contextManager.getGlobalContext(i18nPath)
+    const translations = await this.translateWithOpenAI(value, allLanguages, systemPrompt, comment, projectContext)
 
     // Update all language files
     this.updateAllLanguageFiles(languageFiles, i18nDir, key, translations)

@@ -46,7 +46,8 @@ export abstract class BaseTranslationCommand {
     content: string,
     allLanguages: string[],
     systemPrompt: string,
-    comment?: string
+    comment?: string,
+    projectContext?: string
   ): Promise<Record<string, string>> {
     if (!process.env.OPENAI_API_KEY) {
       this.error('OPENAI_API_KEY environment variable is required')
@@ -59,9 +60,24 @@ export abstract class BaseTranslationCommand {
     const translations: Record<string, string> = {}
 
     try {
-      const contextPrompt = comment
-        ? `Context: ${comment}\n\nText to translate: ${content}`
-        : content
+      const trimmedProjectContext = projectContext?.trim()
+      const trimmedComment = comment?.trim()
+
+      const hasProjectContext = Boolean(trimmedProjectContext && trimmedProjectContext.length > 0)
+      const hasPhraseContext = Boolean(trimmedComment && trimmedComment.length > 0)
+
+      const promptSections: string[] = []
+
+      if (hasProjectContext)
+        promptSections.push(`Project context: ${trimmedProjectContext}`)
+
+      promptSections.push(`Phrase: ${content}`)
+
+      promptSections.push(`Phrase context: ${hasPhraseContext ? trimmedComment : 'None provided'}`)
+
+      promptSections.push('Instructions: Provide translations that sound natural, commonly used, and idiomatic for the described context.')
+
+      const contextPrompt = promptSections.join('\n\n')
 
       const completion = await openai.chat.completions.create({
         model: 'gpt-4.1',

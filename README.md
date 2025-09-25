@@ -200,6 +200,13 @@ npx intl sync en example.hello # sync specific key
 Syncs (re-translates) all languages using the source language dictionary.
 
 ```bash
+npx intl context "Describe shared project background"
+npx intl context --clear
+```
+
+Sets or clears project-wide translation guidance stored in `context.yaml`. Append `-p <path>` to operate on a custom i18n directory.
+
+```bash
 npx intl build
 ```
 

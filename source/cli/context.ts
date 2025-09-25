@@ -15,6 +15,7 @@ export interface ContextEntry {
 }
 
 export interface ContextData {
+  context?: string
   inputs: Record<string, any>
 }
 
@@ -31,22 +32,25 @@ export class ContextFileManager {
     const contextFilePath = this.getContextFilePath(i18nPath)
 
     if (!existsSync(contextFilePath)) {
-      return { inputs: {} }
+      return { context: undefined, inputs: {} }
     }
 
     try {
       const content = readFileSync(contextFilePath, 'utf8')
-      const data = yamlLoad(content) as ContextData
+      const data = yamlLoad(content) as Partial<ContextData> | undefined
 
-      // Ensure the inputs property exists
-      if (!data || typeof data !== 'object' || !data.inputs) {
-        return { inputs: {} }
-      }
+      const inputs = data && typeof data === 'object' && data.inputs && typeof data.inputs === 'object'
+        ? data.inputs
+        : {}
 
-      return data
+      const context = data && typeof data === 'object' && typeof data.context === 'string'
+        ? data.context
+        : undefined
+
+      return { context, inputs }
     } catch (error) {
       console.warn(`⚠️  Failed to read context file: ${error}`)
-      return { inputs: {} }
+      return { context: undefined, inputs: {} }
     }
   }
 
@@ -57,7 +61,12 @@ export class ContextFileManager {
     const contextFilePath = this.getContextFilePath(i18nPath)
 
     try {
-      const yamlContent = yamlDump(data, {
+      const normalizedData: ContextData = {
+        ...(data.context !== undefined ? { context: data.context } : {}),
+        inputs: data.inputs || {},
+      }
+
+      const yamlContent = yamlDump(normalizedData, {
         lineWidth: -1,
         quotingType: '"',
         forceQuotes: false,
@@ -95,6 +104,24 @@ export class ContextFileManager {
     current[finalKey] = { input, context }
 
     this.writeContextFile(i18nPath, data)
+  }
+
+  setGlobalContext(i18nPath: string, context: string): void {
+    const data = this.readContextFile(i18nPath)
+    data.context = context
+    this.writeContextFile(i18nPath, data)
+  }
+
+  clearGlobalContext(i18nPath: string): void {
+    const data = this.readContextFile(i18nPath)
+    if ('context' in data)
+      delete data.context
+    this.writeContextFile(i18nPath, data)
+  }
+
+  getGlobalContext(i18nPath: string): string | undefined {
+    const data = this.readContextFile(i18nPath)
+    return data.context
   }
 
   /**

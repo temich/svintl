@@ -1,18 +1,22 @@
+native: English
 hello: Hello
 bye: Bye
 example:
   hello: Hello
 items:
   count:
-    - one: item
+    "0":
+      one: item
       other: items
 product:
   count:
-    - one: product
+    "0":
+      one: product
       other: products
 test:
   cars:
-    - one: car
+    "0":
+      one: car
       other: cars
 buttons:
   catalog: Browse catalog

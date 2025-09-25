@@ -26,7 +26,7 @@ IMPORTANT RULES:
 1. DETECT the input language automatically from the provided text
 2. For each target language, create translations as OBJECTS with named plural form keys: {"one": "...", "other": "..."}
 3. Only include the plural categories that are actually used by each language - skip unused categories
-4. Use proper language-specific pluralization patterns and grammar
+4. Use proper language-specific pluralization patterns and grammar that sound natural and commonly used
 5. The input text represents a concept that needs to be pluralized (e.g., "item", "message", "user")
 6. Return a JSON object where each language contains an object with named plural forms
 
@@ -71,7 +71,8 @@ Target languages: \${allLanguages}
 Return ONLY a JSON object with the structure shown above.`
 
     // Translate using OpenAI
-    const translations = await this.translateWithOpenAI(input, allLanguages, systemPrompt, comment)
+    const projectContext = this.contextManager.getGlobalContext(i18nPath)
+    const translations = await this.translateWithOpenAI(input, allLanguages, systemPrompt, comment, projectContext)
 
     // Transform the translations to handle objects from OpenAI
     const objectTranslations: Record<string, Record<string, string>> = {}

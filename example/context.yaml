@@ -16,3 +16,7 @@ inputs:
   test:
     cars:
       input: car
+  buttons:
+    catalog:
+      input: Перейти в каталог
+      context: или открыть, посмотреть, как принято в соответствующем языке
