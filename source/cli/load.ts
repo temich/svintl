@@ -34,8 +34,8 @@ function processNode(node: any): any {
       try {
         // Evaluate the JavaScript code directly
         // We expect the code to be a function expression like: (count) => { ... }
-        // eslint-disable-next-line no-eval
-        const func = eval(jsCode)
+        // eslint-disable-next-line no-new-func
+        const func = new Function(`return (${jsCode});`)()
 
         return func
       } catch (error) {
@@ -105,8 +105,8 @@ function createPluralFunction(pluralForms: Record<string, string>): Function {
   `.trim()
 
   try {
-    // eslint-disable-next-line no-eval
-    return eval(`(${functionCode})`)
+    // eslint-disable-next-line no-new-func
+    return new Function(`return (${functionCode});`)()
   } catch (error) {
     console.warn(`Failed to create plural function:`, error)
     // Return a simple fallback function
