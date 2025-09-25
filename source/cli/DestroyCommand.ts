@@ -2,24 +2,11 @@
  * @author claude-4-sonnet
  */
 
-import { unlinkSync, existsSync } from 'fs'
-import { resolve, join } from 'path'
-import { build } from './build'
+import { TranslationService } from './TranslationService'
 import { validateLanguageTag } from './bcp47'
 
 export class DestroyCommand {
-  private log(message: string): void {
-    console.log(message)
-  }
-
-  private warn(message: string): void {
-    console.warn(`⚠️  ${message}`)
-  }
-
-  private error(message: string): never {
-    console.error(`❌ ${message}`)
-    process.exit(1)
-  }
+  private translationService = new TranslationService()
 
   async execute(targetLang: string, force = false, i18nPath = './src/lib/intl/'): Promise<void> {
     // Validate BCP 47 language tag
@@ -28,11 +15,12 @@ export class DestroyCommand {
       this.translationService.error(validationError)
     }
 
-    const i18nDir = resolve(process.cwd(), i18nPath)
-    const targetFile = join(i18nDir, `${targetLang}.yaml`)
+    const { i18nDir } = this.translationService.getLanguageInfo(i18nPath)
+    const targetFile = `${i18nDir}/${targetLang}.yaml`
 
     // Check if target language exists
-    if (!existsSync(targetFile)) {
+    const fs = require('fs')
+    if (!fs.existsSync(targetFile)) {
       this.translationService.error(`Language "${targetLang}" does not exist at ${targetFile}`)
     }
 
@@ -48,11 +36,11 @@ export class DestroyCommand {
 
     try {
       // Delete the file
-      unlinkSync(targetFile)
+      fs.unlinkSync(targetFile)
       this.translationService.log(`✅ Deleted ${targetFile}`)
 
       // Rebuild dictionaries
-      build(i18nPath)
+      require('./build').build(i18nPath)
       this.translationService.log(`✅ Updated dictionaries`)
     } catch (error) {
       this.translationService.error(`Failed to delete ${targetFile}: ${error}`)

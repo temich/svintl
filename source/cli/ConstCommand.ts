@@ -13,11 +13,8 @@ export class ConstCommand {
   async execute(key: string, value: string, i18nPath = './src/lib/intl/'): Promise<void> {
     this.translationService.log(`Setting constant "${key}" with value "${value}" in all dictionaries...`)
 
-    // Get all language files
-    const i18nDir = resolve(process.cwd(), i18nPath)
-
-    const languageFiles = readdirSync(i18nDir)
-      .filter(file => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))
+    // Get language information
+    const { languageFiles, i18nDir } = this.translationService.getLanguageInfo(i18nPath)
 
     if (languageFiles.length === 0) {
       this.translationService.error(`No language files found in ${i18nDir}. Run 'npx intl hola' first.`)
@@ -27,8 +24,7 @@ export class ConstCommand {
 
     // Update all language files with the same value
     for (const file of languageFiles) {
-      const filePath = join(i18nDir, file)
-
+      const filePath = `${i18nDir}/${file}`
       try {
         this.translationService.updateLanguageFile(filePath, key, value)
         this.translationService.log(`✓ Updated ${file}`)
@@ -40,38 +36,6 @@ export class ConstCommand {
     this.translationService.log(`✅ Successfully set constant "${key}" in all language files`)
 
     // Auto-build dictionaries
-    build(i18nPath)
-  }
-
-  private updateLanguageFile(filePath: string, key: string, value: string): void {
-    // Read and parse YAML file
-    const content = readFileSync(filePath, 'utf8')
-    const yamlData = yamlLoad(content) as any
-
-    // Parse the key path and set the value
-    const keyParts = key.split('.')
-    let current = yamlData
-
-    // Navigate to the parent object
-    for (let i = 0; i < keyParts.length - 1; i++) {
-      const part = keyParts[i]
-
-      if (!current[part])
-        current[part] = {}
-
-      current = current[part]
-    }
-
-    // Set the final key
-    const finalKey = keyParts[keyParts.length - 1]
-
-    current[finalKey] = value
-
-    // Write back to file in YAML format
-    writeFileSync(filePath, yamlDump(yamlData, {
-      lineWidth: -1, // Prevent line wrapping
-      quotingType: '"', // Use double quotes
-      forceQuotes: false, // Only quote when necessary
-    }))
+    this.translationService.finalize(i18nPath, key, value)
   }
 }

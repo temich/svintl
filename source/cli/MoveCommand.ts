@@ -5,71 +5,56 @@
  * @author claude-4-sonnet
  */
 
-import { readFileSync, writeFileSync, readdirSync } from 'fs'
-import { join, resolve } from 'path'
-import { load as yamlLoad, dump as yamlDump } from 'js-yaml'
-import { build } from './build'
-import { ContextFileManager } from './context'
+import { TranslationService } from './TranslationService'
 
 export class MoveCommand {
-  private contextManager = new ContextFileManager()
-
-  private log(message: string): void {
-    console.log(message)
-  }
-
-  private warn(message: string): void {
-    console.warn(`⚠️  ${message}`)
-  }
-
-  private error(message: string): never {
-    console.error(`❌ ${message}`)
-    process.exit(1)
-  }
+  private translationService = new TranslationService()
 
   async execute(from: string, to: string, i18nPath = './src/lib/intl/'): Promise<void> {
     this.translationService.log(`Moving "${from}" to "${to}"...`)
 
-    // Get all language files
-    const i18nDir = resolve(process.cwd(), i18nPath)
+    // Get language information
+    const { languageFiles, i18nDir } = this.translationService.getLanguageInfo(i18nPath)
 
-    const languageFiles = readdirSync(i18nDir)
-      .filter(file => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))
-
-    // First, extract values from all files
+    // Store the values from all languages
     const values: Record<string, string> = {}
+    let keyExists = false
 
+    // First pass: collect all values and check if key exists
     for (const file of languageFiles) {
       const lang = file.replace('.yaml', '')
-      const filePath = join(i18nDir, file)
+      const filePath = `${i18nDir}/${file}`
 
       try {
         const value = this.extractValue(filePath, from)
-
-        if (value !== null)
+        if (value !== null) {
           values[lang] = value
+          keyExists = true
+        }
       } catch (error) {
-        this.translationService.warn(`Could not extract value from ${file}: ${error}`)
+        this.translationService.warn(`Failed to read ${file}: ${error}`)
       }
     }
 
-    if (Object.keys(values).length === 0)
+    if (!keyExists) {
       this.translationService.error(`Key "${from}" not found in any language files`)
+    }
 
-    // Add to new location and remove from old location
+    // Second pass: move the values
     for (const file of languageFiles) {
       const lang = file.replace('.yaml', '')
-      const filePath = join(i18nDir, file)
+      const filePath = `${i18nDir}/${file}`
 
-      if (values[lang])
+      if (values[lang]) {
         try {
-          // Add to new location
+          // Remove from old location and add to new location
+          this.translationService.removeFromLanguageFile(filePath, from)
           this.translationService.updateLanguageFile(filePath, to, values[lang])
-          // Remove from old location
-          this.removeKey(filePath, from)
+          this.translationService.log(`✓ Moved in ${file}`)
         } catch (error) {
           this.translationService.error(`Failed to update ${file}: ${error}`)
         }
+      }
     }
 
     // Move context entry if it exists
@@ -85,85 +70,28 @@ export class MoveCommand {
     this.translationService.log(`✅ Saved`)
 
     // Auto-build dictionaries
-    build(i18nPath)
+    require('./build').build(i18nPath)
   }
 
   private extractValue(filePath: string, key: string): string | null {
-    const content = readFileSync(filePath, 'utf8')
-    const yamlData = yamlLoad(content) as any
+    const fs = require('fs')
+    const yaml = require('js-yaml')
+    
+    const content = fs.readFileSync(filePath, 'utf8')
+    const yamlData = yaml.load(content) as any
 
     // Navigate to the key
     const keyParts = key.split('.')
     let current = yamlData
 
-    for (const part of keyParts)
-      if (current && typeof current === 'object' && part in current)
+    for (const part of keyParts) {
+      if (current && typeof current === 'object' && part in current) {
         current = current[part]
-      else
+      } else {
         return null
+      }
+    }
 
     return typeof current === 'string' ? current : null
-  }
-
-  private removeKey(filePath: string, key: string): void {
-    const content = readFileSync(filePath, 'utf8')
-    const yamlData = yamlLoad(content) as any
-
-    // Navigate to the parent object
-    const keyParts = key.split('.')
-    let current = yamlData
-
-    for (let i = 0; i < keyParts.length - 1; i++) {
-      const part = keyParts[i]
-
-      if (current && typeof current === 'object' && part in current)
-        current = current[part]
-      else
-        return // Key doesn't exist
-    }
-
-    // Remove the final key
-    const finalKey = keyParts[keyParts.length - 1]
-
-    if (current && typeof current === 'object')
-      delete current[finalKey]
-
-    writeFileSync(filePath, yamlDump(yamlData, {
-      lineWidth: -1,
-      quotingType: '"',
-      forceQuotes: false,
-    }))
-  }
-
-  private updateLanguageFile(filePath: string, key: string, value: string): void {
-    // Read and parse YAML file
-    const content = readFileSync(filePath, 'utf8')
-    const yamlData = yamlLoad(content) as any
-
-    // Parse the key path and set the value
-    const keyParts = key.split('.')
-    let current = yamlData
-
-    // Navigate to the parent object
-    for (let i = 0; i < keyParts.length - 1; i++) {
-      const part = keyParts[i]
-
-      if (!current[part])
-        current[part] = {}
-
-      current = current[part]
-    }
-
-    // Set the final key
-    const finalKey = keyParts[keyParts.length - 1]
-
-    current[finalKey] = value
-
-    // Write back to file in YAML format
-    writeFileSync(filePath, yamlDump(yamlData, {
-      lineWidth: -1,
-      quotingType: '"',
-      forceQuotes: false,
-    }))
   }
 }

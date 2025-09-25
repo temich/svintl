@@ -45,6 +45,7 @@
     "@semantic-release/release-notes-generator": "^14.1.0",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^24.3.0",
+    "@types/yargs": "^17.0.33",
     "esbuild": "^0.25.9",
     "eslint": "^9.34.0",
     "eslint-plugin-import": "^2.32.0",
@@ -53,7 +54,6 @@
     "semantic-release": "^24.2.9"
   },
   "dependencies": {
-    "@types/yargs": "^17.0.33",
     "dotenv": "^17",
     "js-yaml": "^4",
     "openai": "^5",
