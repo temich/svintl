@@ -204,7 +204,7 @@ npx intl context "Describe shared project background"
 npx intl context --clear
 ```
 
-Sets or clears project-wide translation guidance stored in `context.yaml`. Append `-p <path>` to operate on a custom i18n directory.
+Sets or clears project-wide translation guidance stored in `context.yaml`.
 
 ```bash
 npx intl build
