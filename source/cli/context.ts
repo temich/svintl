@@ -2,7 +2,7 @@
  * Context file management utilities for storing inputs and contexts
  * Maintains an extensible YAML structure for translation context information
  *
- * @author claude-4-sonnet
+ * @author copilot
  */
 
 import { readFileSync, writeFileSync, existsSync } from 'fs'

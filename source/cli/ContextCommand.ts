@@ -4,7 +4,7 @@
  *
  * Allows setting, clearing, and inspecting the global context value
  *
- * @author claude-4-sonnet
+ * @author copilot
  */
 
 import { ContextFileManager } from './context'

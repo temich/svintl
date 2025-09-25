@@ -1,61 +1,50 @@
 /**
- * @author claude-4-sonnet
+ * @author copilot
  */
 
-import { unlinkSync, existsSync } from 'fs'
-import { resolve, join } from 'path'
-import { build } from './build'
+import { TranslationService } from './TranslationService'
+import { logger } from './logger'
 import { validateLanguageTag } from './bcp47'
 
 export class DestroyCommand {
-  private log(message: string): void {
-    console.log(message)
-  }
-
-  private warn(message: string): void {
-    console.warn(`⚠️  ${message}`)
-  }
-
-  private error(message: string): never {
-    console.error(`❌ ${message}`)
-    process.exit(1)
-  }
+  private translationService = new TranslationService()
 
   async execute(targetLang: string, force = false, i18nPath = './src/lib/intl/'): Promise<void> {
     // Validate BCP 47 language tag
     const validationError = validateLanguageTag(targetLang)
     if (validationError) {
-      this.error(validationError)
+      logger.error(validationError)
     }
 
-    const i18nDir = resolve(process.cwd(), i18nPath)
-    const targetFile = join(i18nDir, `${targetLang}.yaml`)
+    const { i18nDir } = this.translationService.getLanguageInfo(i18nPath)
+    const targetFile = `${i18nDir}/${targetLang}.yaml`
 
     // Check if target language exists
-    if (!existsSync(targetFile)) {
-      this.error(`Language "${targetLang}" does not exist at ${targetFile}`)
+    const fs = require('fs')
+    if (!fs.existsSync(targetFile)) {
+      logger.error(`Language "${targetLang}" does not exist at ${targetFile}`)
     }
 
     // Ask for confirmation unless force flag is used
     if (!force) {
-      this.log(`⚠️  This will permanently delete the "${targetLang}" language dictionary.`)
-      this.log(`File: ${targetFile}`)
-      this.log('')
-      this.log('Are you sure? This action cannot be undone.')
-      this.log('Use the -y flag to skip this confirmation.')
-      this.error('Operation cancelled. Use -y flag to force deletion.')
+      logger.log(`⚠️  This will permanently delete the "${targetLang}" language dictionary.`)
+      logger.log(`File: ${targetFile}`)
+      logger.log('')
+      logger.log('Are you sure? This action cannot be undone.')
+      logger.log('Use the -y flag to skip this confirmation.')
+      logger.error('Operation cancelled. Use -y flag to force deletion.')
     }
 
     try {
       // Delete the file
-      unlinkSync(targetFile)
-      this.log(`✅ Deleted ${targetFile}`)
+      fs.unlinkSync(targetFile)
+      logger.log(`✅ Deleted ${targetFile}`)
 
       // Rebuild dictionaries
-      build(i18nPath)
-      this.log(`✅ Updated dictionaries`)
+      require('./build').build(i18nPath)
+      logger.log(`✅ Updated dictionaries`)
     } catch (error) {
-      this.error(`Failed to delete ${targetFile}: ${error}`)
+      logger.error(`Failed to delete ${targetFile}: ${error}`)
     }
   }
 }
