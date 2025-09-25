@@ -24,10 +24,19 @@ export class TranslationService {
    */
   getLanguageInfo(i18nPath: string): { languageFiles: string[], allLanguages: string[], i18nDir: string } {
     const i18nDir = resolve(process.cwd(), i18nPath)
-    const languageFiles = readdirSync(i18nDir).filter(file => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))
-    const allLanguages = languageFiles.map(file => file.replace('.yaml', ''))
+    
+    // Check if directory exists and provide user-friendly error
+    try {
+      const languageFiles = readdirSync(i18nDir).filter(file => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))
+      const allLanguages = languageFiles.map(file => file.replace('.yaml', ''))
 
-    return { languageFiles, allLanguages, i18nDir }
+      return { languageFiles, allLanguages, i18nDir }
+    } catch (error: any) {
+      if (error.code === 'ENOENT') {
+        throw new Error(`Context not found in ${i18nDir}`)
+      }
+      throw error
+    }
   }
 
   /**
