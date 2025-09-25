@@ -32,8 +32,6 @@ function processNode(node: any): any {
       const jsCode = node.replace(/^\s*!js\s*\n?/, '').trim()
 
       try {
-        // Evaluate the JavaScript code directly
-        // We expect the code to be a function expression like: (count) => { ... }
         // eslint-disable-next-line no-new-func
         const func = new Function(`return (${jsCode});`)()
 
@@ -41,7 +39,7 @@ function processNode(node: any): any {
       } catch (error) {
         console.warn(`Failed to parse JavaScript function: ${jsCode}`, error)
 
-        return node // Return original string if parsing fails
+        return node
       }
     }
 
