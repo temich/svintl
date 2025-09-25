@@ -25,7 +25,7 @@ export class DestroyCommand {
     // Validate BCP 47 language tag
     const validationError = validateLanguageTag(targetLang)
     if (validationError) {
-      this.error(validationError)
+      this.translationService.error(validationError)
     }
 
     const i18nDir = resolve(process.cwd(), i18nPath)
@@ -33,29 +33,29 @@ export class DestroyCommand {
 
     // Check if target language exists
     if (!existsSync(targetFile)) {
-      this.error(`Language "${targetLang}" does not exist at ${targetFile}`)
+      this.translationService.error(`Language "${targetLang}" does not exist at ${targetFile}`)
     }
 
     // Ask for confirmation unless force flag is used
     if (!force) {
-      this.log(`⚠️  This will permanently delete the "${targetLang}" language dictionary.`)
-      this.log(`File: ${targetFile}`)
-      this.log('')
-      this.log('Are you sure? This action cannot be undone.')
-      this.log('Use the -y flag to skip this confirmation.')
-      this.error('Operation cancelled. Use -y flag to force deletion.')
+      this.translationService.log(`⚠️  This will permanently delete the "${targetLang}" language dictionary.`)
+      this.translationService.log(`File: ${targetFile}`)
+      this.translationService.log('')
+      this.translationService.log('Are you sure? This action cannot be undone.')
+      this.translationService.log('Use the -y flag to skip this confirmation.')
+      this.translationService.error('Operation cancelled. Use -y flag to force deletion.')
     }
 
     try {
       // Delete the file
       unlinkSync(targetFile)
-      this.log(`✅ Deleted ${targetFile}`)
+      this.translationService.log(`✅ Deleted ${targetFile}`)
 
       // Rebuild dictionaries
       build(i18nPath)
-      this.log(`✅ Updated dictionaries`)
+      this.translationService.log(`✅ Updated dictionaries`)
     } catch (error) {
-      this.error(`Failed to delete ${targetFile}: ${error}`)
+      this.translationService.error(`Failed to delete ${targetFile}: ${error}`)
     }
   }
 }

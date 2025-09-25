@@ -21,7 +21,7 @@ export class ConstCommand {
   }
 
   async execute(key: string, value: string, i18nPath = './src/lib/intl/'): Promise<void> {
-    this.log(`Setting constant "${key}" with value "${value}" in all dictionaries...`)
+    this.translationService.log(`Setting constant "${key}" with value "${value}" in all dictionaries...`)
 
     // Get all language files
     const i18nDir = resolve(process.cwd(), i18nPath)
@@ -30,24 +30,24 @@ export class ConstCommand {
       .filter(file => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))
 
     if (languageFiles.length === 0) {
-      this.error(`No language files found in ${i18nDir}. Run 'npx intl hola' first.`)
+      this.translationService.error(`No language files found in ${i18nDir}. Run 'npx intl hola' first.`)
     }
 
-    this.log(`Updating ${languageFiles.length} language files...`)
+    this.translationService.log(`Updating ${languageFiles.length} language files...`)
 
     // Update all language files with the same value
     for (const file of languageFiles) {
       const filePath = join(i18nDir, file)
 
       try {
-        this.updateLanguageFile(filePath, key, value)
-        this.log(`✓ Updated ${file}`)
+        this.translationService.updateLanguageFile(filePath, key, value)
+        this.translationService.log(`✓ Updated ${file}`)
       } catch (error) {
-        this.error(`Failed to update ${file}: ${error}`)
+        this.translationService.error(`Failed to update ${file}: ${error}`)
       }
     }
 
-    this.log(`✅ Successfully set constant "${key}" in all language files`)
+    this.translationService.log(`✅ Successfully set constant "${key}" in all language files`)
 
     // Auto-build dictionaries
     build(i18nPath)

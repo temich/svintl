@@ -25,7 +25,7 @@ export class RemoveCommand {
   }
 
   async execute(key: string, i18nPath = './src/lib/intl/'): Promise<void> {
-    this.log(`Removing "${key}" from all language files...`)
+    this.translationService.log(`Removing "${key}" from all language files...`)
 
     // Get all language files
     const i18nDir = resolve(process.cwd(), i18nPath)
@@ -34,7 +34,7 @@ export class RemoveCommand {
       .filter(file => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))
 
     if (languageFiles.length === 0)
-      this.error(`No language files found in ${i18nDir}`)
+      this.translationService.error(`No language files found in ${i18nDir}`)
 
     let removedCount = 0
 
@@ -63,25 +63,25 @@ export class RemoveCommand {
           removedCount++
         }
       } catch (error) {
-        this.error(`Failed to process ${file}: ${error}`)
+        this.translationService.error(`Failed to process ${file}: ${error}`)
       }
     }
 
     if (removedCount === 0) {
-      this.error(`Key "${key}" was not found in any language files`)
+      this.translationService.error(`Key "${key}" was not found in any language files`)
     }
 
     // Remove context entry if it exists
     try {
-      const removed = this.contextManager.removeContextEntry(i18nPath, key)
+      const removed = this.translationService.contextManagerInstance.removeContextEntry(i18nPath, key)
       if (removed) {
-        this.log(`✓ Removed context for "${key}"`)
+        this.translationService.log(`✓ Removed context for "${key}"`)
       }
     } catch (error) {
-      this.warn(`Failed to remove context: ${error}`)
+      this.translationService.warn(`Failed to remove context: ${error}`)
     }
 
-    this.log(`✅ Saved`)
+    this.translationService.log(`✅ Saved`)
 
     // Rebuild dictionaries
     build(i18nPath)

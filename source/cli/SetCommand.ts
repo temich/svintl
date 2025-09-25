@@ -5,17 +5,18 @@
  * @author claude-4-sonnet
  */
 
-import { BaseTranslationCommand } from './BaseTranslationCommand'
+import { TranslationService } from './TranslationService'
 
-export class SetCommand extends BaseTranslationCommand {
+export class SetCommand {
+  private translationService = new TranslationService()
 
   async execute(key: string, value: string, comment?: string, i18nPath = './src/lib/intl/'): Promise<void> {
     const commentText = comment ? ` (${comment})` : ''
-    this.log(`Setting "${key}" with value "${value}"${commentText}...`)
+    this.translationService.log(`Setting "${key}" with value "${value}"${commentText}...`)
 
     // Get language information
-    const { languageFiles, allLanguages, i18nDir } = this.getLanguageInfo(i18nPath)
-    this.log(`Translating to ${allLanguages.length} languages...`)
+    const { languageFiles, allLanguages, i18nDir } = this.translationService.getLanguageInfo(i18nPath)
+    this.translationService.log(`Translating to ${allLanguages.length} languages...`)
 
     // Create system prompt for regular translations
     const systemPrompt = `You are a professional translator for an internationalization system. You will receive text in ANY language and must translate it to ALL specified target languages.
@@ -74,14 +75,13 @@ For !js functions:
 }`
 
     // Translate using OpenAI
-    const projectContext = this.contextManager.getGlobalContext(i18nPath)
-    const translations = await this.translateWithOpenAI(value, allLanguages, systemPrompt, comment, projectContext)
+    const translations = await this.translationService.translateWithOpenAI(value, allLanguages, systemPrompt, comment)
 
     // Update all language files
-    this.updateAllLanguageFiles(languageFiles, i18nDir, key, translations)
+    this.translationService.updateAllLanguageFiles(languageFiles, i18nDir, key, translations)
 
     // Store context and build
-    this.finalize(i18nPath, key, value, comment)
+    this.translationService.finalize(i18nPath, key, value, comment)
   }
 
 }

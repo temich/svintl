@@ -28,7 +28,7 @@ export class MoveCommand {
   }
 
   async execute(from: string, to: string, i18nPath = './src/lib/intl/'): Promise<void> {
-    this.log(`Moving "${from}" to "${to}"...`)
+    this.translationService.log(`Moving "${from}" to "${to}"...`)
 
     // Get all language files
     const i18nDir = resolve(process.cwd(), i18nPath)
@@ -49,12 +49,12 @@ export class MoveCommand {
         if (value !== null)
           values[lang] = value
       } catch (error) {
-        this.warn(`Could not extract value from ${file}: ${error}`)
+        this.translationService.warn(`Could not extract value from ${file}: ${error}`)
       }
     }
 
     if (Object.keys(values).length === 0)
-      this.error(`Key "${from}" not found in any language files`)
+      this.translationService.error(`Key "${from}" not found in any language files`)
 
     // Add to new location and remove from old location
     for (const file of languageFiles) {
@@ -64,25 +64,25 @@ export class MoveCommand {
       if (values[lang])
         try {
           // Add to new location
-          this.updateLanguageFile(filePath, to, values[lang])
+          this.translationService.updateLanguageFile(filePath, to, values[lang])
           // Remove from old location
           this.removeKey(filePath, from)
         } catch (error) {
-          this.error(`Failed to update ${file}: ${error}`)
+          this.translationService.error(`Failed to update ${file}: ${error}`)
         }
     }
 
     // Move context entry if it exists
     try {
-      const moved = this.contextManager.moveContextEntry(i18nPath, from, to)
+      const moved = this.translationService.contextManagerInstance.moveContextEntry(i18nPath, from, to)
       if (moved) {
-        this.log(`✓ Moved context from "${from}" to "${to}"`)
+        this.translationService.log(`✓ Moved context from "${from}" to "${to}"`)
       }
     } catch (error) {
-      this.warn(`Failed to move context: ${error}`)
+      this.translationService.warn(`Failed to move context: ${error}`)
     }
 
-    this.log(`✅ Saved`)
+    this.translationService.log(`✅ Saved`)
 
     // Auto-build dictionaries
     build(i18nPath)

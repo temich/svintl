@@ -5,17 +5,18 @@
  * @author claude-4-sonnet
  */
 
-import { BaseTranslationCommand } from './BaseTranslationCommand'
+import { TranslationService } from './TranslationService'
 
-export class UnitCommand extends BaseTranslationCommand {
+export class UnitCommand {
+  private translationService = new TranslationService()
 
   async execute(key: string, input: string, comment?: string, i18nPath = './src/lib/intl/'): Promise<void> {
     const commentText = comment ? ` (${comment})` : ''
-    this.log(`Creating plural forms for "${key}" with input "${input}"${commentText}...`)
+    this.translationService.log(`Creating plural forms for "${key}" with input "${input}"${commentText}...`)
 
     // Get language information
-    const { languageFiles, allLanguages, i18nDir } = this.getLanguageInfo(i18nPath)
-    this.log(`Creating pluralized translations for ${allLanguages.length} languages...`)
+    const { languageFiles, allLanguages, i18nDir } = this.translationService.getLanguageInfo(i18nPath)
+    this.translationService.log(`Creating pluralized translations for ${allLanguages.length} languages...`)
 
     // Create system prompt for pluralization
     const systemPrompt = `You are a professional translator specialized in creating pluralized translations for an internationalization system using Intl.PluralRules.
@@ -71,8 +72,8 @@ Target languages: \${allLanguages}
 Return ONLY a JSON object with the structure shown above.`
 
     // Translate using OpenAI
-    const projectContext = this.contextManager.getGlobalContext(i18nPath)
-    const translations = await this.translateWithOpenAI(input, allLanguages, systemPrompt, comment, projectContext)
+    const projectContext = this.translationService.contextManagerInstance.getGlobalContext(i18nPath)
+    const translations = await this.translationService.translateWithOpenAI(input, allLanguages, systemPrompt, comment, projectContext)
 
     // Transform the translations to handle objects from OpenAI
     const objectTranslations: Record<string, Record<string, string>> = {}
@@ -97,17 +98,17 @@ Return ONLY a JSON object with the structure shown above.`
             objectTranslations[lang] = parsed
           } else {
             // Fallback: create simple one/other object
-            this.warn(`Invalid plural structure for ${lang}, using fallback`)
+            this.translationService.warn(`Invalid plural structure for ${lang}, using fallback`)
             objectTranslations[lang] = this.createFallbackPluralObject(translation, lang)
           }
         } catch {
           // Fallback: create simple one/other object
-          this.warn(`Failed to parse plural structure for ${lang}, using fallback`)
+          this.translationService.warn(`Failed to parse plural structure for ${lang}, using fallback`)
           objectTranslations[lang] = this.createFallbackPluralObject(translation, lang)
         }
       } else {
         // Fallback for any other type
-        this.warn(`Unexpected translation type for ${lang}, using fallback`)
+        this.translationService.warn(`Unexpected translation type for ${lang}, using fallback`)
         objectTranslations[lang] = this.createFallbackPluralObject(String(translation), lang)
       }
     }
@@ -119,10 +120,10 @@ Return ONLY a JSON object with the structure shown above.`
     }
 
     // Update all language files with object plural data
-    this.updateAllLanguageFiles(languageFiles, i18nDir, key, yamlTranslations)
+    this.translationService.updateAllLanguageFiles(languageFiles, i18nDir, key, yamlTranslations)
 
     // Store context and build
-    this.finalize(i18nPath, key, input, comment)
+    this.translationService.finalize(i18nPath, key, input, comment)
   }
 
   /**

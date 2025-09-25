@@ -24,7 +24,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "build:cli": "esbuild source/cli/index.ts --bundle --platform=node --format=cjs --target=node22 --outfile=bin/intl.cjs",
+    "build:cli": "esbuild source/cli/index.ts --bundle --platform=node --format=cjs --target=node22 --outfile=bin/intl.cjs --external:yargs --external:yargs/helpers",
     "prepare": "husky",
     "prepublishOnly": "rm -rf transpiled tsconfig.tsbuildinfo && npm run build && npm run build:cli",
     "lint": "eslint .",
@@ -53,8 +53,10 @@
     "semantic-release": "^24.2.9"
   },
   "dependencies": {
+    "@types/yargs": "^17.0.33",
     "dotenv": "^17",
     "js-yaml": "^4",
-    "openai": "^5"
+    "openai": "^5",
+    "yargs": "^18.0.0"
   }
 }

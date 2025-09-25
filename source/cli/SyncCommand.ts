@@ -33,7 +33,7 @@ export class SyncCommand {
     // Validate BCP 47 language tag
     const validationError = validateLanguageTag(sourceLang)
     if (validationError) {
-      this.error(validationError)
+      this.translationService.error(validationError)
     }
 
     const i18nDir = resolve(process.cwd(), i18nPath)
@@ -41,7 +41,7 @@ export class SyncCommand {
 
     // Check if source language exists
     if (!existsSync(sourceFile)) {
-      this.error(`Source language "${sourceLang}" does not exist at ${sourceFile}`)
+      this.translationService.error(`Source language "${sourceLang}" does not exist at ${sourceFile}`)
     }
 
     // Get all target language files (excluding source)
@@ -50,10 +50,10 @@ export class SyncCommand {
       .filter(file => file !== `${sourceLang}.yaml`)
 
     if (languageFiles.length === 0) {
-      this.error(`No target languages found to sync. Source "${sourceLang}" is the only language.`)
+      this.translationService.error(`No target languages found to sync. Source "${sourceLang}" is the only language.`)
     }
 
-    this.log(`Syncing ${languageFiles.length} languages with "${sourceLang}" source...`)
+    this.translationService.log(`Syncing ${languageFiles.length} languages with "${sourceLang}" source...`)
 
     // Load source dictionary
     const sourceContent = readFileSync(sourceFile, 'utf8')
@@ -85,14 +85,14 @@ export class SyncCommand {
     const sourceEntry = sourceEntries.find(entry => entry.key === specificKey)
 
     if (!sourceEntry) {
-      this.error(`Key "${specificKey}" not found in source language "${sourceLang}"`)
+      this.translationService.error(`Key "${specificKey}" not found in source language "${sourceLang}"`)
     }
 
-    this.log(`Syncing key "${specificKey}" to ${languageFiles.length} languages...`)
+    this.translationService.log(`Syncing key "${specificKey}" to ${languageFiles.length} languages...`)
 
     // Check if OpenAI is available
     if (!process.env.OPENAI_API_KEY) {
-      this.warn('OPENAI_API_KEY not found - copying source value without translation')
+      this.translationService.warn('OPENAI_API_KEY not found - copying source value without translation')
 
       for (const file of languageFiles) {
         const lang = file.replace('.yaml', '')
@@ -158,7 +158,7 @@ CRITICAL: ADAPT the logic to match target language grammar, don't just translate
             this.updateSingleKey(join(i18nDir, file), specificKey, translation)
           }
         } catch (parseError) {
-          this.warn('Failed to parse translation response, using source value')
+          this.translationService.warn('Failed to parse translation response, using source value')
 
           for (const file of languageFiles) {
             const lang = file.replace('.yaml', '')
@@ -166,7 +166,7 @@ CRITICAL: ADAPT the logic to match target language grammar, don't just translate
           }
         }
       } else {
-        this.warn('No translation response, using source value')
+        this.translationService.warn('No translation response, using source value')
 
         for (const file of languageFiles) {
           const lang = file.replace('.yaml', '')
@@ -174,7 +174,7 @@ CRITICAL: ADAPT the logic to match target language grammar, don't just translate
         }
       }
     } catch (error) {
-      this.warn(`Translation failed: ${error}`)
+      this.translationService.warn(`Translation failed: ${error}`)
 
       for (const file of languageFiles) {
         const lang = file.replace('.yaml', '')
@@ -182,7 +182,7 @@ CRITICAL: ADAPT the logic to match target language grammar, don't just translate
       }
     }
 
-    this.log(`✅ Translated`)
+    this.translationService.log(`✅ Translated`)
   }
 
   private async syncAllEntries(
@@ -191,7 +191,7 @@ CRITICAL: ADAPT the logic to match target language grammar, don't just translate
     languageFiles: string[],
     i18nDir: string
   ): Promise<void> {
-    this.log(`Source has ${sourceEntries.length} entries`)
+    this.translationService.log(`Source has ${sourceEntries.length} entries`)
 
     // Analyze what needs to be synced for each target language
     const syncTasks: Record<string, SyncEntry[]> = {}
@@ -238,7 +238,7 @@ CRITICAL: ADAPT the logic to match target language grammar, don't just translate
 
     // Check if OpenAI is available
     if (!process.env.OPENAI_API_KEY) {
-      this.warn('OPENAI_API_KEY not found - copying source values without translation')
+      this.translationService.warn('OPENAI_API_KEY not found - copying source values without translation')
 
       for (const [lang, tasks] of Object.entries(syncTasks)) {
         if (tasks.length > 0) {
@@ -247,7 +247,7 @@ CRITICAL: ADAPT the logic to match target language grammar, don't just translate
         }
       }
 
-      this.log('✅ Translated')
+      this.translationService.log('✅ Translated')
       return
     }
 
@@ -333,15 +333,15 @@ CRITICAL: ADAPT the logic to match target language grammar, don't just translate
 
 
             } catch (parseError) {
-              this.warn(`${progress}Failed to parse response, using source values`)
+              this.translationService.warn(`${progress}Failed to parse response, using source values`)
               translatedTasks.push(...batch)
             }
           } else {
-            this.warn(`${progress}No response, using source values`)
+            this.translationService.warn(`${progress}No response, using source values`)
             translatedTasks.push(...batch)
           }
         } catch (error) {
-          this.warn(`${progress}Translation failed: ${error}`)
+          this.translationService.warn(`${progress}Translation failed: ${error}`)
           translatedTasks.push(...batch)
         }
 
@@ -356,7 +356,7 @@ CRITICAL: ADAPT the logic to match target language grammar, don't just translate
       this.applySyncTasks(targetFile, translatedTasks, true)
     }
 
-    this.log('✅ Translated')
+    this.translationService.log('✅ Translated')
   }
 
   private updateSingleKey(filePath: string, key: string, value: string): void {

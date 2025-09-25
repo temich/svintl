@@ -30,7 +30,7 @@ export class CreateCommand {
     // Validate BCP 47 language tag
     const validationError = validateLanguageTag(targetLang)
     if (validationError) {
-      this.error(validationError)
+      this.translationService.error(validationError)
     }
 
     const i18nDir = resolve(process.cwd(), i18nPath)
@@ -39,12 +39,12 @@ export class CreateCommand {
     // Create the directory if it doesn't exist (including nested paths)
     if (!existsSync(i18nDir)) {
       mkdirSync(i18nDir, { recursive: true })
-      this.log(`Created directory: ${i18nDir}`)
+      this.translationService.log(`Created directory: ${i18nDir}`)
     }
 
     // Check if target language already exists
     if (existsSync(targetFile)) {
-      this.error(`Language "${targetLang}" already exists at ${targetFile}`)
+      this.translationService.error(`Language "${targetLang}" already exists at ${targetFile}`)
     }
 
     // Get existing language files (now supporting BCP 47)
@@ -53,7 +53,7 @@ export class CreateCommand {
 
     if (existingFiles.length === 0) {
       // No existing languages - create file with native key
-      this.log(`Creating language file for "${targetLang}"...`)
+      this.translationService.log(`Creating language file for "${targetLang}"...`)
       const nativeName = getNativeLanguageName(targetLang)
       const initialContent = {
         native: nativeName
@@ -64,7 +64,7 @@ export class CreateCommand {
         forceQuotes: false,
       })
       writeFileSync(targetFile, yamlContent)
-      this.log(`✅ Created ${targetFile} with native name: ${nativeName}`)
+      this.translationService.log(`✅ Created ${targetFile} with native name: ${nativeName}`)
       build(i18nPath)
       return
     }
@@ -74,16 +74,16 @@ export class CreateCommand {
     if (sourceLang) {
       const sourceFile = join(i18nDir, `${sourceLang}.yaml`)
       if (!existsSync(sourceFile)) {
-        this.error(`Source language "${sourceLang}" does not exist`)
+        this.translationService.error(`Source language "${sourceLang}" does not exist`)
       }
       sourceLanguage = sourceLang
     } else if (existingFiles.includes('en.yaml')) {
       sourceLanguage = 'en'
     } else {
-      this.error(`No English (en) language found. Please specify source language: npx intl create ${targetLang} <source-lang>`)
+      this.translationService.error(`No English (en) language found. Please specify source language: npx intl create ${targetLang} <source-lang>`)
     }
 
-    this.log(`Creating "${targetLang}" language from "${sourceLanguage}" source...`)
+    this.translationService.log(`Creating "${targetLang}" language from "${sourceLanguage}" source...`)
 
     // Load source dictionary
     const sourceFile = join(i18nDir, `${sourceLanguage}.yaml`)
@@ -95,11 +95,11 @@ export class CreateCommand {
     const entries = this.extractEntries(sourceDataWithoutNative)
 
     // Get saved contexts for enriched translation
-    const savedContexts = this.contextManager.getAllContextEntries(i18nPath)
+    const savedContexts = this.translationService.contextManagerInstance.getAllContextEntries(i18nPath)
 
-    this.log(`Found ${entries.length} entries to translate`)
+    this.translationService.log(`Found ${entries.length} entries to translate`)
     if (Object.keys(savedContexts).length > 0) {
-      this.log(`Found ${Object.keys(savedContexts).length} saved contexts for enhanced translation`)
+      this.translationService.log(`Found ${Object.keys(savedContexts).length} saved contexts for enhanced translation`)
     }
 
     if (entries.length === 0) {
@@ -114,21 +114,21 @@ export class CreateCommand {
         forceQuotes: false,
       })
       writeFileSync(targetFile, yamlContent)
-      this.log(`✅ Created ${targetFile} with native name: ${nativeName}`)
+      this.translationService.log(`✅ Created ${targetFile} with native name: ${nativeName}`)
       build(i18nPath)
       return
     }
 
     // Check if OpenAI is available for translation
     if (!process.env.OPENAI_API_KEY) {
-      this.warn('OPENAI_API_KEY not found - copying source language without translation')
+      this.translationService.warn('OPENAI_API_KEY not found - copying source language without translation')
       // Add native key to copied data (excluding source native key)
       const dataWithNative = {
         native: getNativeLanguageName(targetLang),
         ...sourceDataWithoutNative
       }
       writeFileSync(targetFile, yamlDump(dataWithNative))
-      this.log(`✅ Created ${targetFile} (copy of ${sourceLanguage} with native name)`)
+      this.translationService.log(`✅ Created ${targetFile} (copy of ${sourceLanguage} with native name)`)
       build(i18nPath)
       return
     }
@@ -217,26 +217,26 @@ Use this context information to provide more accurate translations.` : ''}`,
               if (translatedBatch[key]) {
                 translatedEntries[key] = translatedBatch[key]
               } else {
-                this.warn(`No translation for "${key}", using source`)
+                this.translationService.warn(`No translation for "${key}", using source`)
                 translatedEntries[key] = batchObject[key]
               }
             }
 
 
           } catch (parseError) {
-            this.warn(`${progress} Failed to parse response for batch ${i + 1}, using source values`)
+            this.translationService.warn(`${progress} Failed to parse response for batch ${i + 1}, using source values`)
             for (const { key, value } of batch) {
               translatedEntries[key] = value
             }
           }
         } else {
-          this.warn(`${progress} No response for batch ${i + 1}, using source values`)
+          this.translationService.warn(`${progress} No response for batch ${i + 1}, using source values`)
           for (const { key, value } of batch) {
             translatedEntries[key] = value
           }
         }
       } catch (error) {
-        this.warn(`${progress} Translation failed for batch ${i + 1}: ${error}`)
+        this.translationService.warn(`${progress} Translation failed for batch ${i + 1}: ${error}`)
         for (const { key, value } of batch) {
           translatedEntries[key] = value
         }
@@ -265,7 +265,7 @@ Use this context information to provide more accurate translations.` : ''}`,
     })
 
     writeFileSync(targetFile, yamlContent)
-    this.log(`✅ Translated`)
+    this.translationService.log(`✅ Translated`)
 
     // Rebuild dictionaries
     build(i18nPath)
