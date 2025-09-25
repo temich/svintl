@@ -16,13 +16,13 @@ export class DestroyCommand {
       logger.error(validationError)
     }
 
-    const { i18nDir } = this.translationService.getLanguageInfo(i18nPath)
+    const { i18nDir } = this.translationService.getLocaleInfo(i18nPath)
     const targetFile = `${i18nDir}/${targetLang}.yaml`
 
-    // Check if target language exists
+    // Check if target locale exists
     const fs = require('fs')
     if (!fs.existsSync(targetFile)) {
-      logger.error(`Language "${targetLang}" does not exist at ${targetFile}`)
+      logger.error(`Locale "${targetLang}" does not exist at ${targetFile}`)
     }
 
     // Ask for confirmation unless force flag is used

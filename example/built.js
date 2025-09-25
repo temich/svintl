@@ -57,4 +57,4 @@ export const dictionaries = {
   }
 };
 
-export const languages = ["en-US","ru-RU"];
+export const locales = ["en-US","ru-RU"];

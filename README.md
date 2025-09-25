@@ -14,14 +14,14 @@ npm i svintl -D
 ```bash
 npx intl hola # initialize dictionaries in default location
 npx intl set example.hello "Hello world" # set a translation
-npx intl create es # create a new language dictionary
+npx intl create es # create a new locale dictionary
 ```
 
 ```svelte
 <script lang="ts">
-  import { intl, language } from '$lib/intl'
+  import { intl, locale } from '$lib/intl'
 
-  // bind $language to a dropdown or whatever
+  // bind $locale to a dropdown or whatever
 </script>
 
 <h1>{@render intl.example.hello()}</h1>
@@ -65,7 +65,7 @@ example:
 <h1>You have {@render intl.example.hello(count)}</h1>
 ```
 
-The translation prompt provides clear guidance on using functions across languages to implement phrases with language-specific rules.
+The translation prompt provides clear guidance on using functions across locales to implement phrases with locale-specific rules.
 
 ### Pluralization
 
@@ -83,7 +83,7 @@ product:
       other: products
 ```
 
-For languages with complex pluralization rules (like Russian), include all required forms:
+For locales with complex pluralization rules (like Russian), include all required forms:
 
 ```yaml
 # Russian pluralization
@@ -108,13 +108,13 @@ The array format `[{ one: '...', other: '...' }]` serves as an indicator for plu
 
 ### Context
 
-Translation contexts are automatically saved when using the `set` command with a comment parameter. These contexts enhance translation accuracy when creating new language dictionaries.
+Translation contexts are automatically saved when using the `set` command with a comment parameter. These contexts enhance translation accuracy when creating new locale dictionaries.
 
 ```bash
 npx intl set app.welcome "Welcome to our application" "greeting shown on homepage"
 ```
 
-Contexts are stored in `context.yaml` alongside your language files:
+Contexts are stored in `context.yaml` alongside your locale files:
 
 ```yaml
 inputs:
@@ -124,7 +124,7 @@ inputs:
       context: "greeting shown on homepage"
 ```
 
-When creating new languages with `npx intl create <lang>`, saved contexts are automatically used to provide more accurate translations by giving the AI translator additional context about how each phrase is used.
+When creating new locales with `npx intl create <lang>`, saved contexts are automatically used to provide more accurate translations by giving the AI translator additional context about how each phrase is used.
 
 ## CLI
 
@@ -151,9 +151,9 @@ npx intl create en-US
 npx intl create pt-BR
 ```
 
-Creates a new language dictionary. Language codes must be valid BCP 47 language tags. The new dictionary will automatically include a `native` key with the language name in that language.
+Creates a new locale dictionary. Locale codes must be valid BCP 47 locale tags. The new dictionary will automatically include a `native` key with the locale name in that locale.
 
-Dictionary names must be valid BCP 47 language tags.
+Dictionary names must be valid BCP 47 locale tags.
 
 ```bash
 npx intl set example.hello "Hello world"
@@ -166,7 +166,7 @@ Creates a new translation entry with optional context.
 npx intl unit items.count "item"
 ```
 
-Creates pluralized translation entries for all languages using the object-based format. The system automatically generates appropriate plural forms for each language based on their pluralization rules.
+Creates pluralized translation entries for all locales using the object-based format. The system automatically generates appropriate plural forms for each locale based on their pluralization rules.
 
 ```bash
 npx intl const example.hello "Hello"
@@ -190,14 +190,14 @@ Removes a translation entry.
 npx intl destroy es
 ```
 
-Deletes a language dictionary.
+Deletes a locale dictionary.
 
 ```bash
 npx intl sync en
 npx intl sync en example.hello # sync specific key
 ```
 
-Syncs (re-translates) all languages using the source language dictionary.
+Syncs (re-translates) all locales using the source locale dictionary.
 
 ```bash
 npx intl context "Describe shared project background"

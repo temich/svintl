@@ -6,7 +6,7 @@
 
 import type { Snippet } from 'svelte'
 
-export type Language = 'en-US' | 'ru-RU'
+export type Locale = 'en-US' | 'ru-RU'
 
 export type Dictionary = {
       native: Snippet

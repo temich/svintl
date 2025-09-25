@@ -13,7 +13,7 @@ import { load } from './load'
  * Generate TypeScript type definitions for the dictionary structure
  */
 function generateTypeDefinitions(dictionaries: Record<string, any>): string {
-  const languages = Object.keys(dictionaries).map(lang => `'${lang}'`).join(' | ')
+  const locales = Object.keys(dictionaries).map(lang => `'${lang}'`).join(' | ')
 
   // Use the English dictionary as the structure reference since it's the source
   const firstDict = dictionaries.en || Object.values(dictionaries)[0]
@@ -27,7 +27,7 @@ function generateTypeDefinitions(dictionaries: Record<string, any>): string {
 
 import type { Snippet } from 'svelte'
 
-export type Language = ${languages}
+export type Locale = ${locales}
 
 export type Dictionary = ${dictionaryType}
 `
@@ -77,7 +77,7 @@ function generateDictionaryType(obj: any, indent = 0): string {
 /**
  * Serialize object with functions to JavaScript code
  */
-function serializeWithFunctions(obj: any, indent = 0, language?: string): string {
+function serializeWithFunctions(obj: any, indent = 0, locale?: string): string {
   const spaces = '  '.repeat(indent)
   const nextSpaces = '  '.repeat(indent + 1)
 
@@ -86,16 +86,16 @@ function serializeWithFunctions(obj: any, indent = 0, language?: string): string
 
     // Check if this is a plural function by looking for the __LANG__ placeholder
     if (funcStr.includes('__LANG__')) {
-      // This is a plural function - inject the language and fix the forms reference
+      // This is a plural function - inject the locale and fix the forms reference
       let processedFunc = funcStr.replace(
         '"__LANG__"',
-        language ? `"${language}"` : '"en"'
+        locale ? `"${locale}"` : '"en"'
       )
 
       // Also replace any single quotes version
       processedFunc = processedFunc.replace(
         "'__LANG__'",
-        language ? `'${language}'` : "'en'"
+        locale ? `'${locale}'` : "'en'"
       )
 
       return processedFunc
@@ -105,14 +105,14 @@ function serializeWithFunctions(obj: any, indent = 0, language?: string): string
   }
 
   if (Array.isArray(obj)) {
-    const items = obj.map(item => nextSpaces + serializeWithFunctions(item, indent + 1, language))
+    const items = obj.map(item => nextSpaces + serializeWithFunctions(item, indent + 1, locale))
 
     return `[\n${items.join(',\n')}\n${spaces}]`
   }
 
   if (obj !== null && typeof obj === 'object') {
     const entries = Object.entries(obj).map(([key, value]) => {
-      const serializedValue = serializeWithFunctions(value, indent + 1, language)
+      const serializedValue = serializeWithFunctions(value, indent + 1, locale)
 
       return `${nextSpaces}"${key}": ${serializedValue}`
     })
@@ -132,20 +132,20 @@ export function build(i18nPath = './src/lib/intl/'): void {
 
   const i18nDir = resolve(process.cwd(), i18nPath)
 
-  // Get all YAML language files (supporting BCP 47 format like en-US, zh-CN, etc.)
-  const languageFiles = readdirSync(i18nDir)
+  // Get all YAML locale files (supporting BCP 47 format like en-US, zh-CN, etc.)
+  const localeFiles = readdirSync(i18nDir)
     .filter(file => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))
 
-  if (languageFiles.length === 0) {
-    console.log('❌ No YAML language files found')
+  if (localeFiles.length === 0) {
+    console.log('❌ No YAML locale files found')
 
     return
   }
 
   const dictionaries: Record<string, any> = {}
 
-  // Load each language and process functions
-  for (const file of languageFiles) {
+  // Load each locale and process functions
+  for (const file of localeFiles) {
     const lang = file.replace('.yaml', '')
     const filePath = resolve(i18nDir, file)
 
@@ -172,7 +172,7 @@ export function build(i18nPath = './src/lib/intl/'): void {
 
 export const dictionaries = ${dictionariesStr};
 
-export const languages = ${JSON.stringify(Object.keys(dictionaries))};
+export const locales = ${JSON.stringify(Object.keys(dictionaries))};
 `
 
   // Generate TypeScript definitions

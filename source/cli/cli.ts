@@ -118,14 +118,14 @@ const cli = yargs(hideBin(process.argv))
     const removeCommand = new RemoveCommand()
     await removeCommand.execute(argv.key!, argv.path)
   })
-  .command('create <lang> [source]', 'Create new language dictionary', (yargs) => {
+  .command('create <lang> [source]', 'Create new locale dictionary', (yargs) => {
     return yargs
       .positional('lang', {
-        describe: 'Target language code',
+        describe: 'Target locale code',
         type: 'string'
       })
       .positional('source', {
-        describe: 'Source language code',
+        describe: 'Source locale code',
         type: 'string',
         default: 'en'
       })
@@ -133,10 +133,10 @@ const cli = yargs(hideBin(process.argv))
     const createCommand = new CreateCommand()
     await createCommand.execute(argv.lang!, argv.source, argv.path)
   })
-  .command('destroy <lang>', 'Delete language dictionary', (yargs) => {
+  .command('destroy <lang>', 'Delete locale dictionary', (yargs) => {
     return yargs
       .positional('lang', {
-        describe: 'Language code to delete',
+        describe: 'Locale code to delete',
         type: 'string'
       })
       .option('yes', {
@@ -149,10 +149,10 @@ const cli = yargs(hideBin(process.argv))
     const destroyCommand = new DestroyCommand()
     await destroyCommand.execute(argv.lang!, argv.yes, argv.path)
   })
-  .command('sync <source> [key]', 'Sync languages with source changes', (yargs) => {
+  .command('sync <source> [key]', 'Sync locales with source changes', (yargs) => {
     return yargs
       .positional('source', {
-        describe: 'Source language code',
+        describe: 'Source locale code',
         type: 'string'
       })
       .positional('key', {
