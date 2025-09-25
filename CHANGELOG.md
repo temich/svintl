@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/temich/svintl/compare/v1.1.1...v1.2.0) (2025-09-25)
+
+
+### Features
+
+* **fake:** switch to yargs ([c3cca6f](https://github.com/temich/svintl/commit/c3cca6f73d01799a029acb1aee3f5b3fa071f5f1))
+
 ## [1.1.1](https://github.com/temich/svintl/compare/v1.1.0...v1.1.1) (2025-09-25)
 
 
