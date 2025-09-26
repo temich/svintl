@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/temich/svintl/compare/v1.4.0...v1.4.1) (2025-09-26)
+
+
+### Bug Fixes
+
+* rollback model version ([f825110](https://github.com/temich/svintl/commit/f8251104d35e13a950ef385fe9beaa872b89360e))
+
 # [1.4.0](https://github.com/temich/svintl/compare/v1.3.0...v1.4.0) (2025-09-26)
 
 
