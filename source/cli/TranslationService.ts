@@ -24,7 +24,7 @@ export class TranslationService {
    */
   getLocaleInfo(i18nPath: string): { localeFiles: string[], allLocales: string[], i18nDir: string } {
     const i18nDir = resolve(process.cwd(), i18nPath)
-    
+
     // Check if directory exists and provide user-friendly error
     try {
       const localeFiles = readdirSync(i18nDir).filter(file => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))
@@ -80,7 +80,7 @@ export class TranslationService {
       const contextPrompt = promptSections.join('\n\n')
 
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4.1',
+        model: 'gpt-5',
         messages: [
           {
             role: 'system',
@@ -100,9 +100,18 @@ export class TranslationService {
         throw new Error('No response from OpenAI')
       }
 
-      // Parse JSON response
+      // Parse JSON response, handling markdown code blocks
       try {
-        const parsed = JSON.parse(response)
+        let cleanResponse = response.trim()
+
+        // Remove markdown code block syntax if present
+        if (cleanResponse.startsWith('```json')) {
+          cleanResponse = cleanResponse.replace(/^```json\s*/, '').replace(/\s*```$/, '')
+        } else if (cleanResponse.startsWith('```')) {
+          cleanResponse = cleanResponse.replace(/^```\s*/, '').replace(/\s*```$/, '')
+        }
+
+        const parsed = JSON.parse(cleanResponse)
         Object.assign(translations, parsed)
       } catch (parseError) {
         throw new Error(`Failed to parse OpenAI response as JSON: ${response}`)

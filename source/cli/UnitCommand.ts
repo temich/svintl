@@ -31,6 +31,7 @@ IMPORTANT RULES:
 4. Use proper locale-specific pluralization patterns and grammar that sound natural and commonly used
 5. The input text represents a concept that needs to be pluralized (e.g., "item", "message", "user")
 6. Return a JSON object where each locale contains an object with named plural forms
+7. CRITICAL: EVERY plural form in the output MUST include the placeholder {n} at the correct grammatical position for that language. The {n} represents where the number will be substituted. Position {n} according to the natural word order of each language.
 
 LOCALE-SPECIFIC PLURAL RULES (use only the categories needed for each locale):
 - English: {"one": "...", "other": "..."}
@@ -47,17 +48,17 @@ EXAMPLES:
 Input: "message" (English)
 Output:
 {
-  "en": {"one": "message", "other": "messages"},
-  "ru": {"one": "сообщение", "few": "сообщения", "many": "сообщений", "other": "сообщений"},
-  "fr": {"one": "message", "other": "messages"}
+  "en": {"one": "{n} message", "other": "{n} messages"},
+  "ru": {"one": "{n} сообщение", "few": "{n} сообщения", "many": "{n} сообщений", "other": "{n} сообщений"},
+  "fr": {"one": "{n} message", "other": "{n} messages"}
 }
 
 Input: "usuario" (Spanish)
 Output:
 {
-  "en": {"one": "user", "other": "users"},
-  "es": {"one": "usuario", "other": "usuarios"},
-  "ru": {"one": "пользователь", "few": "пользователя", "many": "пользователей", "other": "пользователей"}
+  "en": {"one": "{n} user", "other": "{n} users"},
+  "es": {"one": "{n} usuario", "other": "{n} usuarios"},
+  "ru": {"one": "{n} пользователь", "few": "{n} пользователя", "many": "{n} пользователей", "other": "{n} пользователей"}
 }
 
 CRITICAL REQUIREMENTS:
@@ -67,6 +68,7 @@ CRITICAL REQUIREMENTS:
 - Maintain semantic consistency across all translations
 - Follow Unicode CLDR pluralization rules exactly
 - Return JSON with locale codes as keys and objects as values
+- MANDATORY: Every single translation value MUST contain exactly one {n} placeholder positioned correctly for natural language flow
 
 Target locales: \${allLocales}
 
@@ -80,7 +82,9 @@ Return ONLY a JSON object with the structure shown above.`
     const objectTranslations: Record<string, Record<string, string>> = {}
 
     for (const lang of allLocales) {
-      const translation = translations[lang]
+      // OpenAI returns base language codes (en, ru) but we have full codes (en-US, ru-RU)
+      const baseLang = lang.split('-')[0]
+      const translation = translations[baseLang] || translations[lang]
 
       // Check if translation is already an object (from OpenAI's response)
       if (typeof translation === 'object' && !Array.isArray(translation) && translation !== null) {
