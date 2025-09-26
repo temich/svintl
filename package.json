@@ -56,7 +56,7 @@
   "dependencies": {
     "dotenv": "^17",
     "js-yaml": "^4",
-    "openai": "^5",
+    "openai": "^5.23.1",
     "yargs": "^18.0.0"
   }
 }

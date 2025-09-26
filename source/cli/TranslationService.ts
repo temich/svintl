@@ -80,7 +80,7 @@ export class TranslationService {
       const contextPrompt = promptSections.join('\n\n')
 
       const completion = await openai.chat.completions.create({
-        model: 'gpt-5',
+        model: 'gpt-4.1',
         messages: [
           {
             role: 'system',
@@ -91,8 +91,7 @@ export class TranslationService {
             content: contextPrompt,
           },
         ],
-        max_tokens: 2000,
-        temperature: 0.1,
+        max_completion_tokens: 2000,
       })
 
       const response = completion.choices[0]?.message?.content
