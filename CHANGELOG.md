@@ -1,3 +1,15 @@
+# [1.4.0](https://github.com/temich/svintl/compare/v1.3.0...v1.4.0) (2025-09-26)
+
+
+### Bug Fixes
+
+* fix `unit` command ([70ca934](https://github.com/temich/svintl/commit/70ca934dfad293a99abb99fec59d78f6447b9eb1))
+
+
+### Features
+
+* bump model version ([bec7e10](https://github.com/temich/svintl/commit/bec7e108b94f5efe64bb478388204e46d6b9011b))
+
 # [1.3.0](https://github.com/temich/svintl/compare/v1.2.0...v1.3.0) (2025-09-25)
 
 
