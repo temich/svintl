@@ -80,7 +80,7 @@ export abstract class BaseTranslationCommand {
       const contextPrompt = promptSections.join('\n\n')
 
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4o',
+        model: 'gpt-5',
         messages: [
           {
             role: 'system',
