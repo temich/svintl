@@ -29,7 +29,7 @@
     "prepublishOnly": "rm -rf transpiled tsconfig.tsbuildinfo && npm run build && npm run build:cli",
     "lint": "eslint .",
     "format": "eslint . --fix",
-    "test": "npm run lint && node --test",
+    "test": "tsc --noEmit && npm run lint && node --test",
     "bump": "npx -y npm-check-updates --target minor -u && npm install"
   },
   "peerDependencies": {

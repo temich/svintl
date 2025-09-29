@@ -150,7 +150,7 @@ export class ContextFileManager {
 
     // Navigate to the key
     const keyParts = key.split('.')
-    let current = data.inputs
+    let current: Record<string, any> | null = data.inputs
 
     for (const part of keyParts) {
       if (current && typeof current === 'object' && part in current) {
