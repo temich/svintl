@@ -112,9 +112,25 @@ export class TranslationService {
         }
 
         const parsed = JSON.parse(cleanResponse)
-        Object.assign(translations, parsed)
+
+        // Handle different response formats from OpenAI
+        let translationData: Record<string, string> = {}
+        if (parsed.translations && typeof parsed.translations === 'object') {
+          translationData = parsed.translations
+        } else if (typeof parsed === 'object' && parsed !== null) {
+          translationData = parsed
+        }
+
+        Object.assign(translations, translationData)
       } catch (parseError) {
         throw new Error(`Failed to parse OpenAI response as JSON: ${response}`)
+      }
+
+      // Ensure all target locales are included, using original value for missing ones
+      for (const locale of allLocales) {
+        if (!(locale in translations)) {
+          translations[locale] = content
+        }
       }
 
       return translations
@@ -156,7 +172,7 @@ export class TranslationService {
 
     // Write back to file in YAML format
     writeFileSync(filePath, yamlDump(yamlData, {
-      lineWidth: -1,
+      indent: 2,
       quotingType: '"',
       forceQuotes: false,
     }))
