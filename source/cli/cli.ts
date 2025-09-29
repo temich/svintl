@@ -19,6 +19,7 @@ import { CreateCommand } from './CreateCommand'
 import { DestroyCommand } from './DestroyCommand'
 import { SyncCommand } from './SyncCommand'
 import { HolaCommand } from './HolaCommand'
+import { PartCommand } from './PartCommand'
 import { ConstCommand } from './ConstCommand'
 import { ContextCommand } from './ContextCommand'
 import { build } from './build'
@@ -44,10 +45,25 @@ const cli = yargs(hideBin(process.argv))
     const holaCommand = new HolaCommand()
     await holaCommand.execute(argv.js, argv.path)
   })
+  .command('part <partition>', 'Create a new dictionary partition', (yargs) => {
+    return yargs
+      .positional('partition', {
+        describe: 'Partition name',
+        type: 'string'
+      })
+      .option('js', {
+        type: 'boolean',
+        default: false,
+        description: 'Use JavaScript instead of TypeScript'
+      })
+  }, async (argv) => {
+    const partCommand = new PartCommand()
+    await partCommand.execute(argv.partition!, argv.js, argv.path)
+  })
   .command('set <key> <value> [comment]', 'Set i18n entry with automatic translation', (yargs) => {
     return yargs
       .positional('key', {
-        describe: 'Translation key (e.g., app.title)',
+        describe: 'Translation key (e.g., app.title or partition/key)',
         type: 'string'
       })
       .positional('value', {
@@ -65,7 +81,7 @@ const cli = yargs(hideBin(process.argv))
   .command('unit <key> <value> [comment]', 'Create pluralized i18n entries', (yargs) => {
     return yargs
       .positional('key', {
-        describe: 'Translation key',
+        describe: 'Translation key (e.g., items.count or partition/items.count)',
         type: 'string'
       })
       .positional('value', {
@@ -83,7 +99,7 @@ const cli = yargs(hideBin(process.argv))
   .command('const <key> <value>', 'Set same value in all dictionaries', (yargs) => {
     return yargs
       .positional('key', {
-        describe: 'Translation key',
+        describe: 'Translation key (e.g., app.title or partition/app.title)',
         type: 'string'
       })
       .positional('value', {
@@ -97,11 +113,11 @@ const cli = yargs(hideBin(process.argv))
   .command('move <from> <to>', 'Move translation key', (yargs) => {
     return yargs
       .positional('from', {
-        describe: 'Source key',
+        describe: 'Source key (e.g., app.title or partition/app.title)',
         type: 'string'
       })
       .positional('to', {
-        describe: 'Target key',
+        describe: 'Target key (e.g., app.header or partition/app.header)',
         type: 'string'
       })
   }, async (argv) => {
@@ -111,7 +127,7 @@ const cli = yargs(hideBin(process.argv))
   .command('remove <key>', 'Remove translation key', (yargs) => {
     return yargs
       .positional('key', {
-        describe: 'Translation key to remove',
+        describe: 'Translation key to remove (e.g., app.title or partition/app.title)',
         type: 'string'
       })
   }, async (argv) => {
@@ -156,7 +172,7 @@ const cli = yargs(hideBin(process.argv))
         type: 'string'
       })
       .positional('key', {
-        describe: 'Specific key to sync',
+        describe: 'Specific key to sync (e.g., app.title or partition/app.title)',
         type: 'string'
       })
   }, async (argv) => {

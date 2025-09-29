@@ -106,6 +106,33 @@ The array format `[{ one: '...', other: '...' }]` serves as an indicator for plu
 <p>You have {@render intl.items.count(itemCount)}</p>
 ```
 
+### Partitions
+
+Partitions allow you to organize translations into separate directories within your i18n folder. Each partition acts as an independent dictionary that can be imported separately.
+
+```bash
+npx intl part foo # creates foo partition with empty dictionaries for all locales
+npx intl set foo/bar.baz "Hello partition" # set key in partition 'foo'
+```
+
+Partitions are created with the same languages as the root dictionary but start empty (no `native` key).
+
+Partitions are useful for:
+
+- Organizing large applications by feature/module
+- Separate dictionaries for different user roles
+- Logical grouping of related translations
+
+```svelte
+<script lang="ts">
+  import { dict as mainDict } from '$lib/intl'
+  import { dict as adminDict } from '$lib/intl/admin'
+</script>
+
+<div>$main.foo</div>
+<div>$admin.bar</div>
+```
+
 ### Context
 
 Translation contexts are automatically saved when using the `set` command with a comment parameter. These contexts enhance translation accuracy when creating new locale dictionaries.
@@ -161,6 +188,12 @@ npx intl set wardrobe.tops "Tops" "Clothing"
 ```
 
 Creates a new translation entry with optional context.
+
+```bash
+npx intl part <partition>
+```
+
+Create a dictionary partition with empty dictionaries for all languages in the root directory. Partitions can be addressed with `partition/key` key syntax. Example: `npx intl set partition/key "value" "context"`.
 
 ```bash
 npx intl unit items.count "item"

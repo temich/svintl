@@ -8,6 +8,7 @@
 import { writeFileSync, readdirSync } from 'fs'
 import { resolve } from 'path'
 import { load } from './load'
+import { hasPartitions } from './partition'
 
 /**
  * Generate TypeScript type definitions for the dictionary structure
@@ -131,6 +132,31 @@ export function build(i18nPath = './src/lib/intl/'): void {
   console.log('🔨 Building dictionaries...')
 
   const i18nDir = resolve(process.cwd(), i18nPath)
+
+  // Check if this is a partition directory or main directory
+  const fs = require('fs')
+  const path = require('path')
+  const isPartition = i18nDir !== resolve(process.cwd(), './src/lib/intl/') &&
+    fs.existsSync(path.join(path.dirname(i18nDir), 'built.js'))
+
+  if (!isPartition && hasPartitions(i18nPath)) {
+    // Build all partitions when building from main directory
+    const entries = fs.readdirSync(i18nDir, { withFileTypes: true })
+
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        const partitionDir = path.join(i18nDir, entry.name)
+        const partitionPath = path.join(i18nPath, entry.name)
+
+        // Check if this directory contains YAML files (is a partition)
+        const partitionEntries = fs.readdirSync(partitionDir)
+        if (partitionEntries.some((file: string) => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))) {
+          console.log(`Building partition: ${entry.name}`)
+          build(partitionPath)
+        }
+      }
+    }
+  }
 
   // Get all YAML locale files (supporting BCP 47 format like en-US, zh-CN, etc.)
   const localeFiles = readdirSync(i18nDir)

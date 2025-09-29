@@ -4,15 +4,19 @@
 
 import { TranslationService } from './TranslationService'
 import { logger } from './logger'
+import { parsePartitionedKey, getPartitionPath } from './partition'
 
 export class RemoveCommand {
   private translationService = new TranslationService()
 
   async execute(key: string, i18nPath = './src/lib/intl/'): Promise<void> {
+    // Parse partitioned key
+    const { partition, key: actualKey } = parsePartitionedKey(key)
+
     logger.log(`Removing "${key}" from all locale files...`)
 
     // Get locale information
-    const { localeFiles, i18nDir } = this.translationService.getLocaleInfo(i18nPath)
+    const { localeFiles, i18nDir } = this.translationService.getLocaleInfo(i18nPath, partition)
 
     let keyExists = false
 
@@ -21,7 +25,7 @@ export class RemoveCommand {
       const filePath = `${i18nDir}/${file}`
 
       try {
-        const removed = this.translationService.removeFromLocaleFile(filePath, key)
+        const removed = this.translationService.removeFromLocaleFile(filePath, actualKey)
         if (removed) {
           logger.log(`✓ Removed from ${file}`)
           keyExists = true
@@ -37,7 +41,7 @@ export class RemoveCommand {
 
     // Remove context entry if it exists
     try {
-      const removed = this.translationService.contextManagerInstance.removeContextEntry(i18nPath, key)
+      const removed = this.translationService.contextManagerInstance.removeContextEntry(getPartitionPath(i18nPath, partition), actualKey)
       if (removed) {
         logger.log(`✓ Removed context for "${key}"`)
       }
@@ -48,6 +52,6 @@ export class RemoveCommand {
     logger.log(`✅ Saved`)
 
     // Auto-build dictionaries
-    require('./build').build(i18nPath)
+    require('./build').build(getPartitionPath(i18nPath, partition))
   }
 }

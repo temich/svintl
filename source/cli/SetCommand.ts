@@ -7,17 +7,21 @@
 
 import { TranslationService } from './TranslationService'
 import { logger } from './logger'
+import { parsePartitionedKey } from './partition'
 
 export class SetCommand {
   private translationService = new TranslationService()
 
   async execute(key: string, value: string, comment?: string, i18nPath = './src/lib/intl/'): Promise<void> {
     try {
-      // Get locale information
-      const { localeFiles, allLocales, i18nDir } = this.translationService.getLocaleInfo(i18nPath)
+      // Parse partitioned key
+      const { partition, key: actualKey } = parsePartitionedKey(key)
 
-    // Create system prompt for regular translations
-    const systemPrompt = `You are a professional translator for an internationalization system. You will receive text in ANY locale and must translate it to ALL specified target locales.
+      // Get locale information
+      const { localeFiles, allLocales, i18nDir } = this.translationService.getLocaleInfo(i18nPath, partition)
+
+      // Create system prompt for regular translations
+      const systemPrompt = `You are a professional translator for an internationalization system. You will receive text in ANY locale and must translate it to ALL specified target locales.
 
 IMPORTANT RULES:
 1. DETECT the input locale automatically - do not assume it's English
@@ -72,16 +76,16 @@ For !js functions:
   "fr": "!js\\n(count) => count === 1 ? \\"1 article\\" : \`\${count} articles\`"
 }`
 
-    // Translate using OpenAI
-    const translations = await this.translationService.translateWithOpenAI(value, allLocales, systemPrompt, comment)
+      // Translate using OpenAI
+      const translations = await this.translationService.translateWithOpenAI(value, allLocales, systemPrompt, comment)
 
-    // Update all locale files
-    this.translationService.updateAllLocaleFiles(localeFiles, i18nDir, key, translations)
+      // Update all locale files
+      this.translationService.updateAllLocaleFiles(localeFiles, i18nDir, actualKey, translations)
 
-    // Store context and build
-    this.translationService.finalize(i18nPath, key, value, comment)
-    
-    logger.log(`✅ Set "${key}" in ${allLocales.length} locales`)
+      // Store context and build
+      this.translationService.finalize(i18nPath, actualKey, value, comment, partition)
+
+      logger.log(`✅ Set "${key}" in ${allLocales.length} locales`)
     } catch (error) {
       logger.error(`Failed to set translation: ${error}`)
     }

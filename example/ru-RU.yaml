@@ -15,3 +15,5 @@ product:
       other: товары
 buttons:
   catalog: Перейти в каталог
+test:
+  key: Test value

@@ -121,11 +121,29 @@ export class ContextFileManager {
 
   getGlobalContext(i18nPath: string): string | undefined {
     const data = this.readContextFile(i18nPath)
+
+    // If global context exists in current directory, use it
+    if (data.context) {
+      return data.context
+    }
+
+    // Check if this is a partition and get global context from parent directory
+    const path = require('path')
+    const fs = require('fs')
+    const parentPath = path.dirname(path.resolve(i18nPath))
+
+    // Only check parent if it's different from current and has a context.yaml
+    if (parentPath !== path.resolve(i18nPath) && fs.existsSync(path.join(parentPath, 'context.yaml'))) {
+      const parentData = this.readContextFile(parentPath)
+      return parentData.context
+    }
+
     return data.context
   }
 
   /**
    * Get context entry for a specific key path
+   * For partitions, also checks parent directory as fallback
    */
   getContextEntry(i18nPath: string, key: string): ContextEntry | null {
     const data = this.readContextFile(i18nPath)
@@ -138,13 +156,38 @@ export class ContextFileManager {
       if (current && typeof current === 'object' && part in current) {
         current = current[part]
       } else {
-        return null
+        current = null
+        break
       }
     }
 
     // Check if current is a valid context entry
     if (current && typeof current === 'object' && 'input' in current) {
       return current as ContextEntry
+    }
+
+    // If not found in current directory, check parent directory for partitions
+    const path = require('path')
+    const fs = require('fs')
+    const parentPath = path.dirname(path.resolve(i18nPath))
+
+    // Only check parent if it's different from current and has a context.yaml
+    if (parentPath !== path.resolve(i18nPath) && fs.existsSync(path.join(parentPath, 'context.yaml'))) {
+      const parentData = this.readContextFile(parentPath)
+      let parentCurrent = parentData.inputs
+
+      for (const part of keyParts) {
+        if (parentCurrent && typeof parentCurrent === 'object' && part in parentCurrent) {
+          parentCurrent = parentCurrent[part]
+        } else {
+          return null
+        }
+      }
+
+      // Check if parent has a valid context entry
+      if (parentCurrent && typeof parentCurrent === 'object' && 'input' in parentCurrent) {
+        return parentCurrent as ContextEntry
+      }
     }
 
     return null
@@ -205,10 +248,27 @@ export class ContextFileManager {
 
   /**
    * Get all context entries as flat key-value pairs
+   * For partitions, also includes contexts from the parent (main) directory
    */
   getAllContextEntries(i18nPath: string): Record<string, ContextEntry> {
     const data = this.readContextFile(i18nPath)
-    return this.flattenContextEntries(data.inputs)
+    let entries = this.flattenContextEntries(data.inputs)
+
+    // Check if this is a partition (subdirectory) and also get contexts from parent directory
+    const path = require('path')
+    const fs = require('fs')
+    const parentPath = path.dirname(path.resolve(i18nPath))
+
+    // Only check parent if it's different from current and has a context.yaml
+    if (parentPath !== path.resolve(i18nPath) && fs.existsSync(path.join(parentPath, 'context.yaml'))) {
+      const parentData = this.readContextFile(parentPath)
+      const parentEntries = this.flattenContextEntries(parentData.inputs)
+
+      // Merge parent entries, but current directory entries take precedence
+      entries = { ...parentEntries, ...entries }
+    }
+
+    return entries
   }
 
   /**

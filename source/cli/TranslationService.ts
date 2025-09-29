@@ -11,6 +11,7 @@ import { load as yamlLoad, dump as yamlDump } from 'js-yaml'
 import OpenAI from 'openai'
 import { build } from './build'
 import { ContextFileManager } from './context'
+import { getPartitionPath } from './partition'
 
 export class TranslationService {
   private contextManager = new ContextFileManager()
@@ -22,8 +23,8 @@ export class TranslationService {
   /**
    * Get all locale files and codes from i18n directory
    */
-  getLocaleInfo(i18nPath: string): { localeFiles: string[], allLocales: string[], i18nDir: string } {
-    const i18nDir = resolve(process.cwd(), i18nPath)
+  getLocaleInfo(i18nPath: string, partition?: string): { localeFiles: string[], allLocales: string[], i18nDir: string } {
+    const i18nDir = getPartitionPath(i18nPath, partition)
 
     // Check if directory exists and provide user-friendly error
     try {
@@ -128,7 +129,12 @@ export class TranslationService {
   updateLocaleFile(filePath: string, key: string, value: string | Record<string, string> | string[] | Array<Record<string, string>>): void {
     // Read and parse YAML file
     const content = readFileSync(filePath, 'utf8')
-    const yamlData = yamlLoad(content) as any
+    let yamlData = yamlLoad(content) as any
+
+    // Handle empty files
+    if (yamlData === null) {
+      yamlData = {}
+    }
 
     // Parse the key path and set the value
     const keyParts = key.split('.')
@@ -161,7 +167,12 @@ export class TranslationService {
    */
   removeFromLocaleFile(filePath: string, key: string): boolean {
     const content = readFileSync(filePath, 'utf8')
-    const yamlData = yamlLoad(content) as any
+    let yamlData = yamlLoad(content) as any
+
+    // Handle empty files
+    if (yamlData === null) {
+      yamlData = {}
+    }
 
     const keyParts = key.split('.')
     let current = yamlData
@@ -213,15 +224,17 @@ export class TranslationService {
   /**
    * Store input and build dictionaries
    */
-  finalize(i18nPath: string, key: string, input: string, comment?: string): void {
+  finalize(i18nPath: string, key: string, input: string, comment?: string, partition?: string): void {
+    const partitionPath = getPartitionPath(i18nPath, partition)
+
     // Store input and context in context.yaml
     try {
-      this.contextManager.setContextEntry(i18nPath, key, input, comment)
+      this.contextManager.setContextEntry(partitionPath, key, input, comment)
     } catch (error) {
       // Context saving failure is not critical
     }
 
     // Auto-build dictionaries
-    build(i18nPath)
+    build(partitionPath)
   }
 }

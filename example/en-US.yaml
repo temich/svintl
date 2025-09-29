@@ -15,3 +15,5 @@ product:
       other: products
 buttons:
   catalog: Browse catalog
+test:
+  key: Test value

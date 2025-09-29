@@ -26,6 +26,9 @@ export const dictionaries = {
     },
     "buttons": {
       "catalog": "Browse catalog"
+    },
+    "test": {
+      "key": "Test value"
     }
   },
   "ru-RU": {
@@ -53,6 +56,9 @@ export const dictionaries = {
     },
     "buttons": {
       "catalog": "Перейти в каталог"
+    },
+    "test": {
+      "key": "Test value"
     }
   }
 };

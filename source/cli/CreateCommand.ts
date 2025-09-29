@@ -5,6 +5,7 @@
 import { TranslationService } from './TranslationService'
 import { logger } from './logger'
 import { validateLanguageTag, getNativeLanguageName } from './bcp47'
+import { parsePartitionedKey } from './partition'
 
 export class CreateCommand {
   private translationService = new TranslationService()

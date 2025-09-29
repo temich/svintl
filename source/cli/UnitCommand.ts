@@ -7,16 +7,20 @@
 
 import { TranslationService } from './TranslationService'
 import { logger } from './logger'
+import { parsePartitionedKey } from './partition'
 
 export class UnitCommand {
   private translationService = new TranslationService()
 
   async execute(key: string, input: string, comment?: string, i18nPath = './src/lib/intl/'): Promise<void> {
+    // Parse partitioned key
+    const { partition, key: actualKey } = parsePartitionedKey(key)
+
     const commentText = comment ? ` (${comment})` : ''
     logger.log(`Creating plural forms for "${key}" with input "${input}"${commentText}...`)
 
     // Get locale information
-    const { localeFiles, allLocales, i18nDir } = this.translationService.getLocaleInfo(i18nPath)
+    const { localeFiles, allLocales, i18nDir } = this.translationService.getLocaleInfo(i18nPath, partition)
     logger.log(`Creating pluralized translations for ${allLocales.length} locales...`)
 
     // Create system prompt for pluralization
@@ -125,10 +129,10 @@ Return ONLY a JSON object with the structure shown above.`
     }
 
     // Update all locale files with object plural data
-    this.translationService.updateAllLocaleFiles(localeFiles, i18nDir, key, yamlTranslations)
+    this.translationService.updateAllLocaleFiles(localeFiles, i18nDir, actualKey, yamlTranslations)
 
     // Store context and build
-    this.translationService.finalize(i18nPath, key, input, comment)
+    this.translationService.finalize(i18nPath, actualKey, input, comment, partition)
   }
 
   /**

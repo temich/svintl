@@ -1,3 +1,4 @@
+context: This is a test project about internationalization
 inputs:
   items:
     count:
@@ -19,3 +20,8 @@ inputs:
       context: или открыть, посмотреть, как принято в соответствующем языке
   test:
     input: OK
+    key:
+      input: Test value
+  test/moved:
+    key:
+      input: Main key

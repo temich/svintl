@@ -5,6 +5,7 @@
 import { TranslationService } from './TranslationService'
 import { logger } from './logger'
 import { validateLanguageTag } from './bcp47'
+import { parsePartitionedKey, getPartitionPath } from './partition'
 
 interface SyncEntry {
   key: string
@@ -22,7 +23,10 @@ export class SyncCommand {
       logger.error(validationError)
     }
 
-    const { localeFiles, i18nDir } = this.translationService.getLocaleInfo(i18nPath)
+    // Parse partitioned key if provided
+    const partition = specificKey ? parsePartitionedKey(specificKey).partition : undefined
+
+    const { localeFiles, i18nDir } = this.translationService.getLocaleInfo(i18nPath, partition)
     const sourceFile = `${i18nDir}/${sourceLang}.yaml`
 
     // Check if source locale exists
@@ -43,7 +47,8 @@ export class SyncCommand {
     logger.log(`Syncing ${targetLocales.length} locales with "${sourceLang}" source...`)
 
     if (specificKey) {
-      await this.syncSpecificKey(sourceLang, specificKey, targetLocales, i18nDir)
+      const { key: actualKey } = parsePartitionedKey(specificKey)
+      await this.syncSpecificKey(sourceLang, actualKey, targetLocales, i18nDir)
     } else {
       await this.syncAllKeys(sourceLang, targetLocales, i18nDir)
     }
@@ -51,13 +56,13 @@ export class SyncCommand {
     logger.log(`✅ Translated`)
 
     // Auto-build dictionaries
-    require('./build').build(i18nPath)
+    require('./build').build(getPartitionPath(i18nPath, partition))
   }
 
   private async syncSpecificKey(sourceLang: string, specificKey: string, targetLocales: string[], i18nDir: string): Promise<void> {
     const fs = require('fs')
     const yaml = require('js-yaml')
-    
+
     const sourceFile = `${i18nDir}/${sourceLang}.yaml`
     const sourceContent = fs.readFileSync(sourceFile, 'utf8')
     const sourceData = yaml.load(sourceContent) as any
@@ -107,7 +112,7 @@ export class SyncCommand {
   private async syncAllKeys(sourceLang: string, targetLocales: string[], i18nDir: string): Promise<void> {
     const fs = require('fs')
     const yaml = require('js-yaml')
-    
+
     const sourceFile = `${i18nDir}/${sourceLang}.yaml`
     const sourceContent = fs.readFileSync(sourceFile, 'utf8')
     const sourceData = yaml.load(sourceContent) as any
