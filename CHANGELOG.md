@@ -1,3 +1,10 @@
+## [1.5.1](https://github.com/temich/svintl/compare/v1.5.0...v1.5.1) (2025-09-29)
+
+
+### Bug Fixes
+
+* fix compiling ([33d39cf](https://github.com/temich/svintl/commit/33d39cf0e794157acd02147ba19aada68ed818e6))
+
 # [1.5.0](https://github.com/temich/svintl/compare/v1.4.1...v1.5.0) (2025-09-29)
 
 
