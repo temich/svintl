@@ -27,6 +27,10 @@ npx intl create es # create a new locale dictionary
 <h1>{@render intl.example.hello()}</h1>
 ```
 
+---
+
+> Everything below this line is written by AI.
+
 ## Dictionary format
 
 The dictionary is an object with an arbitrary structure, where strings are located at the leaves.
