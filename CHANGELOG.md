@@ -1,3 +1,11 @@
+## [1.5.2](https://github.com/temich/svintl/compare/v1.5.1...v1.5.2) (2025-09-29)
+
+
+### Bug Fixes
+
+* fix setting nested values in partitions ([68c39a4](https://github.com/temich/svintl/commit/68c39a49df6d51945b05b9a19ded74fedfc1edec))
+* rename languages into locales in client templates ([6278a37](https://github.com/temich/svintl/commit/6278a37aae5a8dfe533f97e0e95ffcfc322e867b))
+
 ## [1.5.1](https://github.com/temich/svintl/compare/v1.5.0...v1.5.1) (2025-09-29)
 
 
