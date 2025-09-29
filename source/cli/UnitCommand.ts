@@ -106,19 +106,13 @@ Return ONLY a JSON object with the structure shown above.`
             // OpenAI returned just the plural object for this language
             objectTranslations[lang] = parsed
           } else {
-            // Fallback: create simple one/other object
-            logger.warn(`Invalid plural structure for ${lang}, using fallback`)
-            objectTranslations[lang] = this.createFallbackPluralObject(translation, lang)
+            throw new Error(`Invalid plural structure returned for ${lang}: expected object with plural forms`)
           }
         } catch {
-          // Fallback: create simple one/other object
-          logger.warn(`Failed to parse plural structure for ${lang}, using fallback`)
-          objectTranslations[lang] = this.createFallbackPluralObject(translation, lang)
+          throw new Error(`Failed to parse plural structure for ${lang}: invalid JSON response`)
         }
       } else {
-        // Fallback for any other type
-        logger.warn(`Unexpected translation type for ${lang}, using fallback`)
-        objectTranslations[lang] = this.createFallbackPluralObject(String(translation), lang)
+        throw new Error(`Unexpected translation type for ${lang}: expected object or string, got ${typeof translation}`)
       }
     }
 
@@ -135,51 +129,5 @@ Return ONLY a JSON object with the structure shown above.`
     this.translationService.finalize(i18nPath, actualKey, input, comment, partition)
   }
 
-  /**
- * Create a fallback plural object for languages when parsing fails
- */
-  private createFallbackPluralObject(translation: string, languageCode: string): Record<string, string> {
-    // Simple heuristic: for most languages, create objects with named plural forms
-    // For languages known to have more complex pluralization, attempt basic forms
-
-    switch (languageCode) {
-      case 'ru':
-      case 'uk':
-      case 'pl':
-        // Slavic languages: one, few, many, other
-        return {
-          one: translation,
-          few: translation + 'а',              // basic approximation
-          many: translation + 'ов',            // basic approximation
-          other: translation + 'ов'            // fallback
-        }
-
-      case 'ar':
-        // Arabic: zero, one, two, few, many, other
-        return {
-          zero: 'لا ' + translation,
-          one: translation,
-          two: translation + 'ان',
-          few: translation + 'ات',
-          many: translation + 'ات',
-          other: translation + 'ات'
-        }
-
-      case 'ja':
-      case 'zh':
-      case 'ko':
-        // East Asian languages: other only
-        return {
-          other: translation
-        }
-
-      default:
-        // Most languages: one, other
-        return {
-          one: translation,
-          other: translation + 's'               // basic English-like pluralization
-        }
-    }
-  }
 }
 
