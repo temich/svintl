@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/temich/svintl/compare/v1.4.1...v1.5.0) (2025-09-29)
+
+
+### Features
+
+* add partitions ([671ccc8](https://github.com/temich/svintl/commit/671ccc8480fa5457f020d12464a2d59040fb29c2))
+
 ## [1.4.1](https://github.com/temich/svintl/compare/v1.4.0...v1.4.1) (2025-09-26)
 
 
