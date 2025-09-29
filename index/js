@@ -1,9 +1,9 @@
 import { derived, writable } from 'svelte/store'
 import { create } from 'svintl'
-import { dictionaries, languages } from './built.js'
+import { dictionaries, locales } from './built.js'
 
-const language = writable('en-US')
-const intl = create(dictionaries, language)
-const dict = derived(language, ($language) => dictionaries[$language])
+const locale = writable('en-US')
+const intl = create(dictionaries, locale)
+const dict = derived(locale, ($locale) => dictionaries[$locale])
 
-export { dict, intl, dictionaries, languages, language }
+export { dict, intl, dictionaries, locales, locale }
