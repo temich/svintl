@@ -9,5 +9,7 @@ import type { Snippet } from 'svelte'
 export type Locale = 'en-US' | 'ru-RU'
 
 export type Dictionary = {
-
+      test: {
+        title: Snippet
+      }
     }

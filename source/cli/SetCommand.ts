@@ -60,7 +60,7 @@ CRITICAL:
 - ADAPT the logic to match each target language's grammar, don't just translate strings
 - Keep the same function parameters but change conditions and return values as needed
 
-Target languages: \${allLanguages}
+Target languages: ${allLocales}
 
 Return ONLY a JSON object with language codes as keys and translations as values. 
 

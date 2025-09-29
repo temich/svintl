@@ -2,10 +2,14 @@
 
 export const dictionaries = {
   "en-US": {
-
+    "test": {
+      "title": "Title"
+    }
   },
   "ru-RU": {
-
+    "test": {
+      "title": "Заголовок"
+    }
   }
 };
 

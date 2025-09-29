@@ -1,2 +1,6 @@
 context: Partition-specific context
-inputs: {}
+inputs:
+  test:
+    title:
+      input: Title
+      context: title for testing
