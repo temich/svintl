@@ -16,4 +16,7 @@ product:
 buttons:
   catalog: Перейти в каталог
 test:
-  key: Test value
+  - one: "{n} неделя"
+    few: "{n} недели"
+    many: "{n} недель"
+    other: "{n} недель"

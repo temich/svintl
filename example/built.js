@@ -27,8 +27,14 @@ export const dictionaries = {
     "buttons": {
       "catalog": "Browse catalog"
     },
-    "test": {
-      "key": "Test value"
+    "test": (count) => {
+      const forms = {"one":"{n} week","other":"{n} weeks"};
+      const lang = "en-US"; // This will be replaced by the build system
+      const pluralRules = new Intl.PluralRules(lang);
+      const rule = pluralRules.select(count);
+      
+      // Direct object property access - no CLDR ordering needed!
+      return (forms[rule] ?? forms.other).replace(/{n}/g, count.toString());
     }
   },
   "ru-RU": {
@@ -57,8 +63,14 @@ export const dictionaries = {
     "buttons": {
       "catalog": "Перейти в каталог"
     },
-    "test": {
-      "key": "Test value"
+    "test": (count) => {
+      const forms = {"one":"{n} неделя","few":"{n} недели","many":"{n} недель","other":"{n} недель"};
+      const lang = "ru-RU"; // This will be replaced by the build system
+      const pluralRules = new Intl.PluralRules(lang);
+      const rule = pluralRules.select(count);
+      
+      // Direct object property access - no CLDR ordering needed!
+      return (forms[rule] ?? forms.other).replace(/{n}/g, count.toString());
     }
   }
 };

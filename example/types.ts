@@ -34,7 +34,5 @@ export type Dictionary = {
       buttons: {
         catalog: Snippet
       }
-      test: {
-        key: Snippet
-      }
+      test: Snippet<[any]>
     }

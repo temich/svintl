@@ -16,4 +16,5 @@ product:
 buttons:
   catalog: Browse catalog
 test:
-  key: Test value
+  - one: "{n} week"
+    other: "{n} weeks"

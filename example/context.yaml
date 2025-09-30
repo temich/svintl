@@ -19,9 +19,7 @@ inputs:
       input: Перейти в каталог
       context: или открыть, посмотреть, как принято в соответствующем языке
   test:
-    input: OK
-    key:
-      input: Test value
+    input: weeks
   test/moved:
     key:
       input: Main key

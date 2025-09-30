@@ -93,12 +93,7 @@ function createPluralFunction(pluralForms: Record<string, string>): Function {
       const rule = pluralRules.select(count);
       
       // Direct object property access - no CLDR ordering needed!
-      if (forms[rule]) {
-        return forms[rule];
-      }
-      
-      // Fallback priority: other > one > first available
-      return forms.other || forms.one || Object.values(forms)[0] || '';
+      return (forms[rule] ?? forms.other).replace(/{n}/g, count.toString());
     }
   `.trim()
 
