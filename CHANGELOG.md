@@ -1,3 +1,10 @@
+## [1.5.3](https://github.com/temich/svintl/compare/v1.5.2...v1.5.3) (2025-09-30)
+
+
+### Bug Fixes
+
+* fix no value on set ([9b45747](https://github.com/temich/svintl/commit/9b45747c66e6710195056c78f5bab91f1525a5b6))
+
 ## [1.5.2](https://github.com/temich/svintl/compare/v1.5.1...v1.5.2) (2025-09-29)
 
 
