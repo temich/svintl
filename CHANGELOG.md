@@ -1,3 +1,10 @@
+## [1.5.4](https://github.com/temich/svintl/compare/v1.5.3...v1.5.4) (2025-09-30)
+
+
+### Bug Fixes
+
+* fix plural form function ([2443e5e](https://github.com/temich/svintl/commit/2443e5e1ba0c0c988f5bc6c4bee896d2b0470af5))
+
 ## [1.5.3](https://github.com/temich/svintl/compare/v1.5.2...v1.5.3) (2025-09-30)
 
 
