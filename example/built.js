@@ -36,7 +36,8 @@ export const dictionaries = {
       
       // Direct object property access - no CLDR ordering needed!
       return (forms[rule] ?? forms.other).replace(/{n}/g, count.toString());
-    }
+    },
+    "formatName": (name, age) => `Hello, ${name}! You are ${age} years old.`
   },
   "ru-RU": {
     "native": "Русский",
@@ -72,7 +73,8 @@ export const dictionaries = {
       
       // Direct object property access - no CLDR ordering needed!
       return (forms[rule] ?? forms.other).replace(/{n}/g, count.toString());
-    }
+    },
+    "formatName": (name, age) => `Привет, ${name}! Тебе ${age} лет.`
   }
 };
 

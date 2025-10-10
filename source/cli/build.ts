@@ -52,6 +52,9 @@ function generateDictionaryType(obj: any, indent = 0): string {
 
       if (paramCount === 0)
         type = 'string'
+      else if (paramCount === 1)
+        // Plural functions always take a single number parameter
+        type = '(value: number) => string'
       else {
         const params = Array(paramCount).fill('any').join(', ')
 

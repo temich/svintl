@@ -18,3 +18,6 @@ buttons:
 test:
   - one: "{n} week"
     other: "{n} weeks"
+formatName: |
+  !js
+  (name, age) => `Hello, ${name}! You are ${age} years old.`

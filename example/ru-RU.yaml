@@ -20,3 +20,6 @@ test:
     few: "{n} недели"
     many: "{n} недель"
     other: "{n} недель"
+formatName: |
+  !js
+  (name, age) => `Привет, ${name}! Тебе ${age} лет.`

@@ -32,5 +32,6 @@ export type Dictionary = {
       buttons: {
         catalog: string
       }
-      test: (...args: [any]) => string
+      test: (value: number) => string
+      formatName: (...args: [any, any]) => string
     }
