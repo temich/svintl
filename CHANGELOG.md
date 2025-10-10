@@ -1,3 +1,10 @@
+## [1.6.1](https://github.com/temich/svintl/compare/v1.6.0...v1.6.1) (2025-10-10)
+
+
+### Bug Fixes
+
+* fix empty parameter type for dictionary function ([08743ac](https://github.com/temich/svintl/commit/08743acc5da3ac6e94a3c4af3fdd76b442488cf5))
+
 # [1.6.0](https://github.com/temich/svintl/compare/v1.5.4...v1.6.0) (2025-10-10)
 
 
