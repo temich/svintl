@@ -1,3 +1,16 @@
+# [1.6.0](https://github.com/temich/svintl/compare/v1.5.4...v1.6.0) (2025-10-10)
+
+
+### Bug Fixes
+
+* add correct plural function signature ([dea5a12](https://github.com/temich/svintl/commit/dea5a123d47f7a5c47bd94fe2f7598dcbac890fe))
+
+
+### Features
+
+* add number formatting ([372ee24](https://github.com/temich/svintl/commit/372ee2473244d3f80af03827e425123bf5ffd5f3)), closes [#6](https://github.com/temich/svintl/issues/6)
+* remove `intl` ([524ab36](https://github.com/temich/svintl/commit/524ab361787fa88cf1c025db7fc82565d9ba3a8f))
+
 ## [1.5.4](https://github.com/temich/svintl/compare/v1.5.3...v1.5.4) (2025-09-30)
 
 
