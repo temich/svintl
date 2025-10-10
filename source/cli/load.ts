@@ -88,12 +88,12 @@ function createPluralFunction(pluralForms: Record<string, string>): Function {
   const functionCode = `
     (count) => {
       const forms = ${formsJson};
-      const lang = "__LANG__"; // This will be replaced by the build system
-      const pluralRules = new Intl.PluralRules(lang);
+      const locale = "__LANG__"; // This will be replaced by the build system
+      const pluralRules = new Intl.PluralRules(locale);
       const rule = pluralRules.select(count);
-      
+
       // Direct object property access - no CLDR ordering needed!
-      return (forms[rule] ?? forms.other).replace(/{n}/g, count.toString());
+      return (forms[rule] ?? forms.other).replace(/{n}/g, new Intl.NumberFormat(locale).format(count));
     }
   `.trim()
 

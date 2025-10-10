@@ -30,12 +30,12 @@ export const dictionaries = {
     },
     "test": (count) => {
       const forms = {"one":"{n} week","other":"{n} weeks"};
-      const lang = "en-US"; // This will be replaced by the build system
-      const pluralRules = new Intl.PluralRules(lang);
+      const locale = "en-US"; // This will be replaced by the build system
+      const pluralRules = new Intl.PluralRules(locale);
       const rule = pluralRules.select(count);
-      
+
       // Direct object property access - no CLDR ordering needed!
-      return (forms[rule] ?? forms.other).replace(/{n}/g, count.toString());
+      return (forms[rule] ?? forms.other).replace(/{n}/g, new Intl.NumberFormat(locale).format(count));
     },
     "formatName": (name, age) => `Hello, ${name}! You are ${age} years old.`
   },
@@ -67,12 +67,12 @@ export const dictionaries = {
     },
     "test": (count) => {
       const forms = {"one":"{n} неделя","few":"{n} недели","many":"{n} недель","other":"{n} недель"};
-      const lang = "ru-RU"; // This will be replaced by the build system
-      const pluralRules = new Intl.PluralRules(lang);
+      const locale = "ru-RU"; // This will be replaced by the build system
+      const pluralRules = new Intl.PluralRules(locale);
       const rule = pluralRules.select(count);
-      
+
       // Direct object property access - no CLDR ordering needed!
-      return (forms[rule] ?? forms.other).replace(/{n}/g, count.toString());
+      return (forms[rule] ?? forms.other).replace(/{n}/g, new Intl.NumberFormat(locale).format(count));
     },
     "formatName": (name, age) => `Привет, ${name}! Тебе ${age} лет.`
   }
