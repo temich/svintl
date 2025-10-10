@@ -1,1 +1,1 @@
-export { create } from './intl'
+// CLI-only package - no runtime exports

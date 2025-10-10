@@ -1,38 +1,36 @@
 /**
  * Auto-generated TypeScript definitions for i18n dictionaries
- * 
+ *
  * @author copilot
  */
-
-import type { Snippet } from 'svelte'
 
 export type Locale = 'en-US' | 'ru-RU'
 
 export type Dictionary = {
-      native: Snippet
-      hello: Snippet
-      bye: Snippet
+      native: string
+      hello: string
+      bye: string
       example: {
-        hello: Snippet
+        hello: string
       }
       items: {
         count: {
           0: {
-            one: Snippet
-            other: Snippet
+            one: string
+            other: string
           }
         }
       }
       product: {
         count: {
           0: {
-            one: Snippet
-            other: Snippet
+            one: string
+            other: string
           }
         }
       }
       buttons: {
-        catalog: Snippet
+        catalog: string
       }
-      test: Snippet<[any]>
+      test: (...args: [any]) => string
     }
