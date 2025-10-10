@@ -1,9 +1,10 @@
 # Internationalization for Svelte
 
-Developer-friendly internationalization library for Svelte.
+Developer-friendly CLI tool for managing internationalization dictionaries with automatic translation via OpenAI.
 
 - Bulk dictionary manipulation
 - Automatic translation via OpenAI
+- Generates typed JavaScript modules
 
 ## TL;DR
 
@@ -15,16 +16,17 @@ npm i svintl -D
 npx intl hola # initialize dictionaries in default location
 npx intl set example.hello "Hello world" # set a translation
 npx intl create es # create a new locale dictionary
+npx intl build # generate JavaScript dictionaries
 ```
 
 ```svelte
 <script lang="ts">
-  import { intl, locale } from '$lib/intl'
+  import { dict, locale } from '$lib/intl'
 
   // bind $locale to a dropdown or whatever
 </script>
 
-<h1>{@render intl.example.hello()}</h1>
+<h1>{$dict.example.hello}</h1>
 ```
 
 ---
@@ -42,7 +44,7 @@ example:
 ```
 
 ```svelte
-<h1>{@render intl.example.hello()}</h1>
+<h1>{$dict.example.hello}</h1>
 ```
 
 Values can be specified as JavaScript functions using the following syntax:
@@ -66,7 +68,7 @@ example:
 ```
 
 ```svelte
-<h1>You have {@render intl.example.hello(count)}</h1>
+<h1>You have {$dict.example.hello(count)}</h1>
 ```
 
 The translation prompt provides clear guidance on using functions across locales to implement phrases with locale-specific rules.
@@ -107,7 +109,7 @@ The array format `[{ one: '...', other: '...' }]` serves as an indicator for plu
 - Supports all standard plural categories: `zero`, `one`, `two`, `few`, `many`, `other`
 
 ```svelte
-<p>You have {@render intl.items.count(itemCount)}</p>
+<p>You have {$dict.items.count(itemCount)}</p>
 ```
 
 ### Partitions
@@ -133,8 +135,8 @@ Partitions are useful for:
   import { dict as adminDict } from '$lib/intl/admin'
 </script>
 
-<div>$main.foo</div>
-<div>$admin.bar</div>
+<div>{$mainDict.foo}</div>
+<div>{$adminDict.bar}</div>
 ```
 
 ### Context
@@ -172,9 +174,9 @@ Print help.
 npx intl hola
 ```
 
-- Create a directory `src/lib/intl/` or specifed with `-p`
+- Create a directory `src/lib/intl/` or specified with `-p`
 - Create `en` dictionary file with `native: English` key
-- Build dictionaries
+- Generate JavaScript dictionaries and TypeScript types
 
 ```bash
 npx intl create es
@@ -247,4 +249,4 @@ Sets or clears project-wide translation guidance stored in `context.yaml`.
 npx intl build
 ```
 
-Rebuilds (likely after manual changes).
+Generates JavaScript dictionaries and TypeScript types from YAML files. Creates `built.js` and `types.ts` files that can be imported in your Svelte application.
