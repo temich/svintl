@@ -1,3 +1,12 @@
+## [1.7.1](https://github.com/temich/svintl/compare/v1.7.0...v1.7.1) (2025-10-11)
+
+
+### Bug Fixes
+
+* destroy mounted locales ([12f28e4](https://github.com/temich/svintl/commit/12f28e4f0a8b4b66c09dfb98110b87aece65138f))
+* fix `sync` command ([5c9efe2](https://github.com/temich/svintl/commit/5c9efe2aedda809d9aedf37b8de71f4c4a0fb5f8))
+* translate when creating new locale ([d498b16](https://github.com/temich/svintl/commit/d498b169609929f1916cda0ac964393cbaf65a30))
+
 # [1.7.0](https://github.com/temich/svintl/compare/v1.6.1...v1.7.0) (2025-10-11)
 
 
