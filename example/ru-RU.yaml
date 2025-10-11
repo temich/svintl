@@ -1,25 +1,23 @@
-native: Русский
-hello: Привет
-bye: Пока
+native: English
+hello: Hello
+bye: Bye
 example:
-  hello: Привет
+  hello: Hello
 items:
   count:
     "0":
-      one: предмет
-      other: предметы
+      one: item
+      other: items
 product:
   count:
     "0":
-      one: товар
-      other: товары
+      one: product
+      other: products
 buttons:
-  catalog: Перейти в каталог
+  catalog: Browse catalog
 test:
-  - one: "{n} неделя"
-    few: "{n} недели"
-    many: "{n} недель"
-    other: "{n} недель"
+  - one: "{n} week"
+    other: "{n} weeks"
 formatName: |
   !js
-  (name, age) => `Привет, ${name}! Тебе ${age} лет.`
+  (name, age) => `Hello, ${name}! You are ${age} years old.`

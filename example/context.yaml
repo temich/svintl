@@ -25,3 +25,4 @@ inputs:
       input: Main key
 mounts:
   bar: baz
+  foo: foo

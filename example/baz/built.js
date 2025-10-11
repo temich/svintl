@@ -2,17 +2,46 @@
 
 /** @type {Record<import('./types').Locale, import('./types').Dictionary>} */
 export const dictionaries = {
-  "ar-AE": {
-    "native": "العربية",
-    "locale": "ar-AE",
-    "test": "بداية الفترة هنا"
-  },
   "en-US": {
     "test": "Partition is here"
   },
   "ru-RU": {
-    "test": "Разделение здесь"
+    "native": "English",
+    "hello": "Hello",
+    "bye": "Bye",
+    "example": {
+      "hello": "Hello"
+    },
+    "items": {
+      "count": {
+        "0": {
+          "one": "item",
+          "other": "items"
+        }
+      }
+    },
+    "product": {
+      "count": {
+        "0": {
+          "one": "product",
+          "other": "products"
+        }
+      }
+    },
+    "buttons": {
+      "catalog": "Browse catalog"
+    },
+    "test": (count) => {
+      const forms = {"one":"{n} week","other":"{n} weeks"};
+      const locale = "ru-RU"; // This will be replaced by the build system
+      const pluralRules = new Intl.PluralRules(locale);
+      const rule = pluralRules.select(count);
+
+      // Direct object property access - no CLDR ordering needed!
+      return (forms[rule] ?? forms.other).replace(/{n}/g, new Intl.NumberFormat(locale).format(count));
+    },
+    "formatName": (name, age) => `Hello, ${name}! You are ${age} years old.`
   }
 };
 
-export const locales = ["ar-AE","en-US","ru-RU"];
+export const locales = ["en-US","ru-RU"];

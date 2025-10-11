@@ -40,33 +40,33 @@ export const dictionaries = {
     "formatName": (name, age) => `Hello, ${name}! You are ${age} years old.`
   },
   "ru-RU": {
-    "native": "Русский",
-    "hello": "Привет",
-    "bye": "Пока",
+    "native": "English",
+    "hello": "Hello",
+    "bye": "Bye",
     "example": {
-      "hello": "Привет"
+      "hello": "Hello"
     },
     "items": {
       "count": {
         "0": {
-          "one": "предмет",
-          "other": "предметы"
+          "one": "item",
+          "other": "items"
         }
       }
     },
     "product": {
       "count": {
         "0": {
-          "one": "товар",
-          "other": "товары"
+          "one": "product",
+          "other": "products"
         }
       }
     },
     "buttons": {
-      "catalog": "Перейти в каталог"
+      "catalog": "Browse catalog"
     },
     "test": (count) => {
-      const forms = {"one":"{n} неделя","few":"{n} недели","many":"{n} недель","other":"{n} недель"};
+      const forms = {"one":"{n} week","other":"{n} weeks"};
       const locale = "ru-RU"; // This will be replaced by the build system
       const pluralRules = new Intl.PluralRules(locale);
       const rule = pluralRules.select(count);
@@ -74,7 +74,7 @@ export const dictionaries = {
       // Direct object property access - no CLDR ordering needed!
       return (forms[rule] ?? forms.other).replace(/{n}/g, new Intl.NumberFormat(locale).format(count));
     },
-    "formatName": (name, age) => `Привет, ${name}! Тебе ${age} лет.`
+    "formatName": (name, age) => `Hello, ${name}! You are ${age} years old.`
   }
 };
 

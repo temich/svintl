@@ -4,10 +4,8 @@
  * @author copilot
  */
 
-export type Locale = 'ar-AE' | 'en-US' | 'ru-RU'
+export type Locale = 'en-US' | 'ru-RU'
 
 export type Dictionary = {
-      native: string
-      locale: string
       test: string
     }
