@@ -1,3 +1,11 @@
+# [1.7.0](https://github.com/temich/svintl/compare/v1.6.1...v1.7.0) (2025-10-11)
+
+
+### Features
+
+* add `locale` key for new dictionaries ([163b691](https://github.com/temich/svintl/commit/163b6911d96889a3e05a6ad5495181f8b1ee74bf))
+* replace partitions with mounts ([edc5db9](https://github.com/temich/svintl/commit/edc5db9c97b67f7bf3e7a32296987bd109374346))
+
 ## [1.6.1](https://github.com/temich/svintl/compare/v1.6.0...v1.6.1) (2025-10-10)
 
 
