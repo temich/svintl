@@ -58,6 +58,7 @@ export class HolaCommand {
       const initialDict = `# English dictionary
 # The 'native' key contains the language name in its own language
 native: English
+locale: en
 
 # Add your translations here
 # Example:

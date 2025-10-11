@@ -44,6 +44,7 @@ export class CreateCommand {
 
       const initialContent = {
         native: nativeName,
+        locale: targetLang,
       }
 
       const yamlContent = yaml.dump(initialContent, {
@@ -64,16 +65,33 @@ export class CreateCommand {
       .filter((file: string) => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))
 
     // Validate source language
+    let sourceLanguage = sourceLang
     if (sourceLang) {
       const sourceFile = path.join(i18nDir, `${sourceLang}.yaml`)
       if (!fs.existsSync(sourceFile)) {
-        logger.error(`Source language "${sourceLang}" does not exist`)
+        // If the exact source file doesn't exist and it's 'en', try to find any English variant
+        if (sourceLang === 'en') {
+          const englishFile = existingFiles.find((file: string) => file.startsWith('en') && file.endsWith('.yaml'))
+          if (englishFile) {
+            sourceLanguage = englishFile.replace('.yaml', '')
+            logger.log(`Using "${sourceLanguage}" as source language (found English variant)`)
+          } else {
+            logger.error(`Source language "${sourceLang}" does not exist and no English variants found`)
+          }
+        } else {
+          logger.error(`Source language "${sourceLang}" does not exist`)
+        }
+      } else {
+        sourceLanguage = sourceLang
       }
-    } else if (!existingFiles.includes('en.yaml')) {
-      logger.error(`No English (en) language found. Please specify source language: npx intl create ${targetLang} <source-lang>`)
+    } else {
+      // If no source language provided, look for any English locale file
+      const englishFile = existingFiles.find((file: string) => file.startsWith('en') && file.endsWith('.yaml'))
+      if (!englishFile) {
+        logger.error(`No English (en*) language found. Please specify source language: npx intl create ${targetLang} <source-lang>`)
+      }
+      sourceLanguage = englishFile.replace('.yaml', '')
     }
-
-    const sourceLanguage = sourceLang || 'en'
     logger.log(`Creating "${targetLang}" language from "${sourceLanguage}" source...`)
 
     // Load source dictionary
@@ -97,6 +115,7 @@ export class CreateCommand {
       // Create minimal file with just native name
       const initialContent = {
         native: nativeName,
+        locale: targetLang,
       }
 
       const yamlContent = yaml.dump(initialContent, {
@@ -114,6 +133,7 @@ export class CreateCommand {
     // For now, just copy source values (in a real implementation, you'd translate them)
     const targetContent = {
       native: nativeName,
+      locale: targetLang,
       ...sourceDataWithoutNative
     }
 
