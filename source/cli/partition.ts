@@ -5,6 +5,7 @@
  */
 
 import { resolve, join } from 'path'
+import { ContextFileManager } from './context'
 
 export interface PartitionedKey {
   partition?: string
@@ -39,7 +40,22 @@ export function parsePartitionedKey(fullKey: string): PartitionedKey {
  */
 export function getPartitionPath(basePath: string, partition?: string): string {
   const baseDir = resolve(process.cwd(), basePath)
-  return partition ? join(baseDir, partition) : baseDir
+
+  if (!partition) {
+    return baseDir
+  }
+
+  // Try to get mount path from context
+  const contextManager = new ContextFileManager()
+  const mountPath = contextManager.getMountPath(basePath, partition)
+
+  if (mountPath) {
+    // Mount path is relative to the main context file directory
+    return resolve(baseDir, mountPath)
+  }
+
+  // Fallback to old behavior (subdirectory) for backwards compatibility
+  return join(baseDir, partition)
 }
 
 /**

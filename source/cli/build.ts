@@ -152,7 +152,7 @@ export function build(i18nPath = './src/lib/intl/'): void {
         // Check if this directory contains YAML files (is a partition)
         const partitionEntries = fs.readdirSync(partitionDir)
         if (partitionEntries.some((file: string) => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))) {
-          console.log(`Building partition: ${entry.name}`)
+          console.log(`Building mount: ${entry.name}`)
           build(partitionPath)
         }
       }

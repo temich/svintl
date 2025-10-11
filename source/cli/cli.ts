@@ -19,7 +19,8 @@ import { CreateCommand } from './CreateCommand'
 import { DestroyCommand } from './DestroyCommand'
 import { SyncCommand } from './SyncCommand'
 import { HolaCommand } from './HolaCommand'
-import { PartCommand } from './PartCommand'
+import { MountCommand } from './MountCommand'
+import { UnmountCommand } from './UnmountCommand'
 import { ConstCommand } from './ConstCommand'
 import { ContextCommand } from './ContextCommand'
 import { build } from './build'
@@ -45,10 +46,14 @@ const cli = yargs(hideBin(process.argv))
     const holaCommand = new HolaCommand()
     await holaCommand.execute(argv.js, argv.path)
   })
-  .command('part <partition>', 'Create a new dictionary partition', (yargs) => {
+  .command('mount <mount> <dir>', 'Create a new dictionary mount', (yargs) => {
     return yargs
-      .positional('partition', {
-        describe: 'Partition name',
+      .positional('mount', {
+        describe: 'Mount name',
+        type: 'string'
+      })
+      .positional('dir', {
+        describe: 'Path to mount directory',
         type: 'string'
       })
       .option('js', {
@@ -57,13 +62,23 @@ const cli = yargs(hideBin(process.argv))
         description: 'Use JavaScript instead of TypeScript'
       })
   }, async (argv) => {
-    const partCommand = new PartCommand()
-    await partCommand.execute(argv.partition!, argv.js, argv.path)
+    const mountCommand = new MountCommand()
+    await mountCommand.execute(argv.mount!, argv.dir!, argv.js, argv.path)
+  })
+  .command('unmount <mount>', 'Remove a mount from context (keeps partition files)', (yargs) => {
+    return yargs
+      .positional('mount', {
+        describe: 'Mount name to remove',
+        type: 'string'
+      })
+  }, async (argv) => {
+    const unmountCommand = new UnmountCommand()
+    await unmountCommand.execute(argv.mount!, argv.path)
   })
   .command('set <key> <value> [comment]', 'Set i18n entry with automatic translation', (yargs) => {
     return yargs
       .positional('key', {
-        describe: 'Translation key (e.g., app.title or partition/key)',
+        describe: 'Translation key (e.g., app.title or mount/key)',
         type: 'string'
       })
       .positional('value', {
@@ -81,7 +96,7 @@ const cli = yargs(hideBin(process.argv))
   .command('unit <key> <value> [comment]', 'Create pluralized i18n entries', (yargs) => {
     return yargs
       .positional('key', {
-        describe: 'Translation key (e.g., items.count or partition/items.count)',
+        describe: 'Translation key (e.g., items.count or mount/items.count)',
         type: 'string'
       })
       .positional('value', {
@@ -99,7 +114,7 @@ const cli = yargs(hideBin(process.argv))
   .command('const <key> <value>', 'Set same value in all dictionaries', (yargs) => {
     return yargs
       .positional('key', {
-        describe: 'Translation key (e.g., app.title or partition/app.title)',
+        describe: 'Translation key (e.g., app.title or mount/app.title)',
         type: 'string'
       })
       .positional('value', {
@@ -113,11 +128,11 @@ const cli = yargs(hideBin(process.argv))
   .command('move <from> <to>', 'Move translation key', (yargs) => {
     return yargs
       .positional('from', {
-        describe: 'Source key (e.g., app.title or partition/app.title)',
+        describe: 'Source key (e.g., app.title or mount/app.title)',
         type: 'string'
       })
       .positional('to', {
-        describe: 'Target key (e.g., app.header or partition/app.header)',
+        describe: 'Target key (e.g., app.header or mount/app.header)',
         type: 'string'
       })
   }, async (argv) => {
@@ -127,7 +142,7 @@ const cli = yargs(hideBin(process.argv))
   .command('remove <key>', 'Remove translation key', (yargs) => {
     return yargs
       .positional('key', {
-        describe: 'Translation key to remove (e.g., app.title or partition/app.title)',
+        describe: 'Translation key to remove (e.g., app.title or mount/app.title)',
         type: 'string'
       })
   }, async (argv) => {
@@ -172,7 +187,7 @@ const cli = yargs(hideBin(process.argv))
         type: 'string'
       })
       .positional('key', {
-        describe: 'Specific key to sync (e.g., app.title or partition/app.title)',
+        describe: 'Specific key to sync (e.g., app.title or mount/app.title)',
         type: 'string'
       })
   }, async (argv) => {

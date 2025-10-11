@@ -112,22 +112,23 @@ The array format `[{ one: '...', other: '...' }]` serves as an indicator for plu
 <p>You have {$dict.items.count(itemCount)}</p>
 ```
 
-### Partitions
+### Mounts
 
-Partitions allow you to organize translations into separate directories within your i18n folder. Each partition acts as an independent dictionary that can be imported separately.
+Mounts allow you to organize translations into separate directories anywhere in your filesystem. Each mount acts as an independent dictionary that can be imported separately.
 
 ```bash
-npx intl part foo # creates foo partition with empty dictionaries for all locales
-npx intl set foo/bar.baz "Hello partition" # set key in partition 'foo'
+npx intl mount foo ./any/path # creates foo mount with empty dictionaries for all locales
+npx intl set foo/bar.baz "Hello mount" # set key in mount 'foo'
 ```
 
-Partitions are created with the same languages as the root dictionary but start empty (no `native` key).
+Mounts are created with the same languages as the root dictionary but start empty (no `native` key).
 
-Partitions are useful for:
+Mounts are useful for:
 
 - Organizing large applications by feature/module
 - Separate dictionaries for different user roles
 - Logical grouping of related translations
+- Storing dictionaries in different locations
 
 ```svelte
 <script lang="ts">
@@ -150,6 +151,9 @@ npx intl set app.welcome "Welcome to our application" "greeting shown on homepag
 Contexts are stored in `context.yaml` alongside your locale files:
 
 ```yaml
+mounts:
+  foo: ../../any/path # path relative to this main context file
+
 inputs:
   app:
     welcome:
@@ -196,10 +200,16 @@ npx intl set wardrobe.tops "Tops" "Clothing"
 Creates a new translation entry with optional context.
 
 ```bash
-npx intl part <partition>
+npx intl mount <mount> <dir>
 ```
 
-Create a dictionary partition with empty dictionaries for all languages in the root directory. Partitions can be addressed with `partition/key` key syntax. Example: `npx intl set partition/key "value" "context"`.
+Create a dictionary mount at the specified path with empty dictionaries for all languages in the root directory. Mounts can be addressed with `mount/key` key syntax. Example: `npx intl set mount/key "value" "context"`.
+
+```bash
+npx intl unmount <mount>
+```
+
+Remove a mount from context.yaml but keep the partition files on disk. The mount can be re-added later using the `mount` command.
 
 ```bash
 npx intl unit items.count "item"

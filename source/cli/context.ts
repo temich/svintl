@@ -17,6 +17,7 @@ export interface ContextEntry {
 export interface ContextData {
   context?: string
   inputs: Record<string, any>
+  mounts?: Record<string, string>
 }
 
 export class ContextFileManager {
@@ -47,10 +48,14 @@ export class ContextFileManager {
         ? data.context
         : undefined
 
-      return { context, inputs }
+      const mounts = data && typeof data === 'object' && data.mounts && typeof data.mounts === 'object'
+        ? data.mounts
+        : {}
+
+      return { context, inputs, mounts }
     } catch (error) {
       console.warn(`⚠️  Failed to read context file: ${error}`)
-      return { context: undefined, inputs: {} }
+      return { context: undefined, inputs: {}, mounts: {} }
     }
   }
 
@@ -64,6 +69,7 @@ export class ContextFileManager {
       const normalizedData: ContextData = {
         ...(data.context !== undefined ? { context: data.context } : {}),
         inputs: data.inputs || {},
+        ...(data.mounts && Object.keys(data.mounts).length > 0 ? { mounts: data.mounts } : {}),
       }
 
       const yamlContent = yamlDump(normalizedData, {
@@ -110,6 +116,39 @@ export class ContextFileManager {
     const data = this.readContextFile(i18nPath)
     data.context = context
     this.writeContextFile(i18nPath, data)
+  }
+
+  /**
+   * Set mount path for a partition
+   */
+  setMountPath(i18nPath: string, mountName: string, mountPath: string): void {
+    const data = this.readContextFile(i18nPath)
+    if (!data.mounts) {
+      data.mounts = {}
+    }
+    data.mounts[mountName] = mountPath
+    this.writeContextFile(i18nPath, data)
+  }
+
+  /**
+   * Get mount path for a partition
+   */
+  getMountPath(i18nPath: string, mountName: string): string | null {
+    const data = this.readContextFile(i18nPath)
+    return data.mounts && data.mounts[mountName] ? data.mounts[mountName] : null
+  }
+
+  /**
+   * Remove mount path for a partition
+   */
+  removeMountPath(i18nPath: string, mountName: string): boolean {
+    const data = this.readContextFile(i18nPath)
+    if (data.mounts && data.mounts[mountName]) {
+      delete data.mounts[mountName]
+      this.writeContextFile(i18nPath, data)
+      return true
+    }
+    return false
   }
 
   clearGlobalContext(i18nPath: string): void {
