@@ -2,8 +2,17 @@
 
 /** @type {Record<import('./types').Locale, import('./types').Dictionary>} */
 export const dictionaries = {
-  "en-US": null,
-  "ru-RU": null
+  "ar-AE": {
+    "native": "العربية",
+    "locale": "ar-AE",
+    "test": "بداية الفترة هنا"
+  },
+  "en-US": {
+    "test": "Partition is here"
+  },
+  "ru-RU": {
+    "test": "Разделение здесь"
+  }
 };
 
-export const locales = ["en-US","ru-RU"];
+export const locales = ["ar-AE","en-US","ru-RU"];

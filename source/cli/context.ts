@@ -139,6 +139,14 @@ export class ContextFileManager {
   }
 
   /**
+   * Get all mounts
+   */
+  getAllMounts(i18nPath: string): Record<string, string> {
+    const data = this.readContextFile(i18nPath)
+    return data.mounts || {}
+  }
+
+  /**
    * Remove mount path for a partition
    */
   removeMountPath(i18nPath: string, mountName: string): boolean {
