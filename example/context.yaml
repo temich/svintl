@@ -23,3 +23,5 @@ inputs:
   test/moved:
     key:
       input: Main key
+mounts:
+  bar: baz
