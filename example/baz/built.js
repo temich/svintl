@@ -6,41 +6,9 @@ export const dictionaries = {
     "test": "Partition is here"
   },
   "ru-RU": {
-    "native": "English",
-    "hello": "Hello",
-    "bye": "Bye",
-    "example": {
-      "hello": "Hello"
-    },
-    "items": {
-      "count": {
-        "0": {
-          "one": "item",
-          "other": "items"
-        }
-      }
-    },
-    "product": {
-      "count": {
-        "0": {
-          "one": "product",
-          "other": "products"
-        }
-      }
-    },
-    "buttons": {
-      "catalog": "Browse catalog"
-    },
-    "test": (count) => {
-      const forms = {"one":"{n} week","other":"{n} weeks"};
-      const locale = "ru-RU"; // This will be replaced by the build system
-      const pluralRules = new Intl.PluralRules(locale);
-      const rule = pluralRules.select(count);
-
-      // Direct object property access - no CLDR ordering needed!
-      return (forms[rule] ?? forms.other).replace(/{n}/g, new Intl.NumberFormat(locale).format(count));
-    },
-    "formatName": (name, age) => `Hello, ${name}! You are ${age} years old.`
+    "native": "Русский",
+    "locale": "ru-RU",
+    "test": "Раздел здесь"
   }
 };
 

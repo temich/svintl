@@ -1,23 +1,4 @@
-native: English
-hello: Hello
-bye: Bye
-example:
-  hello: Hello
-items:
-  count:
-    "0":
-      one: item
-      other: items
-product:
-  count:
-    "0":
-      one: product
-      other: products
-buttons:
-  catalog: Browse catalog
+native: Русский
+locale: ru-RU
 test:
-  - one: "{n} week"
-    other: "{n} weeks"
-formatName: |
-  !js
-  (name, age) => `Hello, ${name}! You are ${age} years old.`
+  title: Заголовок
