@@ -4,6 +4,10 @@ import { strict as assert } from 'node:assert'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { When, Then, Before } from '@cucumber/cucumber'
+import dotenv from 'dotenv'
+import * as YAML from 'js-yaml'
+
+dotenv.config()
 
 let output: string = ''
 let cwd: string = ''
@@ -20,29 +24,27 @@ When(/I run `([^`]+)`/, function(command: string) {
       cwd,
     })
   } catch (error: any) {
-    // Capture stderr as well for error cases
     output = (error.stdout || '') + (error.stderr || '')
-    // Re-throw to fail the test if command fails
     throw error
   }
 })
 
-Then('the output contains:', function(docString: string) {
-  assert(output.includes(docString.trim()))
+Then('the output contains:', function(expected: string) {
+  assert(output.includes(expected))
 })
 
-Then(/the directory `([^`]+)` contains:/, function(dirPath: string, docString: string) {
-  const fullPath = join(cwd, dirPath)
+Then(/the directory `([^`]+)` contains:/, function(dir: string, yaml: string) {
+  const fullPath = join(cwd, dir)
   const files = readdirSync(fullPath)
-  const expectedFiles = docString.trim().split('\n').map(line => line.trim().replace(/^-\s*/, '')).filter(line => line.length > 0)
+  const expected = YAML.load(yaml) as string[]
 
-  for (const expectedFile of expectedFiles)
+  for (const expectedFile of expected)
     assert(files.includes(expectedFile))
 })
 
-Then(/the file `([^`]+)` contains:/, function(filePath: string, docString: string) {
-  const fullPath = join(cwd, filePath)
-  const content = readFileSync(fullPath, 'utf8')
+Then(/the file `([^`]+)` contains:/, function(rel: string, expected: string) {
+  const path = join(cwd, rel)
+  const content = readFileSync(path, 'utf8')
 
-  assert(content.includes(docString.trim()))
+  assert(content.includes(expected))
 })
