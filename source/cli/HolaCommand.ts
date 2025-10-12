@@ -50,15 +50,15 @@ export class HolaCommand {
       this.log(`✓ Created ${useJavaScript ? 'JavaScript' : 'TypeScript'} index file: ${indexFile}`)
     }
 
-    // 3. Create empty en dictionary
-    const enFile = join(i18nDir, 'en.yaml')
+    // 3. Create empty en-US dictionary
+    const enFile = join(i18nDir, 'en-US.yaml')
     if (existsSync(enFile)) {
       this.log(`⚠️ English dictionary already exists: ${enFile}`)
     } else {
       const initialDict = `# English dictionary
 # The 'native' key contains the language name in its own language
 native: English
-locale: en
+locale: en-US
 
 # Add your translations here
 # Example:
