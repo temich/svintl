@@ -179,7 +179,7 @@ npx intl hola
 ```
 
 - Create a directory `src/lib/intl/` or specified with `-p`
-- Create `en` dictionary file with `native: English` key
+- Create `en-US` dictionary
 - Generate JavaScript dictionaries and TypeScript types
 
 ```bash

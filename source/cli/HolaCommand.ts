@@ -30,19 +30,20 @@ export class HolaCommand {
     }
 
     // 2. Create index file based on template
-    const indexFile = join(i18nDir, 'index.ts')
+    const indexFileName = useJavaScript ? 'index.js' : 'index.ts'
+    const indexFile = join(i18nDir, indexFileName)
     if (existsSync(indexFile)) {
       this.log(`⚠️ Index file already exists: ${indexFile}`)
     } else {
       const templateFile = useJavaScript ? 'js' : 'ts'
-      // Get the path to the intl package root 
+      // Get the path to the intl package root
       // When bundled, __dirname points to where the bundled CLI runs
       // We need to look for the template relative to the package installation
       const packageRoot = resolve(__dirname, '..')
       const templatePath = join(packageRoot, 'index', templateFile)
 
       if (!existsSync(templatePath)) {
-        this.error(`Template file not found: ${templatePath}`)
+        this.error(`Template file not found for ${useJavaScript ? 'JavaScript' : 'TypeScript'}: ${templatePath}`)
       }
 
       const templateContent = readFileSync(templatePath, 'utf8')
