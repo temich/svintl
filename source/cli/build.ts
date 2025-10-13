@@ -140,20 +140,35 @@ export function build(i18nPath = './src/lib/intl/'): void {
   const isPartition = i18nDir !== resolve(process.cwd(), './src/lib/intl/') &&
     fs.existsSync(path.join(path.dirname(i18nDir), 'built.js'))
 
-  if (!isPartition && hasPartitions(i18nPath)) {
+  if (!isPartition) {
     // Build all partitions when building from main directory
-    const entries = fs.readdirSync(i18nDir, { withFileTypes: true })
+    // First check for mounted partitions from context.yaml
+    const contextManager = new (require('./context').ContextFileManager)()
+    const allMounts = contextManager.getAllMounts(i18nPath)
 
-    for (const entry of entries) {
-      if (entry.isDirectory()) {
-        const partitionDir = path.join(i18nDir, entry.name)
-        const partitionPath = path.join(i18nPath, entry.name)
+    for (const [mountName, mountPath] of Object.entries(allMounts)) {
+      const partitionI18nDir = path.resolve(i18nDir, mountPath)
+      if (fs.existsSync(partitionI18nDir)) {
+        console.log(`Building mount: ${mountName}`)
+        build(path.relative(process.cwd(), partitionI18nDir))
+      }
+    }
 
-        // Check if this directory contains YAML files (is a partition)
-        const partitionEntries = fs.readdirSync(partitionDir)
-        if (partitionEntries.some((file: string) => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))) {
-          console.log(`Building mount: ${entry.name}`)
-          build(partitionPath)
+    // Also check for subdirectory partitions (legacy support)
+    if (hasPartitions(i18nPath)) {
+      const entries = fs.readdirSync(i18nDir, { withFileTypes: true })
+
+      for (const entry of entries) {
+        if (entry.isDirectory()) {
+          const partitionDir = path.join(i18nDir, entry.name)
+          const partitionPath = path.join(i18nPath, entry.name)
+
+          // Check if this directory contains YAML files (is a partition)
+          const partitionEntries = fs.readdirSync(partitionDir)
+          if (partitionEntries.some((file: string) => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))) {
+            console.log(`Building mount: ${entry.name}`)
+            build(partitionPath)
+          }
         }
       }
     }

@@ -100,8 +100,8 @@ export class CreateCommand {
     const sourceContent = fs.readFileSync(sourceFile, 'utf8')
     const sourceData = yaml.load(sourceContent) as any
 
-    // Extract all key-value pairs for translation (excluding native key)
-    const { native, ...sourceDataWithoutNative } = sourceData
+    // Extract all key-value pairs for translation (excluding native and locale keys)
+    const { native, locale, ...sourceDataWithoutNative } = sourceData
     const entries = this.extractEntries(sourceDataWithoutNative)
 
     // Get saved contexts for enriched translation

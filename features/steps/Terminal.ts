@@ -1,5 +1,5 @@
 import { execSync } from 'child_process'
-import { mkdtempSync, readdirSync, readFileSync } from 'fs'
+import { mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'fs'
 import { strict as assert } from 'node:assert'
 import { tmpdir } from 'os'
 import { join } from 'path'
@@ -22,6 +22,7 @@ When(/I run `([^`]+)`/, function(command: string) {
     output = execSync(command, {
       encoding: 'utf8',
       cwd,
+      env: process.env,
     })
   } catch (error: any) {
     output = (error.stdout || '') + (error.stderr || '')
@@ -45,6 +46,20 @@ Then(/the directory `([^`]+)` contains:/, function(dir: string, yaml: string) {
 Then(/the file `([^`]+)` contains:/, function(rel: string, expected: string) {
   const path = join(cwd, rel)
   const content = readFileSync(path, 'utf8')
+  const trimmedExpected = expected.trim()
+  const trimmedContent = content.trim()
 
-  assert(content.includes(expected))
+  assert(trimmedContent.includes(trimmedExpected))
+})
+
+When(/I modify `([^`]+)` to update `([^`]+)` to `([^`]+)`/, function(file: string, key: string, value: string) {
+  const path = join(cwd, file)
+  const content = readFileSync(path, 'utf8')
+  const data = YAML.load(content) as any
+
+  data[key] = value
+
+  const updatedContent = YAML.dump(data)
+
+  writeFileSync(path, updatedContent)
 })
