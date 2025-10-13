@@ -1,3 +1,13 @@
+## [1.7.2](https://github.com/temich/svintl/compare/v1.7.1...v1.7.2) (2025-10-13)
+
+
+### Bug Fixes
+
+* add `npx` to tests ([d27ba58](https://github.com/temich/svintl/commit/d27ba583be200c505dd8bc78a5f57400979a2582))
+* disable hook on CI ([23d1072](https://github.com/temich/svintl/commit/23d1072af49e2a2504393d7879dddba8f80ad75d))
+* fix `locale` translations ([6471b85](https://github.com/temich/svintl/commit/6471b85d9ca0efe5f60ef22ee0175d6692846791))
+* fix build for mounts ([3a5b413](https://github.com/temich/svintl/commit/3a5b4131696156c41f0a40c3f14a59eb9e1f9c8b))
+
 ## [1.7.1](https://github.com/temich/svintl/compare/v1.7.0...v1.7.1) (2025-10-11)
 
 
