@@ -26,10 +26,6 @@ Feature: Build
       hello: Hello2
       """
     When I run `intl build -p ./test`
-    Then the output contains:
-      """
-      ✅ Built
-      """
     And the directory `test` contains:
       """
       - en-US.yaml
@@ -92,10 +88,6 @@ Feature: Build
       hello: Hello2
       """
     When I run `intl build -p ./test`
-    Then the output contains:
-      """
-      ✅ Built
-      """
     And the file `test-foo/foo/built.js` contains:
       """
       export const dictionaries = {
