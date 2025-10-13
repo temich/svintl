@@ -22,7 +22,6 @@ When(/I run `([^`]+)`/, function(command: string) {
     output = execSync(command, {
       encoding: 'utf8',
       cwd,
-      env: process.env,
     })
   } catch (error: any) {
     output = (error.stdout || '') + (error.stderr || '')

@@ -1,1 +1,4 @@
+# Skip hooks in CI
+[ -n "$CI" ] && exit 0
+
 npm test
