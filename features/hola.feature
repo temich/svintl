@@ -1,7 +1,7 @@
 Feature: Hola command
 
   Scenario: Create a dictionary project
-    When I run `intl hola`
+    When I run `npx intl hola`
     Then the directory `src/lib/intl` contains:
       """yaml
       - en-US.yaml
@@ -16,7 +16,7 @@ Feature: Hola command
       """
 
   Scenario: Create a dictionary project with given path and using JavaScript
-    When I run `intl hola --js -p ./intl`
+    When I run `npx intl hola --js -p ./intl`
     Then the directory `intl` contains:
       """yaml
       - en-US.yaml

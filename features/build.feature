@@ -1,9 +1,9 @@
 Feature: Build
 
   Scenario: Build
-    When I run `intl hola -p ./test`
-    And I run `intl set hello "Hello" -p ./test`
-    And I run `intl create ru-RU -p ./test`
+    When I run `npx intl hola -p ./test`
+    And I run `npx intl set hello "Hello" -p ./test`
+    And I run `npx intl create ru-RU -p ./test`
     Then the directory `test` contains:
       """
       - en-US.yaml
@@ -25,7 +25,7 @@ Feature: Build
       """
       hello: Hello2
       """
-    When I run `intl build -p ./test`
+    When I run `npx intl build -p ./test`
     And the directory `test` contains:
       """
       - en-US.yaml
@@ -51,8 +51,8 @@ Feature: Build
 
       export const locales = ["en-US","ru-RU"];
       """
-    When I run `intl mount foo ./test-foo/foo -p ./test`
-    And I run `intl set foo/hello "Hello" -p ./test`
+    When I run `npx intl mount foo ./test-foo/foo -p ./test`
+    And I run `npx intl set foo/hello "Hello" -p ./test`
     Then the directory `test-foo/foo` contains:
       """
       - en-US.yaml
@@ -87,7 +87,7 @@ Feature: Build
       """
       hello: Hello2
       """
-    When I run `intl build -p ./test`
+    When I run `npx intl build -p ./test`
     And the file `test-foo/foo/built.js` contains:
       """
       export const dictionaries = {
