@@ -46,10 +46,15 @@ Then(/the directory `([^`]+)` contains:/, function(dir: string, yaml: string) {
 Then(/the file `([^`]+)` contains:/, function(rel: string, expected: string) {
   const path = join(cwd, rel)
   const content = readFileSync(path, 'utf8')
-  const trimmedExpected = expected.trim()
-  const trimmedContent = content.trim()
 
-  assert(trimmedContent.includes(trimmedExpected))
+  if (!content.includes(expected.trim())) {
+    console.error('\n------------ EXPECTED ------------')
+    console.error(expected.trim())
+    console.error('\n------------ ACTUAL ------------')
+    console.error(content)
+
+    throw new Error(`${rel} does not include expected content`)
+  }
 })
 
 When(/I modify `([^`]+)` to update `([^`]+)` to `([^`]+)`/, function(file: string, key: string, value: string) {

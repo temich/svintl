@@ -51,7 +51,23 @@ export class HolaCommand {
       this.log(`✓ Created ${useJavaScript ? 'JavaScript' : 'TypeScript'} index file: ${indexFile}`)
     }
 
-    // 3. Create empty en-US dictionary
+    // 3. Create context.yaml file
+    const contextFile = join(i18nDir, 'context.yaml')
+    if (!existsSync(contextFile)) {
+      const initialContext = `context: Internationalization project
+inputs:
+  locale:
+    input: locale
+    context: BCP 47 language tag, should not be translated, always use the target language code
+  native:
+    input: native
+    context: native name of the language in that language, should not be translated
+`
+      writeFileSync(contextFile, initialContext)
+      this.log(`✓ Created context file: ${contextFile}`)
+    }
+
+    // 5. Create empty en-US dictionary
     const enFile = join(i18nDir, 'en-US.yaml')
     if (existsSync(enFile)) {
       this.log(`⚠️ English dictionary already exists: ${enFile}`)
@@ -71,7 +87,7 @@ locale: en-US
       this.log(`✓ Created English dictionary with native name: ${enFile}`)
     }
 
-    // 4. Build
+    // 6. Build
     this.log('🔨 Building dictionaries...')
     build(i18nPath)
 

@@ -73,6 +73,16 @@ export class MountCommand {
       }
     }
 
+    // Create context.yaml file for the mount
+    const mountContextFile = join(absoluteMountPath, 'context.yaml')
+    if (!existsSync(mountContextFile)) {
+      const mountContext = `context: Mount '${mountName}' context
+inputs: {}
+`
+      writeFileSync(mountContextFile, mountContext)
+      this.log(`✓ Created context file for mount: ${mountContextFile}`)
+    }
+
     // Create index file based on template
     const indexFile = join(absoluteMountPath, 'index.ts')
     if (!existsSync(indexFile)) {

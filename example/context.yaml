@@ -1,5 +1,11 @@
 context: This is a test project about internationalization
 inputs:
+  locale:
+    input: locale
+    context: BCP 47 language tag, should not be translated, always use the target language code
+  native:
+    input: native
+    context: native name of the language in that language, should not be translated
   items:
     count:
       input: item
