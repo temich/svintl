@@ -1,3 +1,10 @@
+## [1.7.4](https://github.com/temich/svintl/compare/v1.7.3...v1.7.4) (2025-11-11)
+
+
+### Bug Fixes
+
+* add string arguments support to functions types ([2249d1a](https://github.com/temich/svintl/commit/2249d1ae4017e8cf2bc077d9f25d5349b6f9bae5))
+
 ## [1.7.3](https://github.com/temich/svintl/compare/v1.7.2...v1.7.3) (2025-11-11)
 
 
