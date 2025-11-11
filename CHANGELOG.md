@@ -1,3 +1,10 @@
+## [1.7.3](https://github.com/temich/svintl/compare/v1.7.2...v1.7.3) (2025-11-11)
+
+
+### Bug Fixes
+
+* add type to `locales` ([1511b67](https://github.com/temich/svintl/commit/1511b6777ee20fd0e8fe508838f4c74d789cac72))
+
 ## [1.7.2](https://github.com/temich/svintl/compare/v1.7.1...v1.7.2) (2025-10-13)
 
 
