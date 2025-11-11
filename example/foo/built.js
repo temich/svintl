@@ -16,4 +16,5 @@ export const dictionaries = {
   }
 };
 
+/** @type {import('./types').Locale[]} */
 export const locales = ["en-US","ru-RU"];

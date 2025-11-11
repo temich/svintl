@@ -215,6 +215,7 @@ export function build(i18nPath = './src/lib/intl/'): void {
 /** @type {Record<import('./types').Locale, import('./types').Dictionary>} */
 export const dictionaries = ${dictionariesStr};
 
+/** @type {import('./types').Locale[]} */
 export const locales = ${JSON.stringify(Object.keys(dictionaries))};
 `
 
