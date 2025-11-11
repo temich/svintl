@@ -67,3 +67,17 @@ When(/I modify `([^`]+)` to update `([^`]+)` to `([^`]+)`/, function(file: strin
 
   writeFileSync(path, updatedContent)
 })
+
+When(/I modify `([^`]+)` to add:/, function(file: string, yamlContent: string) {
+  const path = join(cwd, file)
+  const content = readFileSync(path, 'utf8')
+  const data = YAML.load(content) as any
+  const newData = YAML.load(yamlContent) as any
+
+  // Merge the new data into existing data
+  Object.assign(data, newData)
+
+  const updatedContent = YAML.dump(data)
+
+  writeFileSync(path, updatedContent)
+})

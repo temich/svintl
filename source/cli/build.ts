@@ -49,13 +49,19 @@ function generateDictionaryType(obj: any, indent = 0): string {
 
     if (typeof value === 'function') {
       const paramCount = value.length
+      const funcStr = value.toString()
 
       if (paramCount === 0)
         type = '() => string'
-      else if (paramCount === 1)
-        // Plural functions always take a single number parameter
-        type = '(value: number) => string'
-      else {
+      else if (paramCount === 1) {
+        // Check if this is a plural function (contains __LANG__ placeholder)
+        if (funcStr.includes('__LANG__'))
+          // Plural functions always take a single number parameter
+          type = '(value: number) => string'
+        else
+          // !js functions with single argument can take number or string
+          type = '(value: number | string) => string'
+      } else {
         const params = Array(paramCount).fill('any').join(', ')
 
         type = `(...args: [${params}]) => string`
