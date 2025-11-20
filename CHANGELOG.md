@@ -1,3 +1,10 @@
+## [1.7.5](https://github.com/temich/svintl/compare/v1.7.4...v1.7.5) (2025-11-20)
+
+
+### Bug Fixes
+
+* fix function type errors ([4d62907](https://github.com/temich/svintl/commit/4d629077dd426690d12fb892923e9843f94c2929))
+
 ## [1.7.4](https://github.com/temich/svintl/compare/v1.7.3...v1.7.4) (2025-11-11)
 
 
