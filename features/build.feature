@@ -132,5 +132,5 @@ Feature: Build
     When I run `npx intl build -p ./test-js`
     Then the file `test-js/types.ts` contains:
       """
-      formatSingle: (value: number | string) => string
+      formatSingle: (value: any) => string
       """
