@@ -60,7 +60,7 @@ function generateDictionaryType(obj: any, indent = 0): string {
           type = '(value: number) => string'
         else
           // !js functions with single argument can take number or string
-          type = '(value: number | string) => string'
+          type = '(value: any) => string'
       } else {
         const params = Array(paramCount).fill('any').join(', ')
 
