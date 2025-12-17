@@ -5,10 +5,11 @@
  * @author copilot
  */
 
-import { writeFileSync, readdirSync } from 'fs'
+import { writeFileSync, readdirSync, existsSync, readFileSync } from 'fs'
 import { resolve } from 'path'
 import { load } from './load'
 import { hasPartitions } from './partition'
+import { load as yamlLoad } from 'js-yaml'
 
 /**
  * Generate TypeScript type definitions for the dictionary structure
@@ -140,13 +141,22 @@ export function build(i18nPath = './src/lib/intl/'): void {
 
   const i18nDir = resolve(process.cwd(), i18nPath)
 
-  // Check if this is a partition directory or main directory
-  const fs = require('fs')
+  // Check if this is a mount (partition) directory.
+  // Mounts have their own context.yaml created by `intl mount` and should not
+  // include native/locale headers in built output dictionaries.
   const path = require('path')
-  const isPartition = i18nDir !== resolve(process.cwd(), './src/lib/intl/') &&
-    fs.existsSync(path.join(path.dirname(i18nDir), 'built.js'))
+  const contextPath = resolve(i18nDir, 'context.yaml')
+  let stripMetaKeys = false
+  if (existsSync(contextPath)) {
+    try {
+      const ctx = yamlLoad(readFileSync(contextPath, 'utf8')) as any
+      stripMetaKeys = Boolean(ctx && typeof ctx === 'object' && typeof ctx.context === 'string' && ctx.context.startsWith('Mount '))
+    } catch {
+      stripMetaKeys = false
+    }
+  }
 
-  if (!isPartition) {
+  if (!stripMetaKeys) {
     // Build all partitions when building from main directory
     // First check for mounted partitions from context.yaml
     const contextManager = new (require('./context').ContextFileManager)()
@@ -154,7 +164,7 @@ export function build(i18nPath = './src/lib/intl/'): void {
 
     for (const [mountName, mountPath] of Object.entries(allMounts)) {
       const partitionI18nDir = path.resolve(i18nDir, mountPath)
-      if (fs.existsSync(partitionI18nDir)) {
+      if (existsSync(partitionI18nDir)) {
         console.log(`Building mount: ${mountName}`)
         build(path.relative(process.cwd(), partitionI18nDir))
       }
@@ -162,7 +172,7 @@ export function build(i18nPath = './src/lib/intl/'): void {
 
     // Also check for subdirectory partitions (legacy support)
     if (hasPartitions(i18nPath)) {
-      const entries = fs.readdirSync(i18nDir, { withFileTypes: true })
+      const entries = readdirSync(i18nDir, { withFileTypes: true })
 
       for (const entry of entries) {
         if (entry.isDirectory()) {
@@ -170,7 +180,7 @@ export function build(i18nPath = './src/lib/intl/'): void {
           const partitionPath = path.join(i18nPath, entry.name)
 
           // Check if this directory contains YAML files (is a partition)
-          const partitionEntries = fs.readdirSync(partitionDir)
+          const partitionEntries = readdirSync(partitionDir)
           if (partitionEntries.some((file: string) => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))) {
             console.log(`Building mount: ${entry.name}`)
             build(partitionPath)
@@ -203,6 +213,16 @@ export function build(i18nPath = './src/lib/intl/'): void {
     } catch (error) {
       console.error(`❌ Failed to process ${lang}.yaml:`, error)
       throw error
+    }
+  }
+
+  if (stripMetaKeys) {
+    for (const lang of Object.keys(dictionaries)) {
+      const dict = dictionaries[lang]
+      if (dict && typeof dict === 'object') {
+        const { native: _native, locale: _locale, ...rest } = dict
+        dictionaries[lang] = rest
+      }
     }
   }
 

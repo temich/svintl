@@ -6,9 +6,11 @@
  */
 
 import { existsSync, mkdirSync, writeFileSync, readFileSync, readdirSync } from 'fs'
-import { resolve, join, dirname, relative } from 'path'
+import { resolve, join, relative } from 'path'
 import { build } from './build'
 import { ContextFileManager } from './context'
+import { load as yamlLoad, dump as yamlDump } from 'js-yaml'
+import { getNativeLanguageName } from './bcp47'
 
 export class MountCommand {
   private log(message: string): void {
@@ -58,17 +60,39 @@ export class MountCommand {
       this.error(`No locale files found in main directory: ${i18nDir}`)
     }
 
-    // Create empty YAML files for each locale (without native key)
+    // Create locale YAML files for the mount (with native/locale header)
     for (const localeFile of localeFiles) {
       const localeName = localeFile.replace('.yaml', '')
       const mountFilePath = join(absoluteMountPath, localeFile)
 
       // Only create if it doesn't exist
       if (!existsSync(mountFilePath)) {
-        // Create empty YAML file (just a comment header)
-        const initialDict = `# ${localeName} dictionary\n# Add your translations here\n`
+        // Copy native/locale header from the main dictionary if possible,
+        // otherwise fall back to BCP47 native name detection.
+        const mainLocalePath = join(i18nDir, localeFile)
+        let native = getNativeLanguageName(localeName)
+        let locale = localeName
 
-        writeFileSync(mountFilePath, initialDict)
+        try {
+          const mainContent = readFileSync(mainLocalePath, 'utf8')
+          const mainData = yamlLoad(mainContent) as any
+          if (mainData && typeof mainData === 'object') {
+            if (typeof mainData.native === 'string')
+              native = mainData.native
+            if (typeof mainData.locale === 'string')
+              locale = mainData.locale
+          }
+        } catch {
+          // ignore, fallback to inferred native/locale above
+        }
+
+        const initialYaml = yamlDump({ native, locale }, {
+          lineWidth: -1,
+          quotingType: '"',
+          forceQuotes: false,
+        })
+
+        writeFileSync(mountFilePath, initialYaml)
         this.log(`✓ Created empty ${localeName} dictionary: ${mountFilePath}`)
       }
     }

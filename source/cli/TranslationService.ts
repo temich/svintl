@@ -128,9 +128,8 @@ export class TranslationService {
 
       // Ensure all target locales are included, using original value for missing ones
       for (const locale of allLocales) {
-        if (!(locale in translations)) {
+        if (!(locale in translations))
           translations[locale] = content
-        }
       }
 
       return translations

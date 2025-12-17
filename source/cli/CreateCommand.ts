@@ -112,25 +112,6 @@ export class CreateCommand {
       logger.log(`Found ${Object.keys(savedContexts).length} saved contexts for enhanced translation`)
     }
 
-    if (entries.length === 0) {
-      // Create minimal file with just native name
-      const initialContent = {
-        native: nativeName,
-        locale: targetLang,
-      }
-
-      const yamlContent = yaml.dump(initialContent, {
-        lineWidth: -1,
-        quotingType: '"',
-        forceQuotes: false,
-      })
-
-      fs.writeFileSync(targetFile, yamlContent)
-      require('./build').build(i18nPath)
-      logger.log(`✅ Created ${targetFile} with native name: ${nativeName}`)
-      return
-    }
-
     // Create system prompt for translations
     const systemPrompt = `You are a professional translator for an internationalization system. You will receive text in ANY locale and must translate it to the specified target locale.
 
@@ -174,45 +155,47 @@ Target language: ${targetLang}
 
 Return ONLY the translation as a string.`
 
-    // Translate entries in batches of 10
+    // Translate entries in batches of 10 (or create a minimal file if there is nothing to translate)
     const translatedData: any = {
       native: nativeName,
       locale: targetLang
     }
 
-    const batchSize = 10
-    for (let i = 0; i < entries.length; i += batchSize) {
-      const batch = entries.slice(i, i + batchSize)
-      const batchKeys = batch.map(e => e.key)
-      const batchValues = batch.map(e => e.value)
-      const batchContexts = batch.map(e => savedContexts[e.key]?.input)
+    if (entries.length > 0) {
+      const batchSize = 10
+      for (let i = 0; i < entries.length; i += batchSize) {
+        const batch = entries.slice(i, i + batchSize)
+        const batchKeys = batch.map(e => e.key)
+        const batchValues = batch.map(e => e.value)
+        const batchContexts = batch.map(e => savedContexts[e.key]?.input)
 
-      logger.log(`Translating batch ${Math.floor(i / batchSize) + 1}: ${batchKeys.join(', ')}`)
+        logger.log(`Translating batch ${Math.floor(i / batchSize) + 1}: ${batchKeys.join(', ')}`)
 
-      try {
-        const batchTranslations = await this.translateBatch(
-          batchValues,
-          batchContexts,
-          targetLang,
-          systemPrompt
-        )
+        try {
+          const batchTranslations = await this.translateBatch(
+            batchValues,
+            batchContexts,
+            targetLang,
+            systemPrompt
+          )
 
-        // Apply translations to the data structure
-        for (let j = 0; j < batch.length; j++) {
-          const entry = batch[j]
-          const translation = batchTranslations[j]
-          if (translation) {
-            this.setNestedValue(translatedData, entry.key, translation)
-          } else {
-            // Fallback to original value
+          // Apply translations to the data structure
+          for (let j = 0; j < batch.length; j++) {
+            const entry = batch[j]
+            const translation = batchTranslations[j]
+            if (translation) {
+              this.setNestedValue(translatedData, entry.key, translation)
+            } else {
+              // Fallback to original value
+              this.setNestedValue(translatedData, entry.key, entry.value)
+            }
+          }
+        } catch (error) {
+          logger.error(`Failed to translate batch: ${error}`)
+          // Fallback to original values for the entire batch
+          for (const entry of batch) {
             this.setNestedValue(translatedData, entry.key, entry.value)
           }
-        }
-      } catch (error) {
-        logger.error(`Failed to translate batch: ${error}`)
-        // Fallback to original values for the entire batch
-        for (const entry of batch) {
-          this.setNestedValue(translatedData, entry.key, entry.value)
         }
       }
     }
@@ -229,8 +212,9 @@ Return ONLY the translation as a string.`
     // Create files in all mounted partitions as well
     const allMounts = this.translationService.contextManagerInstance.getAllMounts(i18nPath)
     for (const [mountName, mountPath] of Object.entries(allMounts)) {
-      const partitionI18nDir = `${i18nPath}/${mountPath}`
-      const partitionTargetFile = `${partitionI18nDir}/${targetLang}.yaml`
+      // mountPath is stored relative to the main i18n directory
+      const partitionI18nDir = path.resolve(i18nDir, mountPath)
+      const partitionTargetFile = path.join(partitionI18nDir, `${targetLang}.yaml`)
 
       // Create directory if it doesn't exist
       if (!fs.existsSync(partitionI18nDir)) {
