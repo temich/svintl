@@ -86,7 +86,7 @@ export class SyncCommand {
     }
 
     // Translate using OpenAI
-    const systemPrompt = `You are a professional translator. Translate the given text to the specified locales. Return ONLY a JSON object with locale codes as keys and translations as values.`
+    const systemPrompt = `You are a professional translator. Translate the given text to the following locales: \${allLocales}. Return ONLY a JSON object with locale codes as keys and translations as values.`
 
     try {
       const translations = await this.translationService.translateWithOpenAI(
