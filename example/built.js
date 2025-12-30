@@ -42,7 +42,7 @@ export const dictionaries = {
   "ru-RU": {
     "native": "Русский",
     "locale": "ru-RU",
-    "hello": "Привет",
+    "hello": "Hello",
     "bye": "Пока",
     "example": {
       "hello": "Привет"
