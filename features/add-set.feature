@@ -2,7 +2,7 @@ Feature: Add and Set commands
 
   Scenario: Add command creates new entry
     When I run `npx intl hola -p ./test`
-    And I run `npx intl add test.greeting "Hello" -p ./test`
+    And I run `npx intl const test.greeting "Hello" -p ./test`
     Then the file `test/en-US.yaml` contains:
       """
       test:
@@ -21,7 +21,7 @@ Feature: Add and Set commands
   Scenario: Set command updates existing entry
     When I run `npx intl hola -p ./test`
     And I run `npx intl const test.greeting "Hello" -p ./test`
-    And I run `npx intl set test.greeting "Hi" -p ./test`
+    And I run `npx intl const test.greeting "Hi" -p ./test`
     Then the file `test/en-US.yaml` contains:
       """
       test:
