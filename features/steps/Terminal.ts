@@ -17,7 +17,7 @@ Before(function() {
   cwd = mkdtempSync(join(tmpdir(), 'intl-test-'))
 })
 
-When(/I run `([^`]+)`/, function(command: string) {
+When(/I run `([^`]+)`$/, function(command: string) {
   try {
     output = execSync(command, {
       encoding: 'utf8',
@@ -26,6 +26,19 @@ When(/I run `([^`]+)`/, function(command: string) {
   } catch (error: any) {
     output = (error.stdout || '') + (error.stderr || '')
     throw error
+  }
+})
+
+When(/I run `([^`]+)` and it fails$/, function(command: string) {
+  try {
+    output = execSync(command, {
+      encoding: 'utf8',
+      cwd,
+    })
+
+    throw new Error(`Expected command to fail but it succeeded: ${command}`)
+  } catch (error: any) {
+    output = (error.stdout || '') + (error.stderr || '')
   }
 })
 

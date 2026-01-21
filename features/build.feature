@@ -2,7 +2,7 @@ Feature: Build
 
   Scenario: Build
     When I run `npx intl hola -p ./test`
-    And I run `npx intl set hello "Hello" -p ./test`
+    And I run `npx intl add hello "Hello" -p ./test`
     And I run `npx intl create ru-RU -p ./test`
     Then the directory `test` contains:
       """
@@ -56,7 +56,7 @@ Feature: Build
       export const locales = ["en-US","ru-RU"];
       """
     When I run `npx intl mount foo ./test-foo/foo -p ./test`
-    And I run `npx intl set foo/hello "Hello" -p ./test`
+    And I run `npx intl add foo/hello "Hello" -p ./test`
     Then the directory `test-foo/foo` contains:
       """
       - en-US.yaml
