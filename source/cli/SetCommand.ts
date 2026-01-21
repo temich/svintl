@@ -33,6 +33,7 @@ export class SetCommand {
 
       if (!keyExists) {
         logger.error(`Key "${key}" does not exist. Use 'add' to create new keys.`)
+        return
       }
 
       // Create system prompt for regular translations

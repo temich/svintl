@@ -27,6 +27,7 @@ export class AddCommand {
         const filePath = join(i18nDir, file)
         if (this.translationService.keyExists(filePath, actualKey)) {
           logger.error(`Key "${key}" already exists. Use 'set' to update existing keys.`)
+          return
         }
       }
 
