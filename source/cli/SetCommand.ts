@@ -1,6 +1,7 @@
 /**
- * CLI command for adding new i18n entries with automatic translation
+ * CLI command for updating existing i18n entries with automatic translation
  * Translates entries to all available languages using OpenAI API
+ * Fails if the key does not exist
  *
  * @author copilot
  */
