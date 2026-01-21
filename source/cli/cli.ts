@@ -12,6 +12,7 @@ import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import { TranslationService } from './TranslationService'
 import { SetCommand } from './SetCommand'
+import { AddCommand } from './AddCommand'
 import { UnitCommand } from './UnitCommand'
 import { MoveCommand } from './MoveCommand'
 import { RemoveCommand } from './RemoveCommand'
@@ -75,7 +76,25 @@ const cli = yargs(hideBin(process.argv))
     const unmountCommand = new UnmountCommand()
     await unmountCommand.execute(argv.mount!, argv.path)
   })
-  .command('set <key> <value> [comment]', 'Set i18n entry with automatic translation', (yargs) => {
+  .command('add <key> <value> [comment]', 'Add new i18n entry (fails if key exists)', (yargs) => {
+    return yargs
+      .positional('key', {
+        describe: 'Translation key (e.g., app.title or mount/key)',
+        type: 'string'
+      })
+      .positional('value', {
+        describe: 'Translation value',
+        type: 'string'
+      })
+      .positional('comment', {
+        describe: 'Optional context comment',
+        type: 'string'
+      })
+  }, async (argv) => {
+    const addCommand = new AddCommand()
+    await addCommand.execute(argv.key!, argv.value!, argv.comment, argv.path)
+  })
+  .command('set <key> <value> [comment]', 'Update existing i18n entry (fails if key does not exist)', (yargs) => {
     return yargs
       .positional('key', {
         describe: 'Translation key (e.g., app.title or mount/key)',

@@ -1,6 +1,7 @@
 /**
  * CLI command for adding new i18n entries with automatic translation
  * Translates entries to all available languages using OpenAI API
+ * Fails if the key already exists
  *
  * @author copilot
  */
@@ -10,7 +11,7 @@ import { logger } from './logger'
 import { parsePartitionedKey } from './partition'
 import { join } from 'path'
 
-export class SetCommand {
+export class AddCommand {
   private translationService = new TranslationService()
 
   async execute(key: string, value: string, comment?: string, i18nPath = './src/lib/intl/'): Promise<void> {
@@ -21,18 +22,12 @@ export class SetCommand {
       // Get locale information
       const { localeFiles, allLocales, i18nDir } = this.translationService.getLocaleInfo(i18nPath, partition)
 
-      // Check if key exists in at least one locale file
-      let keyExists = false
+      // Check if key already exists in any locale file
       for (const file of localeFiles) {
         const filePath = join(i18nDir, file)
         if (this.translationService.keyExists(filePath, actualKey)) {
-          keyExists = true
-          break
+          logger.error(`Key "${key}" already exists. Use 'set' to update existing keys.`)
         }
-      }
-
-      if (!keyExists) {
-        logger.error(`Key "${key}" does not exist. Use 'add' to create new keys.`)
       }
 
       // Create system prompt for regular translations
@@ -100,9 +95,9 @@ For !js functions:
       // Store context and build
       this.translationService.finalize(i18nPath, actualKey, value, comment, partition)
 
-      logger.log(`✅ Set "${key}" in ${allLocales.length} locales`)
+      logger.log(`✅ Added "${key}" in ${allLocales.length} locales`)
     } catch (error) {
-      logger.error(`Failed to set translation: ${error}`)
+      logger.error(`Failed to add translation: ${error}`)
     }
   }
 

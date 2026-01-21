@@ -14,7 +14,8 @@ npm i svintl -D
 
 ```bash
 npx intl hola # initialize dictionaries in default location
-npx intl set example.hello "Hello world" # set a translation
+npx intl add example.hello "Hello world" # add a translation
+npx intl set example.hello "Updated hello" # update existing translation
 npx intl create es # create a new locale dictionary
 npx intl build # generate JavaScript dictionaries
 ```
@@ -118,7 +119,7 @@ Mounts allow you to organize translations into separate directories anywhere in 
 
 ```bash
 npx intl mount foo ./any/path # creates foo mount with empty dictionaries for all locales
-npx intl set foo/bar.baz "Hello mount" # set key in mount 'foo'
+npx intl add foo/bar.baz "Hello mount" # add key in mount 'foo'
 ```
 
 Mounts are created with the same languages as the root dictionary but start empty (no `native` key).
@@ -142,10 +143,10 @@ Mounts are useful for:
 
 ### Context
 
-Translation contexts are automatically saved when using the `set` command with a comment parameter. These contexts enhance translation accuracy when creating new locale dictionaries.
+Translation contexts are automatically saved when using the `add` or `set` commands with a comment parameter. These contexts enhance translation accuracy when creating new locale dictionaries.
 
 ```bash
-npx intl set app.welcome "Welcome to our application" "greeting shown on homepage"
+npx intl add app.welcome "Welcome to our application" "greeting shown on homepage"
 ```
 
 Contexts are stored in `context.yaml` alongside your locale files:
@@ -193,17 +194,24 @@ Creates a new locale dictionary. Locale codes must be valid BCP 47 locale tags. 
 Dictionary names must be valid BCP 47 locale tags.
 
 ```bash
-npx intl set example.hello "Hello world"
-npx intl set wardrobe.tops "Tops" "Clothing"
+npx intl add example.hello "Hello world"
+npx intl add wardrobe.tops "Tops" "Clothing"
 ```
 
-Creates a new translation entry with optional context.
+Creates a new translation entry with optional context. Fails if the key already exists.
+
+```bash
+npx intl set example.hello "Updated hello world"
+npx intl set wardrobe.tops "Updated tops" "Clothing"
+```
+
+Updates an existing translation entry with optional context. Fails if the key does not exist.
 
 ```bash
 npx intl mount <mount> <dir>
 ```
 
-Create a dictionary mount at the specified path with empty dictionaries for all languages in the root directory. Mounts can be addressed with `mount/key` key syntax. Example: `npx intl set mount/key "value" "context"`.
+Create a dictionary mount at the specified path with empty dictionaries for all languages in the root directory. Mounts can be addressed with `mount/key` key syntax. Example: `npx intl add mount/key "value" "context"`.
 
 ```bash
 npx intl unmount <mount>
