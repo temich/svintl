@@ -37,29 +37,29 @@
     "typescript": "*"
   },
   "devDependencies": {
-    "@cucumber/cucumber": "^12.2.0",
+    "@cucumber/cucumber": "^12.6.0",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/commit-analyzer": "^13.0.1",
     "@semantic-release/git": "^10.0.1",
-    "@semantic-release/github": "^11.0.6",
-    "@semantic-release/npm": "^12.0.2",
+    "@semantic-release/github": "^12.0.2",
+    "@semantic-release/npm": "^13.1.3",
     "@semantic-release/release-notes-generator": "^14.1.0",
     "@types/js-yaml": "^4.0.9",
-    "@types/node": "^24.3.0",
-    "@types/yargs": "^17.0.33",
-    "esbuild": "^0.25.9",
-    "eslint": "^9.34.0",
+    "@types/node": "^24.10.9",
+    "@types/yargs": "^17.0.35",
+    "esbuild": "^0.27.2",
+    "eslint": "^9.39.2",
     "eslint-plugin-import": "^2.32.0",
     "husky": "^9.1.7",
     "neostandard": "^0.12.2",
-    "semantic-release": "^24.2.9",
+    "semantic-release": "^25.0.2",
     "ts-node": "^10.9.2",
-    "tsx": "^4.20.6"
+    "tsx": "^4.21.0"
   },
   "dependencies": {
     "dotenv": "^17",
     "js-yaml": "^4",
-    "openai": "^5.23.1",
+    "openai": "^6.16.0",
     "yargs": "^18.0.0"
   }
 }
