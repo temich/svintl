@@ -84,7 +84,7 @@ export const dictionaries = {
   if (gender === "she") return `${name} убежала`;
   return `${name} убежал(а)`;
 },
-    "joined": (names, groupName, grammar) => { const list = new Intl.ListFormat("ru", { style: "long", type: "conjunction" }).format(names); if (names.length === 1) { if (grammar && grammar.gender === "he") return `${list} присоединился к группе ${groupName}`; if (grammar && grammar.gender === "she") return `${list} присоединилась к группе ${groupName}`; return `${list} присоединил(ась)ся к группе ${groupName}`; } else { return `${list} присоединились к группе ${groupName}`; } }
+    "joined": (names, groupName, grammar) => { const list = new Intl.ListFormat("ru", { style: "long", type: "conjunction" }).format(names); if (names.length === 1) { if (grammar && grammar.gender === "he") return `${list} присоединился к группе ${groupName}`; if (grammar && grammar.gender === "she") return `${list} присоединилась к группе ${groupName}`; return `${list} присоединился(ась) к группе ${groupName}`; } else { return `${list} присоединились к группе ${groupName}`; } }
   }
 };
 

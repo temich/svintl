@@ -37,6 +37,6 @@ joined: >-
   style: "long", type: "conjunction" }).format(names); if (names.length === 1) {
   if (grammar && grammar.gender === "he") return `${list} присоединился к группе
   ${groupName}`; if (grammar && grammar.gender === "she") return `${list}
-  присоединилась к группе ${groupName}`; return `${list} присоединил(ась)ся к
+  присоединилась к группе ${groupName}`; return `${list} присоединился(ась) к
   группе ${groupName}`; } else { return `${list} присоединились к группе
   ${groupName}`; } }

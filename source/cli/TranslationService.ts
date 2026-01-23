@@ -20,6 +20,73 @@ export class TranslationService {
     return this.contextManager
   }
 
+  getCommonTranslationPromptBody(): string {
+    return [
+      this.getTranslationRules(),
+      this.getTranslationExamples(),
+      this.getTranslationCriticalRules(),
+    ].join('\n\n')
+  }
+
+  getPlaceholderInstructions(): string {
+    return [
+      'If the phrase contains placeholders like {name} or {itemId}, the translation MUST be a !js function with matching parameters.',
+      'If the phrase contains placeholders like [names] in square brackets, treat them as array-of-strings parameters and use Intl.ListFormat with style "long" and type "conjunction".',
+      'Build grammatically correct phrases based on list length (e.g., singular vs plural verb agreement).',
+    ].join('\n')
+  }
+
+  private getTranslationRules(): string {
+    return `IMPORTANT RULES:
+1. DETECT the input locale automatically - do not assume it's English
+2. If the input starts with "!js", it's a JavaScript function that returns localized strings
+3. For !js functions: Keep the "!js" tag but ADAPT the JavaScript logic to match the target locale's grammar rules
+4. You can modify conditions, logic, and structure to fit the target locale's pluralization and grammar rules
+5. For regular text: Translate from the detected source locale to the target locale
+6. If the phrase contains placeholders like {name} or {itemId}, the translation MUST be a !js function with matching parameters
+7. If the phrase contains placeholders like [names] in square brackets, treat them as array-of-strings parameters and use Intl.ListFormat with style "long" and type "conjunction"
+8. Build grammatically correct phrases based on list length (e.g., singular vs plural verb agreement)
+9. Always maintain the exact same function parameters (don't change parameter names or count) unless instructed to add a gender parameter
+10. Use DOUBLE QUOTES for all string literals to avoid JavaScript syntax errors
+11. Translate ALL parts of compound phrases completely
+12. Ensure translations sound natural and commonly used within the provided context
+13. For UI elements (buttons, links, menus), choose idiomatic, inviting phrasing that native speakers expect in that scenario
+14. When translating navigation or call-to-action text, prefer natural, inviting prompts that encourage exploration over literal location descriptors`
+  }
+
+  private getTranslationExamples(): string {
+    return `GRAMMAR ADAPTATION EXAMPLES (any source language):
+
+Source language to Russian (any → complex pluralization):
+Input: "!js\\n(count) => count === 1 ? 'one item' : \`\${count} items\`"
+Russian: "!js\\n(count) => { const rem = count % 10; const tens = Math.floor(count / 10) % 10; if (tens === 1) return \`\${count} предметов\`; if (rem === 1) return \`\${count} предмет\`; if (rem >= 2 && rem <= 4) return \`\${count} предмета\`; return \`\${count} предметов\`; }"
+
+Source language to German (any → simple pluralization):
+Input: "!js\\n(count) => count === 1 ? 'une chose' : \`\${count} choses\`" (French)
+German: "!js\\n(count) => count === 1 ? \"1 Ding\" : \`\${count} Dinge\`"
+
+Russian to other languages (complex → simpler pluralization):
+Input: "!js\\n(count) => { const rem = count % 10; if (rem === 1) return '1 предмет'; return \`\${count} предметов\`; }"
+English: "!js\\n(count) => count === 1 ? \"1 item\" : \`\${count} items\`"
+French: "!js\\n(count) => count === 1 ? \"1 article\" : \`\${count} articles\`"
+
+List placeholder example (use Intl.ListFormat for [names]):
+Input: "[names] have joined the {groupName}"
+English: "!js\\n(names, groupName) => { const list = new Intl.ListFormat(\"en\", { style: \"long\", type: \"conjunction\" }).format(names); return names.length === 1 ? \`\${list} has joined the \${groupName}\` : \`\${list} have joined the \${groupName}\`; }"`
+  }
+
+  private getTranslationCriticalRules(): string {
+    return `CRITICAL:
+- Automatically detect the source language from input text
+- Always use double quotes (") for string literals in JavaScript, never single quotes (')
+- For !js functions, ALWAYS include the "!js" tag at the beginning of each translation
+- If placeholders like {name} exist, translate to a !js function with matching parameters
+- If placeholders like [names] exist, translate to a !js function with array parameters and Intl.ListFormat
+- Escape quotes properly in JSON: use \\" for literal quotes in the function
+- ADAPT the logic to match the target language's grammar, don't just translate strings
+- Keep the same function parameters but change conditions and return values as needed`
+  }
+
   getGenderInstructions(i18nPath: string): string | null {
     const enabled = this.contextManager.getGlobalGenders(i18nPath)
     if (!enabled)
