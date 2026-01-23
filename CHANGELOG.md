@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/temich/svintl/compare/v1.8.0...v1.9.0) (2026-01-23)
+
+
+### Features
+
+* add lists ([af87078](https://github.com/temich/svintl/commit/af87078de3e542a9b10f0759705b6da3942a7fe7))
+
 # [1.8.0](https://github.com/temich/svintl/compare/v1.7.5...v1.8.0) (2026-01-23)
 
 
