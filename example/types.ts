@@ -37,4 +37,5 @@ export type Dictionary = {
       test: (value: number) => string
       formatName: (...args: [any, any]) => string
       ran: (...args: [any, any]) => string
+      joined: (...args: [any, any]) => string
     }

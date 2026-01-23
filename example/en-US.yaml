@@ -28,3 +28,10 @@ ran: |-
     if (gender === "she") return `${name} ran away`;
     return `${name} ran away`;
   }
+joined: >-
+  !js
+
+  (names, groupName) => { const list = new Intl.ListFormat("en", { style:
+  "long", type: "conjunction" }).format(names); return names.length === 1 ?
+  `${list} has joined the ${groupName}` : `${list} have joined the
+  ${groupName}`; }

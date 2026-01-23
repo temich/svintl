@@ -32,6 +32,8 @@ inputs:
       input: Main key
   ran:
     input: "{name} убежал"
+  joined:
+    input: "[names] have joined the {groupName}"
 mounts:
   bar: baz
   foo: foo

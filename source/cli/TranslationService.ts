@@ -29,6 +29,7 @@ export class TranslationService {
 - If a phrase has different grammatical gender forms in any target language, define the key as a function.
 - The function MUST accept a Grammar parameter: gender: 'he' | 'she' | 'none'.
 - If the input is already a !js function, KEEP existing parameters and ADD gender as the last parameter.
+- If the phrase contains list placeholders like [names], add an additional Grammar parameter named grammar for the singular case (list length === 1). Use it only when the list has a single element; ignore it for plural lists.
 - When gender is "none", prefer a gender-neutral form. If not possible, use a combined form like "бежал(а)", "должен(на)".
 - Avoid neuter forms like "бежало" when referring to a person.`
   }

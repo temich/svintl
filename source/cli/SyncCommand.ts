@@ -94,7 +94,9 @@ export class SyncCommand {
     // Translate using OpenAI
     const systemPrompt = `You are a professional translator. Translate the given text to the following locales: \${allLocales}. Return ONLY a JSON object with locale codes as keys and translations as values.
 
-If the phrase contains placeholders like {name} or {itemId}, the translation MUST be a !js function with matching parameters.`
+If the phrase contains placeholders like {name} or {itemId}, the translation MUST be a !js function with matching parameters.
+If the phrase contains placeholders like [names] in square brackets, treat them as array-of-strings parameters and use Intl.ListFormat with style "long" and type "conjunction".
+Build grammatically correct phrases based on list length (e.g., singular vs plural verb agreement).`
     const genderInstructions = this.translationService.getGenderInstructions(i18nPath)
     const systemPromptWithGender = genderInstructions ? `${systemPrompt}\n\n${genderInstructions}` : systemPrompt
 
@@ -180,6 +182,8 @@ IMPORTANT RULES:
 4. You can modify conditions, logic, and structure to fit the target locale's pluralization and grammar rules
 5. For regular text: Translate from the detected source locale to the target locale
 6. If the phrase contains placeholders like {name} or {itemId}, the translation MUST be a !js function with matching parameters
+7. If the phrase contains placeholders like [names] in square brackets, treat them as array-of-strings parameters and use Intl.ListFormat with style "long" and type "conjunction"
+8. Build grammatically correct phrases based on list length (e.g., singular vs plural verb agreement)
 7. Always maintain the exact same function parameters (don't change parameter names or count) unless instructed to add a gender parameter
 7. Use DOUBLE QUOTES for all string literals to avoid JavaScript syntax errors
 8. Translate ALL parts of compound phrases completely
@@ -202,11 +206,16 @@ Input: "!js\n(count) => { const rem = count % 10; if (rem === 1) return '1 пр�
 English: "!js\n(count) => count === 1 ? \"1 item\" : \`\${count} items\`"
 French: "!js\n(count) => count === 1 ? \"1 article\" : \`\${count} articles\`"
 
+List placeholder example (use Intl.ListFormat for [names]):
+Input: "[names] have joined the {groupName}"
+English: "!js\n(names, groupName) => { const list = new Intl.ListFormat(\"en\", { style: \"long\", type: \"conjunction\" }).format(names); return names.length === 1 ? \`\${list} has joined the \${groupName}\` : \`\${list} have joined the \${groupName}\`; }"
+
 CRITICAL:
 - Automatically detect the source language from input text
 - Always use double quotes (") for string literals in JavaScript, never single quotes (')
 - For !js functions, ALWAYS include the "!js" tag at the beginning of each translation
 - If placeholders like {name} exist, translate to a !js function with matching parameters
+- If placeholders like [names] exist, translate to a !js function with array parameters and Intl.ListFormat
 - Escape quotes properly in JSON: use \\" for literal quotes in the function
 - ADAPT the logic to match the target language's grammar, don't just translate strings
 - Keep the same function parameters but change conditions and return values as needed

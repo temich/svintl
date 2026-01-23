@@ -75,6 +75,27 @@ The translation prompt provides clear guidance on using functions across locales
 
 If a phrase contains placeholders like `{name}` or `{itemId}`, store it as a `!js` function with matching parameters.
 
+If a phrase contains placeholders like `[names]` in square brackets, treat them as array-of-strings parameters and format them with `Intl.ListFormat` using `style: "long"` and `type: "conjunction"`. Make the phrase grammatically correct based on the number of items in the array.
+
+Example input:
+
+```bash
+npx intl set joined "[names] have joined the {groupName}"
+```
+
+Example function output:
+
+```yaml
+joined: |
+  !js
+  (names, groupName) => {
+    const list = new Intl.ListFormat("en", { style: "long", type: "conjunction" }).format(names)
+    return names.length === 1
+      ? `${list} has joined the ${groupName}`
+      : `${list} have joined the ${groupName}`
+  }
+```
+
 ### Pluralization
 
 For pluralized content, use arrays containing objects with named plural forms. This format automatically generates functions that use `Intl.PluralRules` for proper pluralization:
