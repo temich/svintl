@@ -1,4 +1,5 @@
 context: This is a test project about internationalization
+genders: true
 inputs:
   locale:
     input: locale
@@ -29,6 +30,8 @@ inputs:
   test/moved:
     key:
       input: Main key
+  ran:
+    input: "{name} убежал"
 mounts:
   bar: baz
   foo: foo

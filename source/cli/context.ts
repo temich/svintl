@@ -18,6 +18,7 @@ export interface ContextData {
   context?: string
   inputs: Record<string, any>
   mounts?: Record<string, string>
+  genders?: boolean
 }
 
 export class ContextFileManager {
@@ -52,10 +53,14 @@ export class ContextFileManager {
         ? data.mounts
         : {}
 
-      return { context, inputs, mounts }
+      const genders = data && typeof data === 'object' && typeof data.genders === 'boolean'
+        ? data.genders
+        : undefined
+
+      return { context, inputs, mounts, genders }
     } catch (error) {
       console.warn(`⚠️  Failed to read context file: ${error}`)
-      return { context: undefined, inputs: {}, mounts: {} }
+      return { context: undefined, inputs: {}, mounts: {}, genders: undefined }
     }
   }
 
@@ -68,6 +73,7 @@ export class ContextFileManager {
     try {
       const normalizedData: ContextData = {
         ...(data.context !== undefined ? { context: data.context } : {}),
+        ...(typeof data.genders === 'boolean' ? { genders: data.genders } : {}),
         inputs: data.inputs || {},
         ...(data.mounts && Object.keys(data.mounts).length > 0 ? { mounts: data.mounts } : {}),
       }
@@ -115,6 +121,12 @@ export class ContextFileManager {
   setGlobalContext(i18nPath: string, context: string): void {
     const data = this.readContextFile(i18nPath)
     data.context = context
+    this.writeContextFile(i18nPath, data)
+  }
+
+  setGlobalGenders(i18nPath: string, enabled: boolean): void {
+    const data = this.readContextFile(i18nPath)
+    data.genders = enabled
     this.writeContextFile(i18nPath, data)
   }
 
@@ -186,6 +198,24 @@ export class ContextFileManager {
     }
 
     return data.context
+  }
+
+  getGlobalGenders(i18nPath: string): boolean | undefined {
+    const data = this.readContextFile(i18nPath)
+
+    if (typeof data.genders === 'boolean')
+      return data.genders
+
+    const path = require('path')
+    const fs = require('fs')
+    const parentPath = path.dirname(path.resolve(i18nPath))
+
+    if (parentPath !== path.resolve(i18nPath) && fs.existsSync(path.join(parentPath, 'context.yaml'))) {
+      const parentData = this.readContextFile(parentPath)
+      return typeof parentData.genders === 'boolean' ? parentData.genders : undefined
+    }
+
+    return data.genders
   }
 
   /**

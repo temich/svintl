@@ -6,6 +6,8 @@
 
 export type Locale = 'en-US' | 'ru-RU'
 
+export type Grammar = 'he' | 'she' | 'none'
+
 export type Dictionary = {
       native: string
       hello: string
@@ -34,4 +36,5 @@ export type Dictionary = {
       }
       test: (value: number) => string
       formatName: (...args: [any, any]) => string
+      ran: (...args: [any, any]) => string
     }

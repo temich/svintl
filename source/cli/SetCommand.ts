@@ -29,13 +29,14 @@ IMPORTANT RULES:
 3. For !js functions: Keep the "!js" tag but ADAPT the JavaScript logic to match each target locale's grammar rules
 4. You can modify conditions, logic, and structure to fit each target locale's pluralization and grammar rules
 5. For regular text: Translate from the detected source locale to each target locale
-6. Always maintain the exact same function parameters (don't change parameter names or count)
+6. If the phrase contains placeholders like {name} or {itemId}, the translation MUST be a !js function with matching parameters
+7. Always maintain the exact same function parameters (don't change parameter names or count) unless instructed to add a gender parameter
 7. Use DOUBLE QUOTES for all string literals to avoid JavaScript syntax errors
 8. Translate ALL parts of compound phrases completely
-9. Ensure translations sound natural and commonly used within the provided context
-10. For UI elements (buttons, links, menus), choose idiomatic, inviting phrasing that native speakers expect in that scenario
-11. When translating navigation or call-to-action text, prefer natural, inviting prompts that encourage exploration over literal location descriptors
-12. Return translations in JSON format as requested
+10. Ensure translations sound natural and commonly used within the provided context
+11. For UI elements (buttons, links, menus), choose idiomatic, inviting phrasing that native speakers expect in that scenario
+12. When translating navigation or call-to-action text, prefer natural, inviting prompts that encourage exploration over literal location descriptors
+13. Return translations in JSON format as requested
 
 GRAMMAR ADAPTATION EXAMPLES (any source language):
 
@@ -56,6 +57,7 @@ CRITICAL:
 - Automatically detect the source language from input text
 - Always use double quotes (") for string literals in JavaScript, never single quotes (')
 - For !js functions, ALWAYS include the "!js" tag at the beginning of each translation
+- If placeholders like {name} exist, translate to a !js function with matching parameters
 - Escape quotes properly in JSON: use \\" for literal quotes in the function
 - ADAPT the logic to match each target language's grammar, don't just translate strings
 - Keep the same function parameters but change conditions and return values as needed
@@ -76,8 +78,11 @@ For !js functions:
   "fr": "!js\\n(count) => count === 1 ? \\"1 article\\" : \`\${count} articles\`"
 }`
 
-      // Translate using OpenAI
-      const translations = await this.translationService.translateWithOpenAI(value, allLocales, systemPrompt, comment)
+    const genderInstructions = this.translationService.getGenderInstructions(i18nPath)
+    const systemPromptWithGender = genderInstructions ? `${systemPrompt}\n\n${genderInstructions}` : systemPrompt
+
+    // Translate using OpenAI
+    const translations = await this.translationService.translateWithOpenAI(value, allLocales, systemPromptWithGender, comment)
 
       // Update all locale files
       this.translationService.updateAllLocaleFiles(localeFiles, i18nDir, actualKey, translations)

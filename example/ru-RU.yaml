@@ -23,3 +23,10 @@ test:
 formatName: |-
   !js
   (name, age) => `Привет, ${name}! Тебе ${age} лет.`
+ran: |-
+  !js
+  (name, gender) => {
+    if (gender === "he") return `${name} убежал`;
+    if (gender === "she") return `${name} убежала`;
+    return `${name} убежал(а)`;
+  }

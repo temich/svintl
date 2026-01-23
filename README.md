@@ -73,6 +73,8 @@ example:
 
 The translation prompt provides clear guidance on using functions across locales to implement phrases with locale-specific rules.
 
+If a phrase contains placeholders like `{name}` or `{itemId}`, store it as a `!js` function with matching parameters.
+
 ### Pluralization
 
 For pluralized content, use arrays containing objects with named plural forms. This format automatically generates functions that use `Intl.PluralRules` for proper pluralization:
@@ -254,6 +256,21 @@ npx intl context --clear
 ```
 
 Sets or clears project-wide translation guidance stored in `context.yaml`.
+
+```bash
+npx intl genders true
+npx intl genders false
+```
+
+Enables or disables grammatical gender guidance for translations. When enabled, phrases that vary by gender should be stored as functions that accept `gender: 'he' | 'she' | 'none'`. Use the neutral form when possible; otherwise use a combined form (e.g., `бежал(а)`, `должен(на)`), and avoid neuter forms for people.
+
+Example:
+
+```yaml
+run: |
+  !js
+  (gender) => gender === "she" ? "бежала" : gender === "he" ? "бежал" : "бежал(а)"
+```
 
 ```bash
 npx intl build

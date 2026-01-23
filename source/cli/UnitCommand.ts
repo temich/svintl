@@ -34,7 +34,8 @@ IMPORTANT RULES:
 3. Only include the plural categories that are actually used by each locale - skip unused categories
 4. Use proper locale-specific pluralization patterns and grammar that sound natural and commonly used
 5. The input text represents a concept that needs to be pluralized (e.g., "item", "message", "user")
-6. Return a JSON object where each locale contains an object with named plural forms
+6. If the phrase contains placeholders like {name} or {itemId}, the translation MUST be a !js function with matching parameters
+7. Return a JSON object where each locale contains an object with named plural forms
 7. CRITICAL: EVERY plural form in the output MUST include the placeholder {n} at the correct grammatical position for that language. The {n} represents where the number will be substituted. Position {n} according to the natural word order of each language.
 
 LOCALE-SPECIFIC PLURAL RULES (use only the categories needed for each locale):
@@ -73,22 +74,32 @@ CRITICAL REQUIREMENTS:
 - Follow Unicode CLDR pluralization rules exactly
 - Return JSON with locale codes as keys and objects as values
 - MANDATORY: Every single translation value MUST contain exactly one {n} placeholder positioned correctly for natural language flow
+- If placeholders like {name} exist, translate to a !js function with matching parameters
 
 Target locales: \${allLocales}
 
 Return ONLY a JSON object with the structure shown above.`
 
-    // Translate using OpenAI
     const projectContext = this.translationService.contextManagerInstance.getGlobalContext(i18nPath)
-    const translations = await this.translationService.translateWithOpenAI(input, allLocales, systemPrompt, comment, projectContext)
+    const genderInstructions = this.translationService.getGenderInstructions(i18nPath)
+    const systemPromptWithGender = genderInstructions ? `${systemPrompt}\n\n${genderInstructions}` : systemPrompt
 
-    // Transform the translations to handle objects from OpenAI
+    // Translate using OpenAI
+    const translations = await this.translationService.translateWithOpenAI(input, allLocales, systemPromptWithGender, comment, projectContext)
+
+    // Transform the translations to handle objects or !js functions from OpenAI
     const objectTranslations: Record<string, Record<string, string>> = {}
+    const yamlTranslations: Record<string, Array<Record<string, string>> | string> = {}
 
     for (const lang of allLocales) {
       // OpenAI returns base language codes (en, ru) but we have full codes (en-US, ru-RU)
       const baseLang = lang.split('-')[0]
       const translation = translations[baseLang] || translations[lang]
+
+      if (typeof translation === 'string' && translation.trim().startsWith('!js')) {
+        yamlTranslations[lang] = translation
+        continue
+      }
 
       // Check if translation is already an object (from OpenAI's response)
       if (typeof translation === 'object' && !Array.isArray(translation) && translation !== null) {
@@ -117,8 +128,9 @@ Return ONLY a JSON object with the structure shown above.`
     }
 
     // Convert objects to the new array-with-object format for YAML storage
-    const yamlTranslations: Record<string, Array<Record<string, string>>> = {}
     for (const lang of allLocales) {
+      if (yamlTranslations[lang])
+        continue
       yamlTranslations[lang] = [objectTranslations[lang]]
     }
 

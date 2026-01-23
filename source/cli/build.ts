@@ -28,6 +28,8 @@ function generateTypeDefinitions(dictionaries: Record<string, any>): string {
 
 export type Locale = ${locales}
 
+export type Grammar = 'he' | 'she' | 'none'
+
 export type Dictionary = ${dictionaryType}
 `
 }

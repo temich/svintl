@@ -23,6 +23,7 @@ import { MountCommand } from './MountCommand'
 import { UnmountCommand } from './UnmountCommand'
 import { ConstCommand } from './ConstCommand'
 import { ContextCommand } from './ContextCommand'
+import { GendersCommand } from './GendersCommand'
 import { build } from './build'
 
 const translationService = new TranslationService()
@@ -204,6 +205,17 @@ const cli = yargs(hideBin(process.argv))
     const contextCommand = new ContextCommand()
     const contextArgs = argv.value ? [argv.value] : []
     await contextCommand.execute(contextArgs, argv.path)
+  })
+  .command('genders [value]', 'Enable or disable grammatical gender support', (yargs) => {
+    return yargs
+      .positional('value', {
+        describe: 'Boolean value: true or false',
+        type: 'string'
+      })
+  }, async (argv) => {
+    const gendersCommand = new GendersCommand()
+    const genderArgs = argv.value ? [argv.value] : []
+    await gendersCommand.execute(genderArgs, argv.path)
   })
   .command('build', 'Build YAML dictionaries into JavaScript', {}, async (argv) => {
     build(argv.path as string)

@@ -37,12 +37,17 @@ export const dictionaries = {
       // Direct object property access - no CLDR ordering needed!
       return (forms[rule] ?? forms.other).replace(/{n}/g, new Intl.NumberFormat(locale).format(count));
     },
-    "formatName": (name, age) => `Hello, ${name}! You are ${age} years old.`
+    "formatName": (name, age) => `Hello, ${name}! You are ${age} years old.`,
+    "ran": (name, gender) => {
+  if (gender === "he") return `${name} ran away`;
+  if (gender === "she") return `${name} ran away`;
+  return `${name} ran away`;
+}
   },
   "ru-RU": {
     "native": "Русский",
     "locale": "ru-RU",
-    "hello": "Hello",
+    "hello": "Привет",
     "bye": "Пока",
     "example": {
       "hello": "Привет"
@@ -72,7 +77,12 @@ export const dictionaries = {
         "other": "{n} недели"
       }
     },
-    "formatName": (name, age) => `Привет, ${name}! Тебе ${age} лет.`
+    "formatName": (name, age) => `Привет, ${name}! Тебе ${age} лет.`,
+    "ran": (name, gender) => {
+  if (gender === "he") return `${name} убежал`;
+  if (gender === "she") return `${name} убежала`;
+  return `${name} убежал(а)`;
+}
   }
 };
 

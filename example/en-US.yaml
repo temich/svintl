@@ -21,3 +21,10 @@ test:
 formatName: |
   !js
   (name, age) => `Hello, ${name}! You are ${age} years old.`
+ran: |-
+  !js
+  (name, gender) => {
+    if (gender === "he") return `${name} ran away`;
+    if (gender === "she") return `${name} ran away`;
+    return `${name} ran away`;
+  }

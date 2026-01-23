@@ -20,6 +20,19 @@ export class TranslationService {
     return this.contextManager
   }
 
+  getGenderInstructions(i18nPath: string): string | null {
+    const enabled = this.contextManager.getGlobalGenders(i18nPath)
+    if (!enabled)
+      return null
+
+    return `GRAMMATICAL GENDER SUPPORT:
+- If a phrase has different grammatical gender forms in any target language, define the key as a function.
+- The function MUST accept a Grammar parameter: gender: 'he' | 'she' | 'none'.
+- If the input is already a !js function, KEEP existing parameters and ADD gender as the last parameter.
+- When gender is "none", prefer a gender-neutral form. If not possible, use a combined form like "бежал(а)", "должен(на)".
+- Avoid neuter forms like "бежало" when referring to a person.`
+  }
+
   /**
    * Get all locale files and codes from i18n directory
    */
