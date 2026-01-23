@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/temich/svintl/compare/v1.7.5...v1.8.0) (2026-01-23)
+
+
+### Features
+
+* add genders ([81ac815](https://github.com/temich/svintl/commit/81ac81544580f8a1bb07d2771c471ef386712bef))
+
 ## [1.7.5](https://github.com/temich/svintl/compare/v1.7.4...v1.7.5) (2025-11-20)
 
 
