@@ -1,3 +1,10 @@
+## [1.10.1](https://github.com/temich/svintl/compare/v1.10.0...v1.10.1) (2026-01-31)
+
+
+### Bug Fixes
+
+* remove redundant types from mounts ([d76c4ce](https://github.com/temich/svintl/commit/d76c4ce7bd45710a3cb95eed9883ee6c601b1ed1))
+
 # [1.10.0](https://github.com/temich/svintl/compare/v1.9.0...v1.10.0) (2026-01-31)
 
 
