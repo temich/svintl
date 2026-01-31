@@ -1,3 +1,17 @@
+# [1.10.0](https://github.com/temich/svintl/compare/v1.9.0...v1.10.0) (2026-01-31)
+
+
+### Bug Fixes
+
+* use `locale` in mounts from the root ([cbc3812](https://github.com/temich/svintl/commit/cbc38123c8f23044ef84da808404797fbfb24964))
+
+
+### Features
+
+* prevent redundant gender conditions ([4dd3400](https://github.com/temich/svintl/commit/4dd34001571efb9e9b15f70041a0e9d30938ab11))
+* remove annoying messages ([c604731](https://github.com/temich/svintl/commit/c6047318a5fd59c78189267d9d7d7e5117b35540))
+* remove more stupid messages ([a231605](https://github.com/temich/svintl/commit/a231605a4ac6445bc940e12607ea6358beb5e18c))
+
 # [1.9.0](https://github.com/temich/svintl/compare/v1.8.0...v1.9.0) (2026-01-23)
 
 
