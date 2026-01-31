@@ -1,6 +1,6 @@
 /**
  * CLI command for managing global genders setting
- * Stores a boolean under the `genders` key in context.yaml
+ * Stores a list of gender values under the `genders` key in context.yaml
  *
  * @author copilot
  */
@@ -26,23 +26,21 @@ export class GendersCommand {
     if (args.length === 0) {
       const current = this.contextManager.getGlobalGenders(i18nPath)
 
-      if (typeof current === 'boolean')
-        this.log(`Genders enabled: ${current}`)
+      if (Array.isArray(current) && current.length > 0)
+        this.log(`Genders enabled: ${current.join(', ')}`)
       else
         this.log('Genders setting is not set.')
 
       return
     }
 
-    if (args.length !== 1)
-      this.error('Genders command expects a single boolean value: true or false')
+    // Accept list of gender values
+    const genderValues = args.map(arg => arg.trim()).filter(val => val.length > 0)
+    
+    if (genderValues.length === 0)
+      this.error('At least one gender value must be provided')
 
-    const rawValue = args[0].trim().toLowerCase()
-    if (rawValue !== 'true' && rawValue !== 'false')
-      this.error('Genders value must be "true" or "false"')
-
-    const enabled = rawValue === 'true'
-    this.contextManager.setGlobalGenders(i18nPath, enabled)
-    this.log(`✅ Genders set to ${enabled}`)
+    this.contextManager.setGlobalGenders(i18nPath, genderValues)
+    this.log(`✅ Genders set to: ${genderValues.join(', ')}`)
   }
 }

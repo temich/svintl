@@ -206,15 +206,16 @@ const cli = yargs(hideBin(process.argv))
     const contextArgs = argv.value ? [argv.value] : []
     await contextCommand.execute(contextArgs, argv.path)
   })
-  .command('genders [value]', 'Enable or disable grammatical gender support', (yargs) => {
+  .command('genders [values..]', 'Set grammatical gender values (e.g., he she none)', (yargs) => {
     return yargs
-      .positional('value', {
-        describe: 'Boolean value: true or false',
-        type: 'string'
+      .positional('values', {
+        describe: 'List of gender values to support',
+        type: 'string',
+        array: true
       })
   }, async (argv) => {
     const gendersCommand = new GendersCommand()
-    const genderArgs = argv.value ? [argv.value] : []
+    const genderArgs = argv.values && Array.isArray(argv.values) ? argv.values as string[] : []
     await gendersCommand.execute(genderArgs, argv.path)
   })
   .command('build', 'Build YAML dictionaries into JavaScript', {}, async (argv) => {

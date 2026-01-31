@@ -18,7 +18,7 @@ export interface ContextData {
   context?: string
   inputs: Record<string, any>
   mounts?: Record<string, string>
-  genders?: boolean
+  genders?: string[]
 }
 
 export class ContextFileManager {
@@ -53,7 +53,7 @@ export class ContextFileManager {
         ? data.mounts
         : {}
 
-      const genders = data && typeof data === 'object' && typeof data.genders === 'boolean'
+      const genders = data && typeof data === 'object' && Array.isArray(data.genders)
         ? data.genders
         : undefined
 
@@ -73,7 +73,7 @@ export class ContextFileManager {
     try {
       const normalizedData: ContextData = {
         ...(data.context !== undefined ? { context: data.context } : {}),
-        ...(typeof data.genders === 'boolean' ? { genders: data.genders } : {}),
+        ...(Array.isArray(data.genders) && data.genders.length > 0 ? { genders: data.genders } : {}),
         inputs: data.inputs || {},
         ...(data.mounts && Object.keys(data.mounts).length > 0 ? { mounts: data.mounts } : {}),
       }
@@ -124,9 +124,9 @@ export class ContextFileManager {
     this.writeContextFile(i18nPath, data)
   }
 
-  setGlobalGenders(i18nPath: string, enabled: boolean): void {
+  setGlobalGenders(i18nPath: string, genderValues: string[]): void {
     const data = this.readContextFile(i18nPath)
-    data.genders = enabled
+    data.genders = genderValues
     this.writeContextFile(i18nPath, data)
   }
 
@@ -200,10 +200,10 @@ export class ContextFileManager {
     return data.context
   }
 
-  getGlobalGenders(i18nPath: string): boolean | undefined {
+  getGlobalGenders(i18nPath: string): string[] | undefined {
     const data = this.readContextFile(i18nPath)
 
-    if (typeof data.genders === 'boolean')
+    if (Array.isArray(data.genders))
       return data.genders
 
     const path = require('path')
@@ -212,7 +212,7 @@ export class ContextFileManager {
 
     if (parentPath !== path.resolve(i18nPath) && fs.existsSync(path.join(parentPath, 'context.yaml'))) {
       const parentData = this.readContextFile(parentPath)
-      return typeof parentData.genders === 'boolean' ? parentData.genders : undefined
+      return Array.isArray(parentData.genders) ? parentData.genders : undefined
     }
 
     return data.genders
