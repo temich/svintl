@@ -5,6 +5,7 @@ export default [
   ...neostandard({
     ts: true,
     ignores: [
+      'index/**',
       'source/cli/**',
       'bin/**',
       'example/**',

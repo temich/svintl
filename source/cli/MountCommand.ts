@@ -84,9 +84,10 @@ inputs: {}
     }
 
     // Create index file based on template
-    const indexFile = join(absoluteMountPath, 'index.ts')
+    const indexFileName = useJavaScript ? 'index.js' : 'index.ts'
+    const indexFile = join(absoluteMountPath, indexFileName)
     if (!existsSync(indexFile)) {
-      const templateFile = useJavaScript ? 'js' : 'ts'
+      const templateFile = useJavaScript ? 'mount.js' : 'mount.ts'
       const packageRoot = resolve(__dirname, '..')
       const templatePath = join(packageRoot, 'index', templateFile)
 

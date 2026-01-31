@@ -35,10 +35,7 @@ export class HolaCommand {
     if (existsSync(indexFile)) {
       this.log(`⚠️ Index file already exists: ${indexFile}`)
     } else {
-      const templateFile = useJavaScript ? 'js' : 'ts'
-      // Get the path to the intl package root
-      // When bundled, __dirname points to where the bundled CLI runs
-      // We need to look for the template relative to the package installation
+      const templateFile = useJavaScript ? 'root.js' : 'root.ts'
       const packageRoot = resolve(__dirname, '..')
       const templatePath = join(packageRoot, 'index', templateFile)
 
