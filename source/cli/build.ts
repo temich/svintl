@@ -9,6 +9,7 @@ import { writeFileSync, readdirSync } from 'fs'
 import { resolve } from 'path'
 import { load } from './load'
 import { hasPartitions } from './partition'
+import { ContextFileManager } from './context'
 
 /**
  * Generate TypeScript type definitions for the dictionary structure
@@ -21,7 +22,6 @@ function generateTypeDefinitions(dictionaries: Record<string, any>, i18nPath: st
   const dictionaryType = generateDictionaryType(firstDict, 2)
 
   // Get genders from context
-  const ContextFileManager = require('./context').ContextFileManager
   const contextManager = new ContextFileManager()
   const genderValues = contextManager.getGlobalGenders(i18nPath)
   
