@@ -2,7 +2,7 @@ Feature: Create command
 
   Scenario: Add locale
     When I run `npx intl hola`
-    And I run `npx intl set example.hello "Hello world"`
+    And I run `npx intl add example.hello "Hello world"`
     And I run `npx intl create es-ES`
     Then the file `src/lib/intl/es-ES.yaml` contains:
       """
