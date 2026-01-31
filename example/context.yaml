@@ -1,5 +1,8 @@
 context: This is a test project about internationalization
-genders: true
+genders:
+  - he
+  - she
+  - none
 inputs:
   locale:
     input: locale

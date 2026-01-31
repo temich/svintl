@@ -9,16 +9,26 @@ import { writeFileSync, readdirSync } from 'fs'
 import { resolve } from 'path'
 import { load } from './load'
 import { hasPartitions } from './partition'
+import { ContextFileManager } from './context'
 
 /**
  * Generate TypeScript type definitions for the dictionary structure
  */
-function generateTypeDefinitions(dictionaries: Record<string, any>): string {
+function generateTypeDefinitions(dictionaries: Record<string, any>, i18nPath: string): string {
   const locales = Object.keys(dictionaries).map(lang => `'${lang}'`).join(' | ')
 
   // Use the English dictionary as the structure reference since it's the source
   const firstDict = dictionaries.en || Object.values(dictionaries)[0]
   const dictionaryType = generateDictionaryType(firstDict, 2)
+
+  // Get genders from context
+  const contextManager = new ContextFileManager()
+  const genderValues = contextManager.getGlobalGenders(i18nPath)
+  
+  // Generate Grammar type from context genders
+  const grammarType = genderValues && Array.isArray(genderValues) && genderValues.length > 0
+    ? genderValues.map(g => `'${g}'`).join(' | ')
+    : 'string'
 
   return `/**
  * Auto-generated TypeScript definitions for i18n dictionaries
@@ -28,7 +38,7 @@ function generateTypeDefinitions(dictionaries: Record<string, any>): string {
 
 export type Locale = ${locales}
 
-export type Grammar = 'he' | 'she' | 'none'
+export type Grammar = ${grammarType}
 
 export type Dictionary = ${dictionaryType}
 `
@@ -228,7 +238,7 @@ export const locales = ${JSON.stringify(Object.keys(dictionaries))};
 `
 
   // Generate TypeScript definitions
-  const tsContent = generateTypeDefinitions(dictionaries)
+  const tsContent = generateTypeDefinitions(dictionaries, i18nPath)
 
   // Write both files in the same directory as i18n files
   const jsOutputPath = resolve(i18nDir, 'built.js')
