@@ -148,8 +148,6 @@ function serializeWithFunctions(obj: any, indent = 0, locale?: string): string {
  * that can be imported in the browser
  */
 export function build(i18nPath = './src/lib/intl/'): void {
-  console.log('🔨 Building dictionaries...')
-
   const i18nDir = resolve(process.cwd(), i18nPath)
 
   // Check if this is a partition directory or main directory
@@ -166,10 +164,8 @@ export function build(i18nPath = './src/lib/intl/'): void {
 
     for (const [mountName, mountPath] of Object.entries(allMounts)) {
       const partitionI18nDir = path.resolve(i18nDir, mountPath)
-      if (fs.existsSync(partitionI18nDir)) {
-        console.log(`Building mount: ${mountName}`)
+      if (fs.existsSync(partitionI18nDir))
         build(path.relative(process.cwd(), partitionI18nDir))
-      }
     }
 
     // Also check for subdirectory partitions (legacy support)
@@ -183,10 +179,8 @@ export function build(i18nPath = './src/lib/intl/'): void {
 
           // Check if this directory contains YAML files (is a partition)
           const partitionEntries = fs.readdirSync(partitionDir)
-          if (partitionEntries.some((file: string) => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))) {
-            console.log(`Building mount: ${entry.name}`)
+          if (partitionEntries.some((file: string) => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/)))
             build(partitionPath)
-          }
         }
       }
     }
@@ -197,8 +191,7 @@ export function build(i18nPath = './src/lib/intl/'): void {
     .filter(file => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))
 
   if (localeFiles.length === 0) {
-    console.log('❌ No YAML locale files found')
-
+    console.error('No YAML locale files found')
     return
   }
 
@@ -213,7 +206,7 @@ export function build(i18nPath = './src/lib/intl/'): void {
       const dictionary = load(filePath)
       dictionaries[lang] = dictionary
     } catch (error) {
-      console.error(`❌ Failed to process ${lang}.yaml:`, error)
+      console.error(`Failed to process ${lang}.yaml:`, error)
       throw error
     }
   }
@@ -246,6 +239,4 @@ export const locales = ${JSON.stringify(Object.keys(dictionaries))};
 
   writeFileSync(jsOutputPath, jsContent)
   writeFileSync(tsOutputPath, tsContent)
-
-  console.log(`✅ Built`)
 }

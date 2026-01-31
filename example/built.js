@@ -4,7 +4,7 @@
 export const dictionaries = {
   "en-US": {
     "native": "English",
-    "hello": "Hello",
+    "hello": "Hi",
     "bye": "Bye",
     "example": {
       "hello": "Hello"
@@ -76,7 +76,8 @@ export const dictionaries = {
       "0": {
         "one": "{n} неделя",
         "other": "{n} недели"
-      }
+      },
+      "key": "Это очень длинный перевод, который превышает сорок символов"
     },
     "formatName": (name, age) => `Привет, ${name}! Тебе ${age} лет.`,
     "ran": (name, gender) => {

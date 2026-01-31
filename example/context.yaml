@@ -30,6 +30,8 @@ inputs:
       context: или открыть, посмотреть, как принято в соответствующем языке
   test:
     input: weeks
+    key:
+      input: This is a very long translation that exceeds forty characters
   test/moved:
     key:
       input: Main key
@@ -37,6 +39,8 @@ inputs:
     input: "{name} убежал"
   joined:
     input: "[names] have joined the {groupName}"
+  hello:
+    input: Hi
 mounts:
   bar: baz
   foo: foo

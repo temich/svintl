@@ -9,6 +9,7 @@
 import { TranslationService } from './TranslationService'
 import { logger } from './logger'
 import { parsePartitionedKey } from './partition'
+import { formatTranslations } from './format'
 import { join } from 'path'
 
 export class AddCommand {
@@ -64,7 +65,7 @@ For !js functions:
       // Store context and build
       this.translationService.finalize(i18nPath, actualKey, value, comment, partition)
 
-      logger.log(`✅ Added "${key}" in ${allLocales.length} locales`)
+      console.log(formatTranslations(translations, allLocales))
     } catch (error) {
       logger.error(`Failed to add translation: ${error}`)
     }
