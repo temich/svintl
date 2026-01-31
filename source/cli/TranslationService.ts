@@ -260,6 +260,33 @@ English: "!js\\n(names, groupName) => { const list = new Intl.ListFormat(\"en\",
   }
 
   /**
+   * Check if a key exists in a locale file
+   */
+  keyExistsInLocaleFile(filePath: string, key: string): boolean {
+    const content = readFileSync(filePath, 'utf8')
+    let yamlData = yamlLoad(content) as any
+
+    // Handle empty files
+    if (yamlData === null) {
+      return false
+    }
+
+    const keyParts = key.split('.')
+    let current = yamlData
+
+    // Navigate to the key
+    for (const part of keyParts) {
+      if (current && typeof current === 'object' && part in current) {
+        current = current[part]
+      } else {
+        return false
+      }
+    }
+
+    return true
+  }
+
+  /**
    * Remove a key from a locale file
    */
   removeFromLocaleFile(filePath: string, key: string): boolean {
