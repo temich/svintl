@@ -4,8 +4,4 @@
  * @author copilot
  */
 
-export type Dictionary = {
-      test: {
-        title: string
-      }
-    }
+export type Dictionary = {}

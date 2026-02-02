@@ -1,6 +1,0 @@
-context: Partition-specific context
-inputs:
-  test:
-    title:
-      input: Title
-      context: title for testing

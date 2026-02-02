@@ -84,6 +84,7 @@ inputs: {}
 
     // Register mount in context.yaml
     contextManager.setMountPath(i18nPath, mountName, relativeMountPath)
-    build(mountPath)
+    // Run full build from root - same as "intl build". Mount = copy + build.
+    build(i18nPath)
   }
 }

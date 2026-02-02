@@ -44,3 +44,4 @@ inputs:
 mounts:
   bar: baz
   foo: foo
+  zzz: zzz

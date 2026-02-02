@@ -2,18 +2,8 @@
 
 /** @type {Record<string, import("./types").Dictionary>} */
 export const dictionaries = {
-  "en-US": {
-    "test": {
-      "title": "Title"
-    }
-  },
-  "ru-RU": {
-    "native": "Русский",
-    "locale": "ru-RU",
-    "test": {
-      "title": "Заголовок"
-    }
-  }
+  "en-US": null,
+  "ru-RU": null
 };
 
 /** @type {string[]} */
