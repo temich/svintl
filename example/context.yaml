@@ -42,7 +42,4 @@ inputs:
   hello:
     input: Hi
 mounts:
-  bar: baz
-  foo: foo
   zzz: zzz
-  aaa: aaa
