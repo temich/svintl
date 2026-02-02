@@ -15,7 +15,7 @@ import { AddCommand } from './AddCommand'
 import { SetCommand } from './SetCommand'
 import { UnitCommand } from './UnitCommand'
 import { MoveCommand } from './MoveCommand'
-import { RemoveCommand } from './RemoveCommand'
+import { DelCommand } from './DelCommand'
 import { CreateCommand } from './CreateCommand'
 import { DestroyCommand } from './DestroyCommand'
 import { SyncCommand } from './SyncCommand'
@@ -159,15 +159,15 @@ const cli = yargs(hideBin(process.argv))
     const moveCommand = new MoveCommand()
     await moveCommand.execute(argv.from!, argv.to!, argv.path)
   })
-  .command('remove <key>', 'Remove translation key', (yargs) => {
+  .command('del <key>', 'Delete translation key', (yargs) => {
     return yargs
       .positional('key', {
-        describe: 'Translation key to remove (e.g., app.title or mount/app.title)',
+        describe: 'Translation key to delete (e.g., app.title or mount/app.title)',
         type: 'string'
       })
   }, async (argv) => {
-    const removeCommand = new RemoveCommand()
-    await removeCommand.execute(argv.key!, argv.path)
+    const delCommand = new DelCommand()
+    await delCommand.execute(argv.key!, argv.path)
   })
   .command('create <lang> [source]', 'Create new locale dictionary', (yargs) => {
     return yargs

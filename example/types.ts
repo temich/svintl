@@ -23,6 +23,13 @@ export type Dictionary = {
           }
         }
       }
+      buttons: {
+        catalog: string
+      }
+      test: (value: number) => string
+      formatName: (...args: [any, any]) => string
+      ran: (...args: [any, any]) => string
+      joined: (...args: [any, any]) => string
       product: {
         count: {
           0: {
@@ -31,11 +38,4 @@ export type Dictionary = {
           }
         }
       }
-      buttons: {
-        catalog: string
-      }
-      test: (value: number) => string
-      formatName: (...args: [any, any]) => string
-      ran: (...args: [any, any]) => string
-      joined: (...args: [any, any]) => string
     }
