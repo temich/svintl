@@ -98,25 +98,13 @@ export class MoveCommand {
       }
     }
 
-    // Move context entry if it exists
+    // Move context entries (tree: key + all sub-keys with inputs)
     try {
-      if (fromParsed.partition !== toParsed.partition) {
-        // Cross-partition move: get context from source partition and set in destination partition
-        const contextManager = this.translationService.contextManagerInstance
-        const contextEntry = contextManager.getContextEntry(fromDir, fromParsed.key)
-
-        if (contextEntry) {
-          contextManager.setContextEntry(toDir, toParsed.key, contextEntry.input, contextEntry.context)
-          contextManager.removeContextEntry(fromDir, fromParsed.key)
-          logger.log(`✓ Moved context from "${from}" to "${to}"`)
-        }
-      } else {
-        // Same partition move
-        const moved = this.translationService.contextManagerInstance.moveContextEntry(fromDir, fromParsed.key, toParsed.key)
-        if (moved) {
-          logger.log(`✓ Moved context from "${from}" to "${to}"`)
-        }
-      }
+      const moved = this.translationService.contextManagerInstance.moveContextTree(
+        fromDir, toDir, fromParsed.key, toParsed.key
+      )
+      if (moved)
+        logger.log(`✓ Moved context from "${from}" to "${to}"`)
     } catch (error) {
       logger.warn(`Failed to move context: ${error}`)
     }

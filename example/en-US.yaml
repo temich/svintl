@@ -8,11 +8,6 @@ items:
     "0":
       one: item
       other: items
-product:
-  count:
-    "0":
-      one: product
-      other: products
 buttons:
   catalog: Browse catalog
 test:
@@ -35,3 +30,8 @@ joined: >-
   "long", type: "conjunction" }).format(names); return names.length === 1 ?
   `${list} has joined the ${groupName}` : `${list} have joined the
   ${groupName}`; }
+product:
+  count:
+    "0":
+      one: product
+      other: products

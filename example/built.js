@@ -17,14 +17,6 @@ export const dictionaries = {
         }
       }
     },
-    "product": {
-      "count": {
-        "0": {
-          "one": "product",
-          "other": "products"
-        }
-      }
-    },
     "buttons": {
       "catalog": "Browse catalog"
     },
@@ -43,7 +35,15 @@ export const dictionaries = {
   if (gender === "she") return `${name} ran away`;
   return `${name} ran away`;
 },
-    "joined": (names, groupName) => { const list = new Intl.ListFormat("en", { style: "long", type: "conjunction" }).format(names); return names.length === 1 ? `${list} has joined the ${groupName}` : `${list} have joined the ${groupName}`; }
+    "joined": (names, groupName) => { const list = new Intl.ListFormat("en", { style: "long", type: "conjunction" }).format(names); return names.length === 1 ? `${list} has joined the ${groupName}` : `${list} have joined the ${groupName}`; },
+    "product": {
+      "count": {
+        "0": {
+          "one": "product",
+          "other": "products"
+        }
+      }
+    }
   },
   "ru-RU": {
     "native": "Русский",
@@ -58,14 +58,6 @@ export const dictionaries = {
         "0": {
           "one": "предмет",
           "other": "предметы"
-        }
-      }
-    },
-    "product": {
-      "count": {
-        "0": {
-          "one": "продукт",
-          "other": "продукты"
         }
       }
     },
@@ -85,7 +77,15 @@ export const dictionaries = {
   if (gender === "she") return `${name} убежала`;
   return `${name} убежал(а)`;
 },
-    "joined": (names, groupName, grammar) => { const list = new Intl.ListFormat("ru", { style: "long", type: "conjunction" }).format(names); if (names.length === 1) { if (grammar && grammar.gender === "he") return `${list} присоединился к группе ${groupName}`; if (grammar && grammar.gender === "she") return `${list} присоединилась к группе ${groupName}`; return `${list} присоединился(ась) к группе ${groupName}`; } else { return `${list} присоединились к группе ${groupName}`; } }
+    "joined": (names, groupName, grammar) => { const list = new Intl.ListFormat("ru", { style: "long", type: "conjunction" }).format(names); if (names.length === 1) { if (grammar && grammar.gender === "he") return `${list} присоединился к группе ${groupName}`; if (grammar && grammar.gender === "she") return `${list} присоединилась к группе ${groupName}`; return `${list} присоединился(ась) к группе ${groupName}`; } else { return `${list} присоединились к группе ${groupName}`; } },
+    "product": {
+      "count": {
+        "0": {
+          "one": "продукт",
+          "other": "продукты"
+        }
+      }
+    }
   }
 };
 /** @type {import("./types").Locale[]} */

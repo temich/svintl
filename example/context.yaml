@@ -20,10 +20,6 @@ inputs:
     notification:
       input: notification
       context: system alert
-  product:
-    count:
-      input: product
-      context: item for sale
   buttons:
     catalog:
       input: Перейти в каталог
@@ -41,5 +37,9 @@ inputs:
     input: "[names] have joined the {groupName}"
   hello:
     input: Hi
+  product:
+    count:
+      input: product
+      context: item for sale
 mounts:
   zzz: zzz

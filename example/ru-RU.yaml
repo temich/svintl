@@ -9,11 +9,6 @@ items:
     "0":
       one: предмет
       other: предметы
-product:
-  count:
-    "0":
-      one: продукт
-      other: продукты
 buttons:
   catalog: Перейти в каталог
 test:
@@ -41,3 +36,8 @@ joined: >-
   присоединилась к группе ${groupName}`; return `${list} присоединился(ась) к
   группе ${groupName}`; } else { return `${list} присоединились к группе
   ${groupName}`; } }
+product:
+  count:
+    "0":
+      one: продукт
+      other: продукты

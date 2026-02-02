@@ -2,6 +2,10 @@
 
 /** @type {Record<import("$lib/intl").Locale, import("./types").Dictionary>} */
 export const dictionaries = {
-  "en-US": null,
-  "ru-RU": null
+  "en-US": {
+
+  },
+  "ru-RU": {
+
+  }
 };

@@ -102,3 +102,45 @@ Feature: Move command
           value: Hello
           another: World
       """
+
+  Scenario: Move tree with subnodes across mounts
+    When I run `npx intl hola -p ./test-move-tree`
+    And I modify `test-move-tree/en-US.yaml` to add:
+      """
+      product:
+        count:
+          - one: product
+            other: products
+        name: Product name
+      """
+    And I modify `test-move-tree/context.yaml` to add:
+      """
+      inputs:
+        product:
+          count:
+            input: product
+            context: item for sale
+          name:
+            input: Product name
+            context: display name
+      """
+    And I run `npx intl mount zzz ./zzz -p ./test-move-tree`
+    And I run `npx intl move product zzz/product -p ./test-move-tree`
+    Then the file `zzz/en-US.yaml` contains:
+      """
+      product:
+        count:
+          - one: product
+            other: products
+        name: Product name
+      """
+    And the file `zzz/context.yaml` contains:
+      """
+      product:
+        count:
+          input: product
+          context: item for sale
+        name:
+          input: Product name
+          context: display name
+      """

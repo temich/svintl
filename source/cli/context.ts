@@ -324,6 +324,64 @@ export class ContextFileManager {
   }
 
   /**
+   * Get all context entries under a key prefix (key itself or key.subkey)
+   * Only from this directory's context file, not merged with parent
+   */
+  getContextEntriesUnderPrefix(i18nPath: string, prefix: string): Record<string, ContextEntry> {
+    const data = this.readContextFile(i18nPath)
+    const all = this.flattenContextEntries(data.inputs)
+    const result: Record<string, ContextEntry> = {}
+    for (const [key, entry] of Object.entries(all)) {
+      if (key === prefix || key.startsWith(prefix + '.'))
+        result[key] = entry
+    }
+    return result
+  }
+
+  /**
+   * Move context tree (entry + all sub-entries) from one key to another
+   * Supports same-partition (fromPath === toPath) and cross-partition moves
+   */
+  moveContextTree(fromPath: string, toPath: string, fromKey: string, toKey: string): boolean {
+    const entries = this.getContextEntriesUnderPrefix(fromPath, fromKey)
+    if (Object.keys(entries).length === 0)
+      return false
+
+    for (const [key, entry] of Object.entries(entries)) {
+      const suffix = key === fromKey ? '' : key.slice(fromKey.length + 1)
+      const newKey = suffix ? `${toKey}.${suffix}` : toKey
+      this.setContextEntry(toPath, newKey, entry.input, entry.context)
+    }
+    this.removeContextSubtree(fromPath, fromKey)
+    return true
+  }
+
+  /**
+   * Remove context subtree (key and all nested entries)
+   */
+  removeContextSubtree(i18nPath: string, key: string): boolean {
+    const data = this.readContextFile(i18nPath)
+    const keyParts = key.split('.')
+    let current = data.inputs
+
+    for (let i = 0; i < keyParts.length - 1; i++) {
+      const part = keyParts[i]
+      if (!current[part])
+        return false
+      current = current[part]
+    }
+
+    const finalKey = keyParts[keyParts.length - 1]
+    if (!(finalKey in current))
+      return false
+
+    delete current[finalKey]
+    this.cleanupEmptyParents(data.inputs, key)
+    this.writeContextFile(i18nPath, data)
+    return true
+  }
+
+  /**
    * Get all context entries as flat key-value pairs
    * For partitions, also includes contexts from the parent (main) directory
    */
