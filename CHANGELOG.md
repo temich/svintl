@@ -1,3 +1,10 @@
+## [1.10.2](https://github.com/temich/svintl/compare/v1.10.1...v1.10.2) (2026-02-02)
+
+
+### Bug Fixes
+
+* fix mount exports ([4f12120](https://github.com/temich/svintl/commit/4f12120925ad6441b0bc68e4c6cdd269a9d30742))
+
 ## [1.10.1](https://github.com/temich/svintl/compare/v1.10.0...v1.10.1) (2026-01-31)
 
 
