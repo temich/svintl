@@ -6,14 +6,14 @@ import { TranslationService } from './TranslationService'
 import { logger } from './logger'
 import { parsePartitionedKey, getPartitionPath } from './partition'
 
-export class RemoveCommand {
+export class DelCommand {
   private translationService = new TranslationService()
 
   async execute(key: string, i18nPath = './src/lib/intl/'): Promise<void> {
     // Parse partitioned key
     const { partition, key: actualKey } = parsePartitionedKey(key)
 
-    logger.log(`Removing "${key}" from all locale files...`)
+    logger.log(`Deleting "${key}" from all locale files...`)
 
     // Get locale information
     const { localeFiles, i18nDir } = this.translationService.getLocaleInfo(i18nPath, partition)
@@ -27,7 +27,7 @@ export class RemoveCommand {
       try {
         const removed = this.translationService.removeFromLocaleFile(filePath, actualKey)
         if (removed) {
-          logger.log(`✓ Removed from ${file}`)
+          logger.log(`✓ Deleted from ${file}`)
           keyExists = true
         }
       } catch (error) {
@@ -43,10 +43,10 @@ export class RemoveCommand {
     try {
       const removed = this.translationService.contextManagerInstance.removeContextEntry(getPartitionPath(i18nPath, partition), actualKey)
       if (removed) {
-        logger.log(`✓ Removed context for "${key}"`)
+        logger.log(`✓ Deleted context for "${key}"`)
       }
     } catch (error) {
-      logger.warn(`Failed to remove context: ${error}`)
+      logger.warn(`Failed to delete context: ${error}`)
     }
 
     logger.log(`✅ Saved`)

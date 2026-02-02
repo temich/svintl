@@ -250,13 +250,13 @@ Sets the same value in all dictionaries without translation.
 npx intl move example.hello example.greeting.welcome
 ```
 
-Moves a translation entry.
+Moves a translation entry or a branch.
 
 ```bash
-npx intl remove example.hello
+npx intl del example.hello
 ```
 
-Removes a translation entry.
+Deletes a translation entry or a branch.
 
 ```bash
 npx intl destroy es
