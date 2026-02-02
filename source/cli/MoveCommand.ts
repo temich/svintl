@@ -26,7 +26,7 @@ export class MoveCommand {
     const { localeFiles: toLocaleFiles, i18nDir: toDir } = this.translationService.getLocaleInfo(i18nPath, toParsed.partition)
 
     // Store the values from all locales in source partition
-    const values: Record<string, string> = {}
+    const values: Record<string, any> = {}
     let keyExists = false
 
     // First pass: collect all values from source partition
@@ -133,7 +133,7 @@ export class MoveCommand {
     }
   }
 
-  private extractValue(filePath: string, key: string): string | null {
+  private extractValue(filePath: string, key: string): any {
     const fs = require('fs')
     const yaml = require('js-yaml')
 
@@ -152,6 +152,6 @@ export class MoveCommand {
       }
     }
 
-    return typeof current === 'string' ? current : null
+    return current
   }
 }

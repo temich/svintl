@@ -3,7 +3,7 @@ module.exports = {
     import: ['features/steps/**/*.ts'],
     requireModule: ['tsx'],
     format: ['progress'],
-    failFast: true,
+    failFast: false,
     formatOptions: {
       snippetInterface: 'async-await',
     },
