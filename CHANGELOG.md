@@ -1,3 +1,11 @@
+# [1.11.0](https://github.com/temich/svintl/compare/v1.10.3...v1.11.0) (2026-02-03)
+
+
+### Features
+
+* allow move branches ([7c2484c](https://github.com/temich/svintl/commit/7c2484cf70e2ab4b5e45afc2e3c066aa06ad8549))
+* rename `remove` into `del` ([66eb916](https://github.com/temich/svintl/commit/66eb9161fd157bbfaf1bd00dfbd8eb1e494975ea))
+
 ## [1.10.3](https://github.com/temich/svintl/compare/v1.10.2...v1.10.3) (2026-02-02)
 
 
