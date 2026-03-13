@@ -1,3 +1,10 @@
+# [1.12.0](https://github.com/temich/svintl/compare/v1.11.0...v1.12.0) (2026-03-13)
+
+
+### Features
+
+* add skill ([b3e4340](https://github.com/temich/svintl/commit/b3e4340f1f6cbc918e874ddd721b4975dbe0338c))
+
 # [1.11.0](https://github.com/temich/svintl/compare/v1.10.3...v1.11.0) (2026-02-03)
 
 
