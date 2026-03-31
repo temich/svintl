@@ -1,3 +1,10 @@
+## [1.12.1](https://github.com/temich/svintl/compare/v1.12.0...v1.12.1) (2026-03-31)
+
+
+### Bug Fixes
+
+* use context ([efb6769](https://github.com/temich/svintl/commit/efb676937dc2c64fb853b189a6508d649900b9b3))
+
 # [1.12.0](https://github.com/temich/svintl/compare/v1.11.0...v1.12.0) (2026-03-13)
 
 
