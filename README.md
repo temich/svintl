@@ -184,12 +184,16 @@ inputs:
       context: "greeting shown on homepage"
 ```
 
-When creating new locales with `npx intl create <lang>`, saved contexts are automatically used to provide more accurate translations by giving the AI translator additional context about how each phrase is used.
+When creating new locales with `npx intl create <lang>`, saved per-key contexts under `inputs` are passed into batch translation.
+
+The optional **global** product description (`npx intl context "…"`), stored as the top-level `context` field in `context.yaml`, is sent on **every** OpenAI translation: `add`, `set`, `unit`, `create` (when translating from a source locale), and `sync`.
 
 ## CLI
 
 > Translations are powered by OpenAI. Ensure you set the `OPENAI_API_KEY` in your environment variables.
 > `.env` file is supported.
+
+On `add` and `set`, pass `--debug` to print the full translation request (model, system and user messages) to stdout before the OpenAI call.
 
 ```bash
 npx intl
@@ -216,11 +220,13 @@ Creates a new locale dictionary. Locale codes must be valid BCP 47 locale tags. 
 Dictionary names must be valid BCP 47 locale tags.
 
 ```bash
-npx intl set example.hello "Hello world"
+npx intl add example.hello "Hello world"   # new key (fails if key already exists)
+npx intl set example.hello "Hello world"   # update existing key
 npx intl set wardrobe.tops "Tops" "Clothing"
+npx intl set example.hello "Hello world" --debug   # log OpenAI request before sending
 ```
 
-Creates a new translation entry with optional context.
+`add` creates an entry; `set` updates an existing one. Optional third argument is context for the translator.
 
 ```bash
 npx intl mount <mount> <dir>

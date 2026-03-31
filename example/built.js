@@ -43,6 +43,9 @@ export const dictionaries = {
           "other": "products"
         }
       }
+    },
+    "some": {
+      "key": "Hello"
     }
   },
   "ru-RU": {
@@ -85,6 +88,9 @@ export const dictionaries = {
           "other": "продукты"
         }
       }
+    },
+    "some": {
+      "key": "Здравствуйте"
     }
   }
 };

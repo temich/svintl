@@ -80,7 +80,7 @@ Target locales: \${allLocales}
 
 Return ONLY a JSON object with the structure shown above.`
 
-    const projectContext = this.translationService.contextManagerInstance.getGlobalContext(i18nPath)
+    const projectContext = this.translationService.getGlobalProjectContext(i18nPath)
     const genderInstructions = this.translationService.getGenderInstructions(i18nPath)
     const systemPromptWithGender = genderInstructions ? `${systemPrompt}\n\n${genderInstructions}` : systemPrompt
 

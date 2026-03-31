@@ -143,6 +143,8 @@ Return ONLY the translation as a string.`
     const genderInstructions = this.translationService.getGenderInstructions(i18nPath)
     const systemPromptWithGender = genderInstructions ? `${systemPrompt}\n\n${genderInstructions}` : systemPrompt
 
+    const projectContext = this.translationService.getGlobalProjectContext(i18nPath)
+
     // Translate entries in batches of 10
     const translatedData: any = {
       native: nativeName,
@@ -163,7 +165,8 @@ Return ONLY the translation as a string.`
           batchValues,
           batchContexts,
           targetLang,
-            systemPromptWithGender
+          systemPromptWithGender,
+          projectContext
         )
 
         // Apply translations to the data structure
@@ -264,7 +267,8 @@ Return ONLY the translation as a string.`
                 batchValues,
                 batchContexts,
                 targetLang,
-                systemPromptWithGender
+                systemPromptWithGender,
+                projectContext
               )
 
               // Apply translations to the partition data structure
@@ -336,7 +340,8 @@ Return ONLY the translation as a string.`
     values: string[],
     contexts: (string | undefined)[],
     targetLang: string,
-    baseSystemPrompt: string
+    baseSystemPrompt: string,
+    projectContext?: string
   ): Promise<string[]> {
     if (!process.env.OPENAI_API_KEY) {
       throw new Error('OPENAI_API_KEY environment variable is required')
@@ -354,9 +359,10 @@ Phrase: ${value}
 Context: ${context || 'None provided'}`
     }).join('\n\n')
 
+    const pc = this.translationService.projectContextPromptPrefix(projectContext)
     const systemPrompt = baseSystemPrompt.replace(
       'Return ONLY the translation as a string.',
-      `Translate all ${values.length} items below to ${targetLang}.
+      `${pc}Translate all ${values.length} items below to ${targetLang}.
 
 ${batchItems}
 

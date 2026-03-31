@@ -38,4 +38,7 @@ export type Dictionary = {
           }
         }
       }
+      some: {
+        key: string
+      }
     }

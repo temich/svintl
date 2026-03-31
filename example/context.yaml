@@ -41,5 +41,8 @@ inputs:
     count:
       input: product
       context: item for sale
+  some:
+    key:
+      input: Hello
 mounts:
   zzz: zzz

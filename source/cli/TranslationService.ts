@@ -127,6 +127,24 @@ English: "!js\\n(names, groupName) => { const list = new Intl.ListFormat(\"en\",
   }
 
   /**
+   * Product-wide context from `context.yaml` (`npx intl context …`). Pass CLI `-p` base path.
+   */
+  getGlobalProjectContext(i18nPath: string): string | undefined {
+    return this.contextManager.getGlobalContext(i18nPath)
+  }
+
+  /**
+   * Same label as in translateWithOpenAI user messages — for batch prompts.
+   */
+  projectContextPromptPrefix(projectContext?: string): string {
+    const t = projectContext?.trim()
+    if (!t)
+      return ''
+
+    return `Project context: ${t}\n\n`
+  }
+
+  /**
    * Translate content using OpenAI with custom system prompt
    */
   async translateWithOpenAI(
@@ -134,7 +152,8 @@ English: "!js\\n(names, groupName) => { const list = new Intl.ListFormat(\"en\",
     allLocales: string[],
     systemPrompt: string,
     comment?: string,
-    projectContext?: string
+    projectContext?: string,
+    debug = false
   ): Promise<Record<string, string>> {
     if (!process.env.OPENAI_API_KEY) {
       throw new Error('OPENAI_API_KEY environment variable is required')
@@ -166,20 +185,20 @@ English: "!js\\n(names, groupName) => { const list = new Intl.ListFormat(\"en\",
 
       const contextPrompt = promptSections.join('\n\n')
 
-      const completion = await openai.chat.completions.create({
+      const resolvedSystemContent = systemPrompt.replace('${allLocales}', allLocales.join(', '))
+      const requestPayload = {
         model: 'gpt-4.1',
         messages: [
-          {
-            role: 'system',
-            content: systemPrompt.replace('${allLocales}', allLocales.join(', ')),
-          },
-          {
-            role: 'user',
-            content: contextPrompt,
-          },
+          { role: 'system' as const, content: resolvedSystemContent },
+          { role: 'user' as const, content: contextPrompt },
         ],
         max_completion_tokens: 2000,
-      })
+      }
+
+      if (debug)
+        console.log('[intl --debug] Translation request:\n', JSON.stringify(requestPayload, null, 2))
+
+      const completion = await openai.chat.completions.create(requestPayload)
 
       const response = completion.choices[0]?.message?.content
       if (!response) {

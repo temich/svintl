@@ -91,9 +91,14 @@ const cli = yargs(hideBin(process.argv))
         describe: 'Optional context comment',
         type: 'string'
       })
+      .option('debug', {
+        type: 'boolean',
+        default: false,
+        describe: 'Print the AI translation request to stdout before sending'
+      })
   }, async (argv) => {
     const addCommand = new AddCommand()
-    await addCommand.execute(argv.key!, argv.value!, argv.comment, argv.path)
+    await addCommand.execute(argv.key!, argv.value!, argv.comment, argv.path, argv.debug)
   })
   .command('set <key> <value> [comment]', 'Update existing i18n entry with automatic translation', (yargs) => {
     return yargs
@@ -109,9 +114,14 @@ const cli = yargs(hideBin(process.argv))
         describe: 'Optional context comment',
         type: 'string'
       })
+      .option('debug', {
+        type: 'boolean',
+        default: false,
+        describe: 'Print the AI translation request to stdout before sending'
+      })
   }, async (argv) => {
     const setCommand = new SetCommand()
-    await setCommand.execute(argv.key!, argv.value!, argv.comment, argv.path)
+    await setCommand.execute(argv.key!, argv.value!, argv.comment, argv.path, argv.debug)
   })
   .command('unit <key> <value> [comment]', 'Create pluralized i18n entries', (yargs) => {
     return yargs

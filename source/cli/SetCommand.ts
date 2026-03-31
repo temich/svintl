@@ -15,7 +15,7 @@ import { join } from 'path'
 export class SetCommand {
   private translationService = new TranslationService()
 
-  async execute(key: string, value: string, comment?: string, i18nPath = './src/lib/intl/'): Promise<void> {
+  async execute(key: string, value: string, comment?: string, i18nPath = './src/lib/intl/', debug = false): Promise<void> {
     try {
       // Parse partitioned key
       const { partition, key: actualKey } = parsePartitionedKey(key)
@@ -62,8 +62,8 @@ For !js functions:
     const genderInstructions = this.translationService.getGenderInstructions(i18nPath)
     const systemPromptWithGender = genderInstructions ? `${systemPrompt}\n\n${genderInstructions}` : systemPrompt
 
-    // Translate using OpenAI
-    const translations = await this.translationService.translateWithOpenAI(value, allLocales, systemPromptWithGender, comment)
+    const projectContext = this.translationService.getGlobalProjectContext(i18nPath)
+    const translations = await this.translationService.translateWithOpenAI(value, allLocales, systemPromptWithGender, comment, projectContext, debug)
 
       // Update all locale files
       this.translationService.updateAllLocaleFiles(localeFiles, i18nDir, actualKey, translations)

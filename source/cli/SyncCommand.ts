@@ -98,11 +98,15 @@ ${this.translationService.getPlaceholderInstructions()}`
     const genderInstructions = this.translationService.getGenderInstructions(i18nPath)
     const systemPromptWithGender = genderInstructions ? `${systemPrompt}\n\n${genderInstructions}` : systemPrompt
 
+    const projectContext = this.translationService.getGlobalProjectContext(i18nPath)
+
     try {
       const translations = await this.translationService.translateWithOpenAI(
         sourceValue!,
         targetLocales,
-        systemPromptWithGender
+        systemPromptWithGender,
+        undefined,
+        projectContext
       )
 
       for (const lang of targetLocales) {
@@ -182,6 +186,8 @@ Return ONLY the translation as a string.`
     const genderInstructions = this.translationService.getGenderInstructions(i18nPath)
     const systemPromptWithGender = genderInstructions ? `${systemPrompt}\n\n${genderInstructions}` : systemPrompt
 
+    const projectContext = this.translationService.getGlobalProjectContext(i18nPath)
+
     // For each target locale, translate all entries in batches of 10
     for (const targetLang of targetLocales) {
       logger.log(`Syncing to "${targetLang}"...`)
@@ -208,7 +214,8 @@ Return ONLY the translation as a string.`
             batchValues,
             batchContexts,
             targetLang,
-            systemPromptWithGender.replace('{targetLang}', targetLang)
+            systemPromptWithGender.replace('{targetLang}', targetLang),
+            projectContext
           )
 
           // Apply translations to the data structure
@@ -307,7 +314,8 @@ Return ONLY the translation as a string.`
                   batchValues,
                   batchContexts,
                   targetLang,
-                systemPromptWithGender.replace('{targetLang}', targetLang)
+                  systemPromptWithGender.replace('{targetLang}', targetLang),
+                  projectContext
                 )
 
                 // Apply translations to the partition data structure
@@ -407,7 +415,8 @@ Return ONLY the translation as a string.`
     values: string[],
     contexts: (string | undefined)[],
     targetLang: string,
-    baseSystemPrompt: string
+    baseSystemPrompt: string,
+    projectContext?: string
   ): Promise<string[]> {
     if (!process.env.OPENAI_API_KEY) {
       throw new Error('OPENAI_API_KEY environment variable is required')
@@ -425,9 +434,10 @@ Phrase: ${value}
 Context: ${context || 'None provided'}`
     }).join('\n\n')
 
+    const pc = this.translationService.projectContextPromptPrefix(projectContext)
     const systemPrompt = baseSystemPrompt.replace(
       'Return ONLY the translation as a string.',
-      `Translate all ${values.length} items below to ${targetLang}.
+      `${pc}Translate all ${values.length} items below to ${targetLang}.
 
 ${batchItems}
 

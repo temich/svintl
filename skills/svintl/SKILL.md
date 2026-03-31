@@ -18,7 +18,9 @@ CLI tool for managing internationalization dictionaries with automatic translati
 npx intl hola                               # init dictionaries (default: src/lib/intl/)
 npx intl hola -p ./custom/path              # init at custom path
 npx intl add key.path "Value" "context"     # add new key (errors if exists), context optional
+npx intl add key.path "Value" --debug        # optional: print OpenAI request before API call
 npx intl set key.path "Updated value"       # update existing key
+npx intl set key.path "Value" --debug       # same (--debug on add/set)
 npx intl set "mount/key.path" "Value"       # set in mount
 npx intl const key.path "Same everywhere"   # same value across all locales (no translation)
 npx intl unit items.count "item"            # pluralized entry (auto-generates plural forms)
