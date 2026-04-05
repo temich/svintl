@@ -25,9 +25,9 @@ export const dictionaries = {
       const locale = "en-US"; // This will be replaced by the build system
       const pluralRules = new Intl.PluralRules(locale);
       const rule = pluralRules.select(count);
+      const table = /** @type {Record<string, string>} */ (forms);
 
-      // Direct object property access - no CLDR ordering needed!
-      return (forms[rule] ?? forms.other).replace(/{n}/g, new Intl.NumberFormat(locale).format(count));
+      return (table[rule] ?? table.other).replace(/{n}/g, new Intl.NumberFormat(locale).format(count));
     },
     "formatName": (name, age) => `Hello, ${name}! You are ${age} years old.`,
     "ran": (name, gender) => {
