@@ -1,3 +1,10 @@
+## [1.12.2](https://github.com/temich/svintl/compare/v1.12.1...v1.12.2) (2026-04-05)
+
+
+### Bug Fixes
+
+* adjust plural types ([6590e3d](https://github.com/temich/svintl/commit/6590e3dc6c3d01c7ff9ae0191a4733d143fd86e5))
+
 ## [1.12.1](https://github.com/temich/svintl/compare/v1.12.0...v1.12.1) (2026-03-31)
 
 
