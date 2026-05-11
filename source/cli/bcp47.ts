@@ -121,6 +121,15 @@ export function getNativeLanguageName(languageTag: string): string {
 }
 
 /**
+ * Returns the text direction ('ltr' | 'rtl') for a BCP 47 tag.
+ * Throws on invalid tags (consistent with Intl.Locale constructor).
+ */
+export function getTextDirection(languageTag: string): 'ltr' | 'rtl' {
+  const info = (new Intl.Locale(languageTag) as any).getTextInfo()
+  return info.direction
+}
+
+/**
  * Validates a language tag and provides error message if invalid
  * @param languageTag - The language tag to validate
  * @returns null if valid, error message if invalid

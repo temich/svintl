@@ -4,7 +4,7 @@
 
 import { TranslationService } from './TranslationService'
 import { logger } from './logger'
-import { validateLanguageTag, getNativeLanguageName } from './bcp47'
+import { validateLanguageTag, getNativeLanguageName, getTextDirection } from './bcp47'
 import { parsePartitionedKey, getPartitionPath } from './partition'
 import OpenAI from 'openai'
 
@@ -57,7 +57,7 @@ export class SyncCommand {
     logger.log(`✅ Translated`)
 
     // Auto-build dictionaries
-    require('./build').build(getPartitionPath(i18nPath, partition))
+    require('./build').build(getPartitionPath(i18nPath, partition), !!partition)
   }
 
   private async syncSpecificKey(
@@ -132,15 +132,10 @@ ${this.translationService.getPlaceholderInstructions()}`
     const sourceContent = fs.readFileSync(sourceFile, 'utf8')
     const sourceData = yaml.load(sourceContent) as any
 
-    // Extract all entries from source (excluding native and locale keys)
-    const { native, locale, ...sourceDataWithoutNative } = sourceData
+    // Extract all entries from source (excluding reserved keys)
+    const { native, locale, dir: _dir, ...sourceDataWithoutNative } = sourceData
     const sourceEntries = this.extractEntries(sourceDataWithoutNative)
     logger.log(`Source has ${sourceEntries.length} entries`)
-
-    if (sourceEntries.length === 0) {
-      logger.warn(`No entries found in source language "${sourceLang}"`)
-      return
-    }
 
     // Get saved contexts for enriched translation
     const savedContexts = this.translationService.contextManagerInstance.getAllContextEntries(i18nDir)
@@ -155,7 +150,8 @@ ${this.translationService.getPlaceholderInstructions()}`
         const nativeName = getNativeLanguageName(lang)
         const translatedData: any = {
           native: nativeName,
-          locale: lang
+          locale: lang,
+          dir: getTextDirection(lang),
         }
 
         for (const entry of sourceEntries) {
@@ -196,7 +192,8 @@ Return ONLY the translation as a string.`
       const nativeName = getNativeLanguageName(targetLang)
       const translatedData: any = {
         native: nativeName,
-        locale: targetLang
+        locale: targetLang,
+        dir: getTextDirection(targetLang),
       }
 
       // Translate entries in batches of 10
@@ -275,7 +272,8 @@ Return ONLY the translation as a string.`
         const nativeName = getNativeLanguageName(targetLang)
         const partitionTranslatedData: any = {
           native: nativeName,
-          locale: targetLang
+          locale: targetLang,
+          dir: getTextDirection(targetLang),
         }
 
         // Check if partition has its own source file
@@ -287,6 +285,7 @@ Return ONLY the translation as a string.`
           const partitionSourceDataWithoutNative = { ...partitionSourceData }
           delete partitionSourceDataWithoutNative.native
           delete partitionSourceDataWithoutNative.locale
+          delete partitionSourceDataWithoutNative.dir
 
           const partitionEntries = this.extractEntries(partitionSourceDataWithoutNative)
           const partitionSavedContexts = this.translationService.contextManagerInstance.getAllContextEntries(partitionI18nDir)
@@ -354,6 +353,7 @@ Return ONLY the translation as a string.`
               const mainTranslatedDataWithoutNative = { ...mainTranslatedData }
               delete mainTranslatedDataWithoutNative.native
               delete mainTranslatedDataWithoutNative.locale
+              delete mainTranslatedDataWithoutNative.dir
 
               const mainTranslatedEntries = this.extractEntries(mainTranslatedDataWithoutNative)
               for (const entry of mainTranslatedEntries) {

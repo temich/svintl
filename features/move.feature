@@ -136,11 +136,12 @@ Feature: Move command
       """
     And the file `zzz/context.yaml` contains:
       """
-      product:
-        count:
-          input: product
-          context: item for sale
-        name:
-          input: Product name
-          context: display name
+      inputs:
+        product:
+          count:
+            input: product
+            context: item for sale
+          name:
+            input: Product name
+            context: display name
       """

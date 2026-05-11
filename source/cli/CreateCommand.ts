@@ -4,7 +4,7 @@
 
 import { TranslationService } from './TranslationService'
 import { logger } from './logger'
-import { validateLanguageTag, getNativeLanguageName } from './bcp47'
+import { validateLanguageTag, getNativeLanguageName, getTextDirection } from './bcp47'
 import { parsePartitionedKey } from './partition'
 import OpenAI from 'openai'
 
@@ -38,6 +38,7 @@ export class CreateCommand {
 
     // Get native language name
     const nativeName = getNativeLanguageName(targetLang)
+    const dir = getTextDirection(targetLang)
 
     // If no source language is provided, create minimal file with native name
     if (!sourceLang) {
@@ -46,6 +47,7 @@ export class CreateCommand {
       const initialContent = {
         native: nativeName,
         locale: targetLang,
+        dir,
       }
 
       const yamlContent = yaml.dump(initialContent, {
@@ -100,8 +102,8 @@ export class CreateCommand {
     const sourceContent = fs.readFileSync(sourceFile, 'utf8')
     const sourceData = yaml.load(sourceContent) as any
 
-    // Extract all key-value pairs for translation (excluding native and locale keys)
-    const { native, locale, ...sourceDataWithoutNative } = sourceData
+    // Extract all key-value pairs for translation (excluding reserved keys)
+    const { native, locale, dir: _dir, ...sourceDataWithoutNative } = sourceData
     const entries = this.extractEntries(sourceDataWithoutNative)
 
     // Get saved contexts for enriched translation
@@ -117,6 +119,7 @@ export class CreateCommand {
       const initialContent = {
         native: nativeName,
         locale: targetLang,
+        dir,
       }
 
       const yamlContent = yaml.dump(initialContent, {
@@ -148,7 +151,8 @@ Return ONLY the translation as a string.`
     // Translate entries in batches of 10
     const translatedData: any = {
       native: nativeName,
-      locale: targetLang
+      locale: targetLang,
+      dir,
     }
 
     const batchSize = 10
@@ -225,6 +229,7 @@ Return ONLY the translation as a string.`
         const minimalContent = {
           native: nativeName,
           locale: targetLang,
+          dir,
         }
         const minimalYamlContent = yaml.dump(minimalContent, {
           lineWidth: -1,
@@ -243,11 +248,13 @@ Return ONLY the translation as a string.`
           const partitionSourceDataWithoutNative = { ...partitionSourceData }
           delete partitionSourceDataWithoutNative.native
           delete partitionSourceDataWithoutNative.locale
+          delete partitionSourceDataWithoutNative.dir
 
           const partitionEntries = this.extractEntries(partitionSourceDataWithoutNative)
           const partitionTranslatedData: any = {
             native: nativeName,
-            locale: targetLang
+            locale: targetLang,
+            dir,
           }
 
           logger.log(`Translating ${partitionEntries.length} entries for partition "${mountName}"...`)
@@ -304,6 +311,7 @@ Return ONLY the translation as a string.`
           const minimalContent = {
             native: nativeName,
             locale: targetLang,
+            dir,
           }
           const minimalYamlContent = yaml.dump(minimalContent, {
             lineWidth: -1,
