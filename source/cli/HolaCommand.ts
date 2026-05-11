@@ -73,6 +73,7 @@ inputs:
 # The 'native' key contains the language name in its own language
 native: English
 locale: en-US
+dir: ltr
 
 # Add your translations here
 # Example:

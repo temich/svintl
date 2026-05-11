@@ -43,11 +43,13 @@ Feature: Build
         "en-US": {
           "native": "English",
           "locale": "en-US",
+          "dir": "ltr",
           "hello": "Hello2"
         },
         "ru-RU": {
           "native": "Русский",
           "locale": "ru-RU",
+          "dir": "ltr",
           "hello": "Здравствуйте"
         }
       };
