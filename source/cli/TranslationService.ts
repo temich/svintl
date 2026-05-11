@@ -383,6 +383,6 @@ English: "!js\\n(names, groupName) => { const list = new Intl.ListFormat(\"en\",
     }
 
     // Auto-build dictionaries
-    build(partitionPath)
+    build(partitionPath, !!partition)
   }
 }

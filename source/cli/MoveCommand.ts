@@ -114,10 +114,10 @@ export class MoveCommand {
     // Auto-build both source and destination partitions if they are different
     const build = require('./build').build
     if (fromParsed.partition !== toParsed.partition) {
-      build(getPartitionPath(i18nPath, fromParsed.partition))
-      build(getPartitionPath(i18nPath, toParsed.partition))
+      build(getPartitionPath(i18nPath, fromParsed.partition), !!fromParsed.partition)
+      build(getPartitionPath(i18nPath, toParsed.partition), !!toParsed.partition)
     } else {
-      build(getPartitionPath(i18nPath, fromParsed.partition))
+      build(getPartitionPath(i18nPath, fromParsed.partition), !!fromParsed.partition)
     }
   }
 

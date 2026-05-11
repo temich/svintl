@@ -52,6 +52,6 @@ export class DelCommand {
     logger.log(`✅ Saved`)
 
     // Auto-build dictionaries
-    require('./build').build(getPartitionPath(i18nPath, partition))
+    require('./build').build(getPartitionPath(i18nPath, partition), !!partition)
   }
 }

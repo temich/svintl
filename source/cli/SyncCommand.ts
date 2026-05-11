@@ -57,7 +57,7 @@ export class SyncCommand {
     logger.log(`✅ Translated`)
 
     // Auto-build dictionaries
-    require('./build').build(getPartitionPath(i18nPath, partition))
+    require('./build').build(getPartitionPath(i18nPath, partition), !!partition)
   }
 
   private async syncSpecificKey(
