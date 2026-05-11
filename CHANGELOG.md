@@ -1,3 +1,16 @@
+# [1.13.0](https://github.com/temich/svintl/compare/v1.12.2...v1.13.0) (2026-05-11)
+
+
+### Bug Fixes
+
+* **build:** pass isPartition when building mounts directly ([fadfc7c](https://github.com/temich/svintl/commit/fadfc7c8bbcef9c89a37f0edcd67fff5205b6fb4))
+* **tests:** don't rethrow on non-zero exit in `I run` step ([18a8db4](https://github.com/temich/svintl/commit/18a8db434be4cfb1c289e73d56705b5232c766d0))
+
+
+### Features
+
+* auto-managed `dir` reserved key ([8c3cf78](https://github.com/temich/svintl/commit/8c3cf7816ce16da3ffcccac136ff7ba66dbf8f8d))
+
 ## [1.12.2](https://github.com/temich/svintl/compare/v1.12.1...v1.12.2) (2026-04-05)
 
 
