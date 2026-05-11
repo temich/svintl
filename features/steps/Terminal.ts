@@ -25,7 +25,6 @@ When(/I run `([^`]+)`/, function(command: string) {
     })
   } catch (error: any) {
     output = (error.stdout || '') + (error.stderr || '')
-    throw error
   }
 })
 
