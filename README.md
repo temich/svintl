@@ -142,9 +142,10 @@ Mounts allow you to organize translations into separate directories anywhere in 
 ```bash
 npx intl mount foo ./any/path # creates foo mount with empty dictionaries for all locales
 npx intl set foo/bar.baz "Hello mount" # set key in mount 'foo'
+npx intl import bar ./vendor/bar-intl # adopt an existing dictionary dir as a mount
 ```
 
-Mounts are created with the same languages as the root dictionary but start empty (no `native` key).
+Mounts are created with the same languages as the root dictionary but start empty (no `native` key). Use `import` instead to adopt a **populated** dictionary directory and reconcile its locales to the root.
 
 Mounts are useful for:
 
@@ -233,6 +234,12 @@ npx intl mount <mount> <dir>
 ```
 
 Create a dictionary mount at the specified path with empty dictionaries for all languages in the root directory. Mounts can be addressed with `mount/key` key syntax. Example: `npx intl set mount/key "value" "context"`.
+
+```bash
+npx intl import <name> <dir> [--js]
+```
+
+Adopt an existing dictionary directory (must contain `context.yaml`) as a mount and reconcile its locales to the root: drop languages the root lacks, generate languages it has but the mount lacks (translating the imported `inputs` with the root's context and genders), leave shared locales untouched. Errors if `<name>` is already a mount.
 
 ```bash
 npx intl unmount <mount>

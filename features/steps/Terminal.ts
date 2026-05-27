@@ -1,9 +1,9 @@
 import { execSync } from 'child_process'
-import { mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'fs'
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'fs'
 import { strict as assert } from 'node:assert'
 import { tmpdir } from 'os'
-import { join } from 'path'
-import { When, Then, Before } from '@cucumber/cucumber'
+import { dirname, join } from 'path'
+import { When, Then, Given, Before } from '@cucumber/cucumber'
 import dotenv from 'dotenv'
 import * as YAML from 'js-yaml'
 
@@ -15,6 +15,23 @@ let cwd: string = ''
 Before(function() {
   // Create a new temp directory for each scenario
   cwd = mkdtempSync(join(tmpdir(), 'intl-test-'))
+})
+
+Given(/a file `([^`]+)`:/, function(rel: string, content: string) {
+  const path = join(cwd, rel)
+
+  mkdirSync(dirname(path), { recursive: true })
+  writeFileSync(path, content)
+})
+
+Then(/the file `([^`]+)` does not exist/, function(rel: string) {
+  assert(!existsSync(join(cwd, rel)), `${rel} should not exist`)
+})
+
+Then(/the file `([^`]+)` does not contain:/, function(rel: string, unexpected: string) {
+  const content = readFileSync(join(cwd, rel), 'utf8')
+
+  assert(!content.includes(unexpected.trim()), `${rel} unexpectedly includes:\n${unexpected.trim()}`)
 })
 
 When(/I run `([^`]+)`/, function(command: string) {
