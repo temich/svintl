@@ -1,3 +1,10 @@
+# [1.14.0](https://github.com/temich/svintl/compare/v1.13.0...v1.14.0) (2026-05-27)
+
+
+### Features
+
+* `intl import <name> <dir>` adopts an existing mount ([fee88fb](https://github.com/temich/svintl/commit/fee88fbeec5fa337879a6541d8ce0c4885bb054d))
+
 # [1.13.0](https://github.com/temich/svintl/compare/v1.12.2...v1.13.0) (2026-05-11)
 
 
