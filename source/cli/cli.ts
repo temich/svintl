@@ -21,6 +21,7 @@ import { DestroyCommand } from './DestroyCommand'
 import { SyncCommand } from './SyncCommand'
 import { HolaCommand } from './HolaCommand'
 import { MountCommand } from './MountCommand'
+import { ImportCommand } from './ImportCommand'
 import { UnmountCommand } from './UnmountCommand'
 import { ConstCommand } from './ConstCommand'
 import { ContextCommand } from './ContextCommand'
@@ -66,6 +67,25 @@ const cli = yargs(hideBin(process.argv))
   }, async (argv) => {
     const mountCommand = new MountCommand()
     await mountCommand.execute(argv.mount!, argv.dir!, argv.js, argv.path)
+  })
+  .command('import <name> <dir>', 'Adopt an existing dictionary directory as a mount and reconcile its locales', (yargs) => {
+    return yargs
+      .positional('name', {
+        describe: 'Mount name',
+        type: 'string'
+      })
+      .positional('dir', {
+        describe: 'Path to existing dictionary directory',
+        type: 'string'
+      })
+      .option('js', {
+        type: 'boolean',
+        default: false,
+        description: 'Use JavaScript instead of TypeScript'
+      })
+  }, async (argv) => {
+    const importCommand = new ImportCommand()
+    await importCommand.execute(argv.name!, argv.dir!, argv.js, argv.path)
   })
   .command('unmount <mount>', 'Remove a mount from context (keeps partition files)', (yargs) => {
     return yargs

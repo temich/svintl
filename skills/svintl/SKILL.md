@@ -28,7 +28,8 @@ npx intl move old.key new.key               # rename key/branch
 npx intl del key.path                       # delete key/branch
 npx intl create es                          # new locale (BCP 47 tag, auto-translates)
 npx intl destroy es                         # delete locale
-npx intl mount foo ./any/path               # create mount
+npx intl mount foo ./any/path               # create empty mount
+npx intl import foo ./any/path              # adopt existing dict dir as mount, reconcile locales
 npx intl unmount foo                        # remove mount (keeps files)
 npx intl context "Project description"      # set project-wide translation guidance
 npx intl context --clear                    # clear project context
@@ -102,6 +103,8 @@ npx intl set "admin/dashboard.title" "Admin Dashboard"
 ```
 
 Mount keys use `{mount}/` prefix in CLI commands.
+
+`mount` scaffolds an empty mount; `import` adopts a populated dir (with its own `context.yaml`) and reconciles its locales to the root — drops languages the root lacks, generates ones it lacks (translating the imported `inputs`), leaves shared locales untouched.
 
 ## Import Pattern
 

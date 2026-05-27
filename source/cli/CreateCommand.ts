@@ -328,6 +328,53 @@ Return ONLY the translation as a string.`
     require('./build').build(i18nPath)
   }
 
+  /**
+   * Batch-translate a flat list of entries (with per-key context) into a nested
+   * object of translated keys only — no reserved native/locale/dir keys.
+   * Reuses the same OpenAI batch logic as `execute`. Empty input → empty object.
+   * Shared with ImportCommand to avoid duplicating the translation pipeline.
+   */
+  async translateEntries(
+    entries: Array<{ key: string; value: string; context?: string }>,
+    targetLang: string,
+    projectContext?: string,
+    genderInstructions?: string | null
+  ): Promise<Record<string, any>> {
+    const result: any = {}
+
+    if (entries.length === 0)
+      return result
+
+    const systemPrompt = `You are a professional translator for an internationalization system. You will receive text in ANY locale and must translate it to the specified target locale.
+
+${this.translationService.getCommonTranslationPromptBody()}
+
+Target language: ${targetLang}
+
+Return ONLY the translation as a string.`
+    const systemPromptWithGender = genderInstructions ? `${systemPrompt}\n\n${genderInstructions}` : systemPrompt
+
+    const batchSize = 10
+    for (let i = 0; i < entries.length; i += batchSize) {
+      const batch = entries.slice(i, i + batchSize)
+      const batchValues = batch.map(e => e.value)
+      const batchContexts = batch.map(e => e.context)
+
+      const batchTranslations = await this.translateBatch(
+        batchValues,
+        batchContexts,
+        targetLang,
+        systemPromptWithGender,
+        projectContext
+      )
+
+      for (let j = 0; j < batch.length; j++)
+        this.setNestedValue(result, batch[j].key, batchTranslations[j] ?? batch[j].value)
+    }
+
+    return result
+  }
+
   private extractEntries(obj: any, prefix = ''): Array<{ key: string; value: string }> {
     const entries: Array<{ key: string; value: string }> = []
 
