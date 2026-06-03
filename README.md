@@ -292,13 +292,13 @@ npx intl context --clear
 Sets or clears project-wide translation guidance stored in `context.yaml`.
 
 ```bash
-npx intl genders true
-npx intl genders false
+npx intl genders he she none   # enable; list the gender values (last = neutral/fallback)
+npx intl genders               # print current values
 ```
 
-Enables or disables grammatical gender guidance for translations. When enabled, phrases that vary by gender should be stored as functions that accept `gender: 'he' | 'she' | 'none'`. Use the neutral form when possible; otherwise use a combined form (e.g., `бежал(а)`, `должен(на)`), and avoid neuter forms for people.
+Lists the grammatical genders your strings vary by — they become the `Grammar` union in the generated types. Disable by removing the `genders` key from `context.yaml` (there is no `genders false`).
 
-Example:
+Gender-dependent phrases become `!js` functions taking the gender as their **last** argument (the phrase's own arguments, if any, come first). Prefer the neutral form; otherwise a combined one (`бежал(а)`, `должен(на)`), never a neuter form for a person.
 
 ```yaml
 run: |
