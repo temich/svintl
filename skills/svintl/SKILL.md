@@ -33,8 +33,8 @@ npx intl import foo ./any/path              # adopt existing dict dir as mount, 
 npx intl unmount foo                        # remove mount (keeps files)
 npx intl context "Project description"      # set project-wide translation guidance
 npx intl context --clear                    # clear project context
-npx intl genders true                       # enable gender-aware translations
-npx intl genders false                      # disable
+npx intl genders he she none                # enable gender-aware translations (list the gender values)
+npx intl genders                            # print current gender values
 npx intl sync en                            # re-translate all from source (EXPENSIVE — avoid)
 npx intl sync en key.path                   # re-translate specific key
 npx intl build                              # rebuild JS/TS from YAML
@@ -91,7 +91,7 @@ Complex locales (Russian, Arabic) auto-get `few`, `many`, etc.
 
 ### Genders
 
-When enabled (`npx intl genders true`), gender-dependent phrases become functions with `gender: 'he' | 'she' | 'none'`.
+When enabled (`npx intl genders he she none`), gender-dependent phrases become functions whose **last** argument is the gender (`'he' | 'she' | 'none'`) — the phrase's own arguments come first, e.g. `(name, gender) => …`. The listed values become the generated `Grammar` union.
 
 ## Mounts
 
