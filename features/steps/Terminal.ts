@@ -138,6 +138,10 @@ Then('the editor page contains:', function(expected: string) {
   assert(openPage.includes(expected.trim()), `editor page does not include:\n${expected.trim()}`)
 })
 
+Then('the editor page does not contain:', function(unexpected: string) {
+  assert(!openPage.includes(unexpected.trim()), `editor page unexpectedly includes:\n${unexpected.trim()}`)
+})
+
 When('I save the editor with no changes', async function() {
   const res = await fetch(`http://127.0.0.1:${openPort}/api/save`, {
     method: 'POST',

@@ -10,7 +10,7 @@ import { createServer } from 'http'
 import { spawn } from 'child_process'
 import { readFileSync } from 'fs'
 import { join } from 'path'
-import { load as yamlLoad, dump as yamlDump } from 'js-yaml'
+import { load as yamlLoad } from 'js-yaml'
 import { TranslationService } from './TranslationService'
 import { SetCommand } from './SetCommand'
 import { parsePartitionedKey } from './partition'
@@ -95,15 +95,16 @@ export class OpenCommand {
 
   private collect(node: any, prefix: string, leaves: Leaf[]): void {
     if (typeof node === 'string') {
+      // Hide !js function entries — only plain strings are editable here.
+      if (node.trim().startsWith('!js'))
+        return
       leaves.push({ key: prefix, value: node })
       return
     }
 
-    if (Array.isArray(node)) {
-      // Plural form arrays (e.g. [{ one, other }]) are serialized verbatim.
-      leaves.push({ key: prefix, value: yamlDump(node).trimEnd() })
+    // Hide pluralization arrays (e.g. [{ one, other }]).
+    if (Array.isArray(node))
       return
-    }
 
     if (node && typeof node === 'object') {
       for (const [childKey, childValue] of Object.entries(node)) {

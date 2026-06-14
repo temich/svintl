@@ -29,6 +29,36 @@ Feature: Open command
     And the editor saved 0 change(s)
     And the editor server has stopped
 
+  Scenario: Hide plural and js entries
+    When I run `npx intl hola -p ./test-open-hide`
+    And I modify `test-open-hide/en-US.yaml` to add:
+      """
+      example:
+        hello: Hello world
+      items:
+        count:
+          - one: item
+            other: items
+      formatName: |
+        !js
+        (name) => `Hi ${name}`
+      """
+    And I open the editor with ` -p ./test-open-hide` on port 4714
+    Then the editor page contains:
+      """
+      example.hello
+      """
+    And the editor page does not contain:
+      """
+      items.count
+      """
+    And the editor page does not contain:
+      """
+      formatName
+      """
+    When I save the editor with no changes
+    Then the editor save succeeds
+
   Scenario: Open a single entry
     When I run `npx intl hola -p ./test-open-single`
     And I modify `test-open-single/en-US.yaml` to add:
