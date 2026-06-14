@@ -13,6 +13,9 @@ import { build } from './build'
 import { ContextFileManager } from './context'
 import { getPartitionPath } from './partition'
 
+/** OpenAI model used for all translation requests. */
+const TRANSLATION_MODEL = 'gpt-5.5'
+
 export class TranslationService {
   private contextManager = new ContextFileManager()
 
@@ -30,11 +33,15 @@ export class TranslationService {
 1. Detect the source language automatically - do not assume English.
 2. Translate into the target locale so the result is natural, idiomatic, and what native speakers commonly use in the given context. For UI elements (buttons, links, menus, calls to action) prefer inviting, idiomatic phrasing over literal wording. Translate every part of compound phrases.
 3. If the input begins with "!js", keep the "!js" tag and translate it as a JavaScript function: adapt the logic, conditions and return values to the target locale's grammar and pluralization rules, but keep the exact same parameters (same names and count) unless a gender parameter is explicitly required.
-4. If the phrase contains {placeholder} tokens (e.g. {name}, {itemId}), the translation MUST be a "!js" function whose parameters match those tokens.
+4. A plain phrase containing {placeholder} tokens (e.g. {name}, {itemId}, {price}) is expected to be a function: the translation MUST be a "!js" function whose parameters match those tokens.
 5. If the phrase contains [list] tokens in square brackets (e.g. [names]), treat them as array-of-strings parameters, format them with Intl.ListFormat using style "long" and type "conjunction", and make the surrounding grammar agree with the list length (e.g. singular vs plural verb).
 6. In any "!js" function use double quotes (") for string literals (escape as \\" in JSON), never single quotes (').
 
 EXAMPLES:
+
+Placeholder phrase becomes a function (any -> English):
+Input: "Subscribe for {price} per month"
+English: "!js\\n(price) => \`Subscribe for \${price} per month\`"
 
 Pluralization into a complex locale (any -> Russian):
 Input: "!js\\n(count) => count === 1 ? 'one item' : \`\${count} items\`"
@@ -158,7 +165,7 @@ Return ONLY a JSON array of translations in the same order as the items above.`
 
     try {
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4.1',
+        model: TRANSLATION_MODEL,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: `Translate all ${values.length} items to ${targetLang}. Return a JSON array of strings.` },
@@ -291,7 +298,7 @@ Return ONLY a JSON array of translations in the same order as the items above.`
 
       const resolvedSystemContent = systemPrompt.replace('${allLocales}', allLocales.join(', '))
       const requestPayload = {
-        model: 'gpt-4.1',
+        model: TRANSLATION_MODEL,
         messages: [
           { role: 'system' as const, content: resolvedSystemContent },
           { role: 'user' as const, content: contextPrompt },
