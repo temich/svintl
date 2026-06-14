@@ -239,7 +239,7 @@ npx intl open -l ru-RU         # edit a specific locale
 npx intl open --port 4567      # choose the server port
 ```
 
-Starts a small local web server and opens your browser with a no-framework editor. You edit one locale (default `en-US`, or the first available; override with `--locale`/`-l`). Pressing **Save** writes the changed entries through the same translate-to-all pipeline as `set` (so other locales are re-translated via OpenAI), then the server shuts down and the CLI exits. Only plain-string entries are editable; `!js` functions and pluralization arrays are hidden.
+Starts a small local web server and opens your browser with a no-framework editor. You edit one locale (default `en-US`, or the first available; override with `--locale`/`-l`). Each field shows an editable translator **context** (pre-filled from `context.yaml`). Pressing **Save** writes the changed entries through the same translate-to-all pipeline as `set` (so other locales are re-translated via OpenAI) — a field is re-translated when its value or its context changed, and untouched fields are left alone. Then the server shuts down and the CLI exits. Only plain-string entries are editable; `!js` functions and pluralization arrays are hidden.
 
 ```bash
 npx intl mount <mount> <dir>

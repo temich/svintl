@@ -74,6 +74,29 @@ Feature: Open command
     When I save the editor with no changes
     Then the editor save succeeds
 
+  Scenario: Pre-fill per-field context
+    When I run `npx intl hola -p ./test-open-ctx`
+    And I modify `test-open-ctx/en-US.yaml` to add:
+      """
+      example:
+        hello: Hello world
+      """
+    And a file `test-open-ctx/context.yaml`:
+      """
+      inputs:
+        example:
+          hello:
+            input: Hello world
+            context: greeting on the homepage
+      """
+    And I open the editor with `example -p ./test-open-ctx` on port 4716
+    Then the editor page contains:
+      """
+      greeting on the homepage
+      """
+    When I save the editor with no changes
+    Then the editor save succeeds
+
   Scenario: Open a whole mount
     When I run `npx intl hola -p ./test-open-mount`
     And I run `npx intl mount foo ./foo -p ./test-open-mount`

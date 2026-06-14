@@ -13,7 +13,8 @@ import { join } from 'path'
 import { load as yamlLoad } from 'js-yaml'
 import { TranslationService } from './TranslationService'
 import { SetCommand } from './SetCommand'
-import { parsePartitionedKey } from './partition'
+import { ContextFileManager } from './context'
+import { parsePartitionedKey, getPartitionPath } from './partition'
 import { logger } from './logger'
 
 interface OpenOptions {
@@ -24,12 +25,14 @@ interface OpenOptions {
 interface Leaf {
   key: string
   value: string
+  context: string
 }
 
 const META_KEYS = ['native', 'locale', 'dir']
 
 export class OpenCommand {
   private translationService = new TranslationService()
+  private contextManager = new ContextFileManager()
 
   async execute(target: string | undefined, i18nPath = './src/lib/intl/', options: OpenOptions = {}): Promise<void> {
     const port = options.port ?? 4567
@@ -56,6 +59,11 @@ export class OpenCommand {
 
     if (leaves.length === 0)
       logger.error(`Nothing editable found at "${target ?? '(root)'}" in locale "${locale}"`)
+
+    // Pre-fill each field's translator context from context.yaml.
+    const partitionPath = getPartitionPath(i18nPath, partition)
+    for (const leaf of leaves)
+      leaf.context = this.contextManager.getContextEntry(partitionPath, leaf.key)?.context ?? ''
 
     const title = target ? target : '(root)'
     const html = this.renderHtml({ title, locale, partition, leaves })
@@ -98,7 +106,7 @@ export class OpenCommand {
       // Hide !js function entries — only plain strings are editable here.
       if (node.trim().startsWith('!js'))
         return
-      leaves.push({ key: prefix, value: node })
+      leaves.push({ key: prefix, value: node, context: '' })
       return
     }
 
@@ -118,11 +126,11 @@ export class OpenCommand {
     }
 
     if (node !== undefined && node !== null)
-      leaves.push({ key: prefix, value: String(node) })
+      leaves.push({ key: prefix, value: String(node), context: '' })
   }
 
   private serve(html: string, leaves: Leaf[], partition: string | undefined, i18nPath: string, port: number, locale: string): Promise<void> {
-    const original = new Map(leaves.map(leaf => [leaf.key, leaf.value]))
+    const original = new Map(leaves.map(leaf => [leaf.key, leaf]))
 
     return new Promise((resolve) => {
       const server = createServer((req, res) => {
@@ -144,7 +152,10 @@ export class OpenCommand {
           req.on('end', async () => {
             try {
               const payload = JSON.parse(body || '{}') as { changes?: Leaf[] }
-              const changes = (payload.changes ?? []).filter(c => original.get(c.key) !== c.value)
+              const changes = (payload.changes ?? []).filter(c => {
+                const before = original.get(c.key)
+                return !before || before.value !== c.value || before.context !== c.context
+              })
 
               await this.applyChanges(changes, partition, i18nPath)
 
@@ -177,7 +188,7 @@ export class OpenCommand {
     const setCommand = new SetCommand()
     for (const change of changes) {
       const fullKey = partition ? `${partition}/${change.key}` : change.key
-      await setCommand.execute(fullKey, change.value, undefined, i18nPath)
+      await setCommand.execute(fullKey, change.value, change.context || undefined, i18nPath)
     }
   }
 
@@ -218,10 +229,13 @@ export class OpenCommand {
   details > summary::before { content: "▸"; display: inline-block; width: 1em; opacity: .6; transition: transform .1s; }
   details[open] > summary::before { transform: rotate(90deg); }
   .children { margin-left: 1.1em; border-left: 1px solid color-mix(in srgb, CanvasText 12%, transparent); padding-left: 12px; }
-  .leaf { margin: 6px 0; }
+  .leaf { margin: 10px 0; }
   .leaf label { display: block; font-size: 12px; opacity: .8; margin-bottom: 2px; }
-  textarea { width: 100%; font: inherit; padding: 6px 8px; border: 1px solid color-mix(in srgb, CanvasText 25%, transparent); border-radius: 6px; background: Canvas; color: CanvasText; resize: vertical; }
-  textarea.changed { border-color: #d98a00; box-shadow: 0 0 0 1px #d98a00; }
+  textarea, input.ctx { width: 100%; font: inherit; padding: 6px 8px; border: 1px solid color-mix(in srgb, CanvasText 25%, transparent); border-radius: 6px; background: Canvas; color: CanvasText; }
+  textarea { resize: vertical; }
+  input.ctx { margin-top: 4px; font-size: 12px; opacity: .85; }
+  input.ctx::placeholder { opacity: .5; }
+  textarea.changed, input.ctx.changed { border-color: #d98a00; box-shadow: 0 0 0 1px #d98a00; }
   footer { position: fixed; bottom: 0; left: 0; right: 0; background: Canvas; border-top: 1px solid color-mix(in srgb, CanvasText 18%, transparent); padding: 12px 20px; display: flex; align-items: center; gap: 12px; }
   button { font: inherit; font-weight: 600; padding: 8px 18px; border: 0; border-radius: 6px; background: #2563eb; color: #fff; cursor: pointer; }
   button:disabled { opacity: .5; cursor: default; }
@@ -243,7 +257,7 @@ export class OpenCommand {
 (function () {
   var data = JSON.parse(document.getElementById('data').textContent);
   var original = {};
-  data.leaves.forEach(function (l) { original[l.key] = l.value; });
+  data.leaves.forEach(function (l) { original[l.key] = { value: l.value, context: l.context }; });
 
   // Build a nested tree from dot-separated keys.
   var rootNode = { children: {}, leaves: [] };
@@ -255,7 +269,7 @@ export class OpenCommand {
       node.children[seg] = node.children[seg] || { children: {}, leaves: [] };
       node = node.children[seg];
     }
-    node.leaves.push({ key: leaf.key, label: parts[parts.length - 1], value: leaf.value });
+    node.leaves.push({ key: leaf.key, label: parts[parts.length - 1], value: leaf.value, context: leaf.context });
   });
 
   function makeLeaf(leaf) {
@@ -268,10 +282,20 @@ export class OpenCommand {
     ta.dataset.key = leaf.key;
     ta.rows = Math.min(10, leaf.value.split('\\n').length);
     ta.addEventListener('input', function () {
-      ta.classList.toggle('changed', ta.value !== original[leaf.key]);
+      ta.classList.toggle('changed', ta.value !== original[leaf.key].value);
+    });
+    var ctx = document.createElement('input');
+    ctx.type = 'text';
+    ctx.className = 'ctx';
+    ctx.value = leaf.context;
+    ctx.placeholder = 'context for the translator';
+    ctx.dataset.key = leaf.key;
+    ctx.addEventListener('input', function () {
+      ctx.classList.toggle('changed', ctx.value !== original[leaf.key].context);
     });
     wrap.appendChild(label);
     wrap.appendChild(ta);
+    wrap.appendChild(ctx);
     return wrap;
   }
 
@@ -300,9 +324,12 @@ export class OpenCommand {
   var status = document.getElementById('status');
   saveBtn.addEventListener('click', function () {
     var changes = [];
-    document.querySelectorAll('textarea').forEach(function (ta) {
-      if (ta.value !== original[ta.dataset.key])
-        changes.push({ key: ta.dataset.key, value: ta.value });
+    document.querySelectorAll('.leaf').forEach(function (leaf) {
+      var ta = leaf.querySelector('textarea');
+      var ctx = leaf.querySelector('input.ctx');
+      var key = ta.dataset.key;
+      if (ta.value !== original[key].value || ctx.value !== original[key].context)
+        changes.push({ key: key, value: ta.value, context: ctx.value });
     });
     saveBtn.disabled = true;
     status.textContent = changes.length ? 'Saving & translating ' + changes.length + ' entr' + (changes.length === 1 ? 'y' : 'ies') + '…' : 'No changes — finishing…';
