@@ -1,3 +1,10 @@
+# [1.16.0](https://github.com/temich/svintl/compare/v1.15.0...v1.16.0) (2026-06-14)
+
+
+### Features
+
+* bump openai model ([b5d3cdc](https://github.com/temich/svintl/commit/b5d3cdc703d2af7572be6e2f3333378f61f00d21))
+
 # [1.15.0](https://github.com/temich/svintl/compare/v1.14.0...v1.15.0) (2026-06-14)
 
 
