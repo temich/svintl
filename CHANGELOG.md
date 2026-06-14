@@ -1,3 +1,12 @@
+# [1.15.0](https://github.com/temich/svintl/compare/v1.14.0...v1.15.0) (2026-06-14)
+
+
+### Features
+
+* add `open` ([c01faac](https://github.com/temich/svintl/commit/c01faacf2db6e1e46f14ad3c4d4adc781be61a1b))
+* **open:** add context ([53051d3](https://github.com/temich/svintl/commit/53051d3ff63381832920101f1b442c28b47f9d74))
+* **open:** hide complex fields ([7d2662f](https://github.com/temich/svintl/commit/7d2662f6829ced7ed4ba682d47216221b964bc89))
+
 # [1.14.0](https://github.com/temich/svintl/compare/v1.13.0...v1.14.0) (2026-05-27)
 
 
