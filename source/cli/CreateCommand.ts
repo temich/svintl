@@ -6,7 +6,6 @@ import { TranslationService } from './TranslationService'
 import { logger } from './logger'
 import { validateLanguageTag, getNativeLanguageName, getTextDirection } from './bcp47'
 import { parsePartitionedKey } from './partition'
-import OpenAI from 'openai'
 
 export class CreateCommand {
   private translationService = new TranslationService()
@@ -104,7 +103,7 @@ export class CreateCommand {
 
     // Extract all key-value pairs for translation (excluding reserved keys)
     const { native, locale, dir: _dir, ...sourceDataWithoutNative } = sourceData
-    const entries = this.extractEntries(sourceDataWithoutNative)
+    const entries = this.translationService.extractEntries(sourceDataWithoutNative)
 
     // Get saved contexts for enriched translation
     const savedContexts = this.translationService.contextManagerInstance.getAllContextEntries(i18nPath)
@@ -134,18 +133,6 @@ export class CreateCommand {
       return
     }
 
-    // Create system prompt for translations
-    const systemPrompt = `You are a professional translator for an internationalization system. You will receive text in ANY locale and must translate it to the specified target locale.
-
-${this.translationService.getCommonTranslationPromptBody()}
-
-Target language: ${targetLang}
-
-Return ONLY the translation as a string.`
-
-    const genderInstructions = this.translationService.getGenderInstructions(i18nPath)
-    const systemPromptWithGender = genderInstructions ? `${systemPrompt}\n\n${genderInstructions}` : systemPrompt
-
     const projectContext = this.translationService.getGlobalProjectContext(i18nPath)
 
     // Translate entries in batches of 10
@@ -165,30 +152,30 @@ Return ONLY the translation as a string.`
       logger.log(`Translating batch ${Math.floor(i / batchSize) + 1}: ${batchKeys.join(', ')}`)
 
       try {
-          const batchTranslations = await this.translateBatch(
-          batchValues,
-          batchContexts,
+        const batchTranslations = await this.translationService.translateBatch({
+          values: batchValues,
+          contexts: batchContexts,
           targetLang,
-          systemPromptWithGender,
-          projectContext
-        )
+          i18nPath,
+          projectContext,
+        })
 
         // Apply translations to the data structure
         for (let j = 0; j < batch.length; j++) {
           const entry = batch[j]
           const translation = batchTranslations[j]
           if (translation) {
-            this.setNestedValue(translatedData, entry.key, translation)
+            this.translationService.setNestedValue(translatedData, entry.key, translation)
           } else {
             // Fallback to original value
-            this.setNestedValue(translatedData, entry.key, entry.value)
+            this.translationService.setNestedValue(translatedData, entry.key, entry.value)
           }
         }
       } catch (error) {
         logger.error(`Failed to translate batch: ${error}`)
         // Fallback to original values for the entire batch
         for (const entry of batch) {
-          this.setNestedValue(translatedData, entry.key, entry.value)
+          this.translationService.setNestedValue(translatedData, entry.key, entry.value)
         }
       }
     }
@@ -250,7 +237,7 @@ Return ONLY the translation as a string.`
           delete partitionSourceDataWithoutNative.locale
           delete partitionSourceDataWithoutNative.dir
 
-          const partitionEntries = this.extractEntries(partitionSourceDataWithoutNative)
+          const partitionEntries = this.translationService.extractEntries(partitionSourceDataWithoutNative)
           const partitionTranslatedData: any = {
             native: nativeName,
             locale: targetLang,
@@ -270,30 +257,30 @@ Return ONLY the translation as a string.`
             logger.log(`Translating partition batch ${Math.floor(i / partitionBatchSize) + 1}: ${batchKeys.join(', ')}`)
 
             try {
-              const batchTranslations = await this.translateBatch(
-                batchValues,
-                batchContexts,
+              const batchTranslations = await this.translationService.translateBatch({
+                values: batchValues,
+                contexts: batchContexts,
                 targetLang,
-                systemPromptWithGender,
-                projectContext
-              )
+                i18nPath,
+                projectContext,
+              })
 
               // Apply translations to the partition data structure
               for (let j = 0; j < batch.length; j++) {
                 const entry = batch[j]
                 const translation = batchTranslations[j]
                 if (translation) {
-                  this.setNestedValue(partitionTranslatedData, entry.key, translation)
+                  this.translationService.setNestedValue(partitionTranslatedData, entry.key, translation)
                 } else {
                   // Fallback to original value
-                  this.setNestedValue(partitionTranslatedData, entry.key, entry.value)
+                  this.translationService.setNestedValue(partitionTranslatedData, entry.key, entry.value)
                 }
               }
             } catch (error) {
               logger.error(`Failed to translate partition batch: ${error}`)
               // Fallback to original values for the entire batch
               for (const entry of batch) {
-                this.setNestedValue(partitionTranslatedData, entry.key, entry.value)
+                this.translationService.setNestedValue(partitionTranslatedData, entry.key, entry.value)
               }
             }
           }
@@ -338,144 +325,29 @@ Return ONLY the translation as a string.`
     entries: Array<{ key: string; value: string; context?: string }>,
     targetLang: string,
     projectContext?: string,
-    genderInstructions?: string | null
+    i18nPath = './src/lib/intl/'
   ): Promise<Record<string, any>> {
     const result: any = {}
 
     if (entries.length === 0)
       return result
 
-    const systemPrompt = `You are a professional translator for an internationalization system. You will receive text in ANY locale and must translate it to the specified target locale.
-
-${this.translationService.getCommonTranslationPromptBody()}
-
-Target language: ${targetLang}
-
-Return ONLY the translation as a string.`
-    const systemPromptWithGender = genderInstructions ? `${systemPrompt}\n\n${genderInstructions}` : systemPrompt
-
     const batchSize = 10
     for (let i = 0; i < entries.length; i += batchSize) {
       const batch = entries.slice(i, i + batchSize)
-      const batchValues = batch.map(e => e.value)
-      const batchContexts = batch.map(e => e.context)
 
-      const batchTranslations = await this.translateBatch(
-        batchValues,
-        batchContexts,
+      const batchTranslations = await this.translationService.translateBatch({
+        values: batch.map(e => e.value),
+        contexts: batch.map(e => e.context),
         targetLang,
-        systemPromptWithGender,
-        projectContext
-      )
+        i18nPath,
+        projectContext,
+      })
 
       for (let j = 0; j < batch.length; j++)
-        this.setNestedValue(result, batch[j].key, batchTranslations[j] ?? batch[j].value)
+        this.translationService.setNestedValue(result, batch[j].key, batchTranslations[j] ?? batch[j].value)
     }
 
     return result
-  }
-
-  private extractEntries(obj: any, prefix = ''): Array<{ key: string; value: string }> {
-    const entries: Array<{ key: string; value: string }> = []
-
-    for (const [key, value] of Object.entries(obj)) {
-      const fullKey = prefix ? `${prefix}.${key}` : key
-
-      if (typeof value === 'string') {
-        entries.push({ key: fullKey, value })
-      } else if (typeof value === 'object' && value !== null) {
-        entries.push(...this.extractEntries(value, fullKey))
-      }
-    }
-
-    return entries
-  }
-
-  private async translateBatch(
-    values: string[],
-    contexts: (string | undefined)[],
-    targetLang: string,
-    baseSystemPrompt: string,
-    projectContext?: string
-  ): Promise<string[]> {
-    if (!process.env.OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY environment variable is required')
-    }
-
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    })
-
-    // Create batch prompt
-    const batchItems = values.map((value, index) => {
-      const context = contexts[index]
-      return `Item ${index + 1}:
-Phrase: ${value}
-Context: ${context || 'None provided'}`
-    }).join('\n\n')
-
-    const pc = this.translationService.projectContextPromptPrefix(projectContext)
-    const systemPrompt = baseSystemPrompt.replace(
-      'Return ONLY the translation as a string.',
-      `${pc}Translate all ${values.length} items below to ${targetLang}.
-
-${batchItems}
-
-Return ONLY a JSON array of translations in the same order as the items above.`
-    )
-
-    try {
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-4.1',
-        messages: [
-          {
-            role: 'system',
-            content: systemPrompt,
-          },
-          {
-            role: 'user',
-            content: `Translate all ${values.length} items to ${targetLang}. Return a JSON array of strings.`,
-          },
-        ],
-        max_completion_tokens: 4000,
-      })
-
-      const response = completion.choices[0]?.message?.content
-      if (!response) {
-        throw new Error('No response from OpenAI')
-      }
-
-      // Parse JSON response
-      let cleanResponse = response.trim()
-      if (cleanResponse.startsWith('```json')) {
-        cleanResponse = cleanResponse.replace(/^```json\s*/, '').replace(/\s*```$/, '')
-      } else if (cleanResponse.startsWith('```')) {
-        cleanResponse = cleanResponse.replace(/^```\s*/, '').replace(/\s*```$/, '')
-      }
-
-      const parsed = JSON.parse(cleanResponse)
-      if (Array.isArray(parsed)) {
-        return parsed
-      } else {
-        throw new Error(`Expected JSON array, got: ${typeof parsed}`)
-      }
-    } catch (error: any) {
-      throw new Error(`Batch translation failed: ${error.message}`)
-    }
-  }
-
-  private setNestedValue(obj: any, keyPath: string, value: any): void {
-    const keys = keyPath.split('.')
-    let current = obj
-
-    for (let i = 0; i < keys.length - 1; i++) {
-      const key = keys[i]
-      if (!current[key]) {
-        current[key] = {}
-      }
-      current = current[key]
-    }
-
-    current[keys[keys.length - 1]] = value
   }
 }

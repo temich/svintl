@@ -20,71 +20,33 @@ export class TranslationService {
     return this.contextManager
   }
 
+  /**
+   * The shared, deduplicated body of translation instructions used by every
+   * command. Stated once each: source detection, naturalness, !js handling,
+   * {placeholder}/[list] rules, and quoting — followed by a few worked examples.
+   */
   getCommonTranslationPromptBody(): string {
-    return [
-      this.getTranslationRules(),
-      this.getTranslationExamples(),
-      this.getTranslationCriticalRules(),
-    ].join('\n\n')
-  }
+    return `RULES:
+1. Detect the source language automatically - do not assume English.
+2. Translate into the target locale so the result is natural, idiomatic, and what native speakers commonly use in the given context. For UI elements (buttons, links, menus, calls to action) prefer inviting, idiomatic phrasing over literal wording. Translate every part of compound phrases.
+3. If the input begins with "!js", keep the "!js" tag and translate it as a JavaScript function: adapt the logic, conditions and return values to the target locale's grammar and pluralization rules, but keep the exact same parameters (same names and count) unless a gender parameter is explicitly required.
+4. If the phrase contains {placeholder} tokens (e.g. {name}, {itemId}), the translation MUST be a "!js" function whose parameters match those tokens.
+5. If the phrase contains [list] tokens in square brackets (e.g. [names]), treat them as array-of-strings parameters, format them with Intl.ListFormat using style "long" and type "conjunction", and make the surrounding grammar agree with the list length (e.g. singular vs plural verb).
+6. In any "!js" function use double quotes (") for string literals (escape as \\" in JSON), never single quotes (').
 
-  getPlaceholderInstructions(): string {
-    return [
-      'If the phrase contains placeholders like {name} or {itemId}, the translation MUST be a !js function with matching parameters.',
-      'If the phrase contains placeholders like [names] in square brackets, treat them as array-of-strings parameters and use Intl.ListFormat with style "long" and type "conjunction".',
-      'Build grammatically correct phrases based on list length (e.g., singular vs plural verb agreement).',
-    ].join('\n')
-  }
+EXAMPLES:
 
-  private getTranslationRules(): string {
-    return `IMPORTANT RULES:
-1. DETECT the input locale automatically - do not assume it's English
-2. If the input starts with "!js", it's a JavaScript function that returns localized strings
-3. For !js functions: Keep the "!js" tag but ADAPT the JavaScript logic to match the target locale's grammar rules
-4. You can modify conditions, logic, and structure to fit the target locale's pluralization and grammar rules
-5. For regular text: Translate from the detected source locale to the target locale
-6. If the phrase contains placeholders like {name} or {itemId}, the translation MUST be a !js function with matching parameters
-7. If the phrase contains placeholders like [names] in square brackets, treat them as array-of-strings parameters and use Intl.ListFormat with style "long" and type "conjunction"
-8. Build grammatically correct phrases based on list length (e.g., singular vs plural verb agreement)
-9. Always maintain the exact same function parameters (don't change parameter names or count) unless instructed to add a gender parameter
-10. Use DOUBLE QUOTES for all string literals to avoid JavaScript syntax errors
-11. Translate ALL parts of compound phrases completely
-12. Ensure translations sound natural and commonly used within the provided context
-13. For UI elements (buttons, links, menus), choose idiomatic, inviting phrasing that native speakers expect in that scenario
-14. When translating navigation or call-to-action text, prefer natural, inviting prompts that encourage exploration over literal location descriptors`
-  }
-
-  private getTranslationExamples(): string {
-    return `GRAMMAR ADAPTATION EXAMPLES (any source language):
-
-Source language to Russian (any → complex pluralization):
+Pluralization into a complex locale (any -> Russian):
 Input: "!js\\n(count) => count === 1 ? 'one item' : \`\${count} items\`"
 Russian: "!js\\n(count) => { const rem = count % 10; const tens = Math.floor(count / 10) % 10; if (tens === 1) return \`\${count} предметов\`; if (rem === 1) return \`\${count} предмет\`; if (rem >= 2 && rem <= 4) return \`\${count} предмета\`; return \`\${count} предметов\`; }"
 
-Source language to German (any → simple pluralization):
-Input: "!js\\n(count) => count === 1 ? 'une chose' : \`\${count} choses\`" (French)
+Pluralization into a simple locale (any -> German):
+Input: "!js\\n(count) => count === 1 ? 'one item' : \`\${count} items\`"
 German: "!js\\n(count) => count === 1 ? \"1 Ding\" : \`\${count} Dinge\`"
 
-Russian to other languages (complex → simpler pluralization):
-Input: "!js\\n(count) => { const rem = count % 10; if (rem === 1) return '1 предмет'; return \`\${count} предметов\`; }"
-English: "!js\\n(count) => count === 1 ? \"1 item\" : \`\${count} items\`"
-French: "!js\\n(count) => count === 1 ? \"1 article\" : \`\${count} articles\`"
-
-List placeholder example (use Intl.ListFormat for [names]):
+List placeholder (Intl.ListFormat for [names]):
 Input: "[names] have joined the {groupName}"
 English: "!js\\n(names, groupName) => { const list = new Intl.ListFormat(\"en\", { style: \"long\", type: \"conjunction\" }).format(names); return names.length === 1 ? \`\${list} has joined the \${groupName}\` : \`\${list} have joined the \${groupName}\`; }"`
-  }
-
-  private getTranslationCriticalRules(): string {
-    return `CRITICAL:
-- Automatically detect the source language from input text
-- Always use double quotes (") for string literals in JavaScript, never single quotes (')
-- For !js functions, ALWAYS include the "!js" tag at the beginning of each translation
-- If placeholders like {name} exist, translate to a !js function with matching parameters
-- If placeholders like [names] exist, translate to a !js function with array parameters and Intl.ListFormat
-- Escape quotes properly in JSON: use \\" for literal quotes in the function
-- ADAPT the logic to match the target language's grammar, don't just translate strings
-- Keep the same function parameters but change conditions and return values as needed`
   }
 
   getGenderInstructions(i18nPath: string): string | null {
@@ -97,13 +59,166 @@ English: "!js\\n(names, groupName) => { const list = new Intl.ListFormat(\"en\",
     const neutralGender = genderValues[genderValues.length - 1]
 
     return `GRAMMATICAL GENDER SUPPORT:
-- If a phrase has different grammatical gender forms in any target language, define the key as a function.
-- If a language has no gender distinction for a phrase (all forms are identical), return a plain string, not a function with if-else repeating the same text.
-- The function MUST accept a Grammar parameter: gender: ${genderList}.
-- If the input is already a !js function, KEEP existing parameters and ADD gender as the last parameter.
-- If the phrase contains list placeholders like [names], add an additional Grammar parameter named grammar for the singular case (list length === 1). Use it only when the list has a single element; ignore it for plural lists.
-- When gender is "${neutralGender}", prefer a gender-neutral form. If not possible, use a combined form like "бежал(а)", "должен(на)".
-- Avoid neuter forms like "бежало" when referring to a person.`
+- If a phrase has different grammatical gender forms in a target language, define the key as a "!js" function; if all forms are identical, return a plain string instead.
+- The function MUST accept a Grammar parameter gender: ${genderList} as its LAST parameter (after the phrase's own parameters); if the input is already a "!js" function, keep its parameters and append gender.
+- If the phrase contains [list] placeholders, add a Grammar parameter for the singular case (list length === 1) and use it only when the list has a single element.
+- When gender is "${neutralGender}", prefer a gender-neutral form; otherwise use a combined form like "бежал(а)", "должен(на)". Never use a neuter form (e.g. "бежало") for a person.`
+  }
+
+  /**
+   * Intro sentence + common body + (optional) gender block — the shared head of
+   * every system prompt. `scope` controls whether we address one target locale
+   * or all of them.
+   */
+  private buildPromptHead(i18nPath: string, scope: 'single' | 'all'): string {
+    const intro = scope === 'all'
+      ? 'You are a professional translator for an internationalization system. You will receive text in ANY locale and must translate it to ALL specified target locales.'
+      : 'You are a professional translator for an internationalization system. You will receive text in ANY locale and must translate it to the specified target locale.'
+
+    const gender = this.getGenderInstructions(i18nPath)
+
+    return [intro, this.getCommonTranslationPromptBody(), gender]
+      .filter(Boolean)
+      .join('\n\n')
+  }
+
+  /**
+   * System prompt for the single-string commands.
+   * - `single`: translate one phrase to one target locale, returning a bare string.
+   * - `jsonObject`: translate one phrase to all locales, returning a JSON object
+   *   keyed by locale code (used by add/set). Uses the literal `${allLocales}`
+   *   token, resolved inside translateWithOpenAI.
+   */
+  buildSystemPrompt(options: { mode: 'single' | 'jsonObject'; i18nPath: string; target?: string }): string {
+    if (options.mode === 'jsonObject') {
+      return `${this.buildPromptHead(options.i18nPath, 'all')}
+
+Target languages: \${allLocales}
+
+Return ONLY a JSON object with language codes as keys and translations as values.
+
+For regular text:
+{
+  "de": "German translation",
+  "fr": "French translation"
+}
+
+For !js functions:
+{
+  "de": "!js\\n(count) => count === 1 ? \\"1 Artikel\\" : \`\${count} Artikel\`",
+  "fr": "!js\\n(count) => count === 1 ? \\"1 article\\" : \`\${count} articles\`"
+}`
+    }
+
+    return `${this.buildPromptHead(options.i18nPath, 'single')}
+
+Target language: ${options.target ?? '${targetLang}'}
+
+Return ONLY the translation as a string.`
+  }
+
+  /**
+   * Project context line shared by batch user/system prompts.
+   */
+  private projectContextPrefix(projectContext?: string): string {
+    const t = projectContext?.trim()
+    return t ? `Project context: ${t}\n\n` : ''
+  }
+
+  /**
+   * Batch-translate a flat list of phrases (each with optional context) to a
+   * single target locale, returning the translations in input order. Composes
+   * the full system prompt directly (no string splicing) and calls OpenAI.
+   */
+  async translateBatch(options: {
+    values: string[]
+    contexts: (string | undefined)[]
+    targetLang: string
+    i18nPath: string
+    projectContext?: string
+  }): Promise<string[]> {
+    const { values, contexts, targetLang, i18nPath, projectContext } = options
+
+    if (!process.env.OPENAI_API_KEY)
+      throw new Error('OPENAI_API_KEY environment variable is required')
+
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+
+    const batchItems = values.map((value, index) => `Item ${index + 1}:
+Phrase: ${value}
+Context: ${contexts[index] || 'None provided'}`).join('\n\n')
+
+    const systemPrompt = `${this.buildPromptHead(i18nPath, 'single')}
+
+${this.projectContextPrefix(projectContext)}Translate all ${values.length} items below to ${targetLang}.
+
+${batchItems}
+
+Return ONLY a JSON array of translations in the same order as the items above.`
+
+    try {
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-4.1',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: `Translate all ${values.length} items to ${targetLang}. Return a JSON array of strings.` },
+        ],
+        max_completion_tokens: 4000,
+      })
+
+      const response = completion.choices[0]?.message?.content
+      if (!response)
+        throw new Error('No response from OpenAI')
+
+      let cleanResponse = response.trim()
+      if (cleanResponse.startsWith('```json'))
+        cleanResponse = cleanResponse.replace(/^```json\s*/, '').replace(/\s*```$/, '')
+      else if (cleanResponse.startsWith('```'))
+        cleanResponse = cleanResponse.replace(/^```\s*/, '').replace(/\s*```$/, '')
+
+      const parsed = JSON.parse(cleanResponse)
+      if (!Array.isArray(parsed))
+        throw new Error(`Expected JSON array, got: ${typeof parsed}`)
+
+      return parsed
+    } catch (error: any) {
+      throw new Error(`Batch translation failed: ${error.message}`)
+    }
+  }
+
+  /**
+   * Flatten a nested object into dot-keyed string leaves.
+   */
+  extractEntries(obj: any, prefix = ''): Array<{ key: string; value: string }> {
+    const entries: Array<{ key: string; value: string }> = []
+
+    for (const [key, value] of Object.entries(obj)) {
+      const fullKey = prefix ? `${prefix}.${key}` : key
+
+      if (typeof value === 'string')
+        entries.push({ key: fullKey, value })
+      else if (typeof value === 'object' && value !== null)
+        entries.push(...this.extractEntries(value, fullKey))
+    }
+
+    return entries
+  }
+
+  /**
+   * Set a dot-keyed value on a nested object, creating intermediate objects.
+   */
+  setNestedValue(obj: any, keyPath: string, value: any): void {
+    const keys = keyPath.split('.')
+    let current = obj
+
+    for (let i = 0; i < keys.length - 1; i++) {
+      const key = keys[i]
+      if (!current[key])
+        current[key] = {}
+      current = current[key]
+    }
+
+    current[keys[keys.length - 1]] = value
   }
 
   /**
@@ -131,17 +246,6 @@ English: "!js\\n(names, groupName) => { const list = new Intl.ListFormat(\"en\",
    */
   getGlobalProjectContext(i18nPath: string): string | undefined {
     return this.contextManager.getGlobalContext(i18nPath)
-  }
-
-  /**
-   * Same label as in translateWithOpenAI user messages — for batch prompts.
-   */
-  projectContextPromptPrefix(projectContext?: string): string {
-    const t = projectContext?.trim()
-    if (!t)
-      return ''
-
-    return `Project context: ${t}\n\n`
   }
 
   /**

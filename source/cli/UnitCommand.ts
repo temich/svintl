@@ -36,7 +36,7 @@ IMPORTANT RULES:
 5. The input text represents a concept that needs to be pluralized (e.g., "item", "message", "user")
 6. If the phrase contains placeholders like {name} or {itemId}, the translation MUST be a !js function with matching parameters
 7. Return a JSON object where each locale contains an object with named plural forms
-7. CRITICAL: EVERY plural form in the output MUST include the placeholder {n} at the correct grammatical position for that language. The {n} represents where the number will be substituted. Position {n} according to the natural word order of each language.
+8. EVERY plural form in the output MUST include the placeholder {n} at the correct grammatical position for that language. The {n} represents where the number will be substituted. Position {n} according to the natural word order of each language.
 
 LOCALE-SPECIFIC PLURAL RULES (use only the categories needed for each locale):
 - English: {"one": "...", "other": "..."}
@@ -67,14 +67,8 @@ Output:
 }
 
 CRITICAL REQUIREMENTS:
-- Return objects with named plural form keys for each locale
-- Only include categories that exist for each locale (skip unused ones)
-- Use proper grammatical forms for each category
-- Maintain semantic consistency across all translations
-- Follow Unicode CLDR pluralization rules exactly
-- Return JSON with locale codes as keys and objects as values
-- MANDATORY: Every single translation value MUST contain exactly one {n} placeholder positioned correctly for natural language flow
-- If placeholders like {name} exist, translate to a !js function with matching parameters
+- Follow Unicode CLDR pluralization rules exactly and maintain semantic consistency across all translations
+- Every translation value MUST contain exactly one {n} placeholder, positioned for natural language flow
 
 Target locales: \${allLocales}
 

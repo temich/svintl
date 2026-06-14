@@ -78,10 +78,9 @@ export class ImportCommand {
 
       // Enrichment comes from the root project, not the external mount.
       const projectContext = this.translationService.getGlobalProjectContext(i18nPath)
-      const genderInstructions = this.translationService.getGenderInstructions(i18nPath)
 
       for (const locale of missing) {
-        const data = await this.createCommand.translateEntries(entries, locale, projectContext, genderInstructions)
+        const data = await this.createCommand.translateEntries(entries, locale, projectContext, i18nPath)
         const yamlContent = yamlDump(data, { lineWidth: -1, quotingType: '"', forceQuotes: false })
 
         writeFileSync(join(absImportPath, `${locale}.yaml`), yamlContent)
