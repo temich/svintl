@@ -230,6 +230,18 @@ npx intl set example.hello "Hello world" --debug   # log OpenAI request before s
 `add` creates an entry; `set` updates an existing one. Optional third argument is context for the translator.
 
 ```bash
+npx intl open                  # whole dictionary as a collapsible tree
+npx intl open example          # a sub-tree
+npx intl open example.hello    # a single entry
+npx intl open foo/             # a whole mount
+npx intl open foo/bar          # a sub-tree inside a mount
+npx intl open -l ru-RU         # edit a specific locale
+npx intl open --port 4567      # choose the server port
+```
+
+Starts a small local web server and opens your browser with a no-framework editor. You edit one locale (default `en-US`, or the first available; override with `--locale`/`-l`). Pressing **Save** writes the changed entries through the same translate-to-all pipeline as `set` (so other locales are re-translated via OpenAI), then the server shuts down and the CLI exits. `!js` functions and pluralization arrays are shown as editable raw text.
+
+```bash
 npx intl mount <mount> <dir>
 ```
 

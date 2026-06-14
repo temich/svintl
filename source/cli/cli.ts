@@ -26,6 +26,7 @@ import { UnmountCommand } from './UnmountCommand'
 import { ConstCommand } from './ConstCommand'
 import { ContextCommand } from './ContextCommand'
 import { GendersCommand } from './GendersCommand'
+import { OpenCommand } from './OpenCommand'
 import { build } from './build'
 
 const translationService = new TranslationService()
@@ -198,6 +199,26 @@ const cli = yargs(hideBin(process.argv))
   }, async (argv) => {
     const delCommand = new DelCommand()
     await delCommand.execute(argv.key!, argv.path)
+  })
+  .command('open [target]', 'Edit dictionary in the browser', (yargs) => {
+    return yargs
+      .positional('target', {
+        describe: 'Key, sub-tree, or mount (e.g. example, example.hello, mount/, mount/foo)',
+        type: 'string'
+      })
+      .option('locale', {
+        alias: 'l',
+        type: 'string',
+        description: 'Locale to edit (default: en-US or first locale)'
+      })
+      .option('port', {
+        type: 'number',
+        default: 4567,
+        description: 'Port for the local editing server'
+      })
+  }, async (argv) => {
+    const openCommand = new OpenCommand()
+    await openCommand.execute(argv.target, argv.path, { locale: argv.locale, port: argv.port })
   })
   .command('create <lang> [source]', 'Create new locale dictionary', (yargs) => {
     return yargs

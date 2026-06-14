@@ -3,7 +3,7 @@ locale: ru-RU
 hello: Привет
 bye: Пока
 example:
-  hello: Привет
+  hello: Здравствуйте
 items:
   count:
     "0":

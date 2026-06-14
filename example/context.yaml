@@ -44,5 +44,8 @@ inputs:
   some:
     key:
       input: Hello
+  example:
+    hello:
+      input: Hello
 mounts:
   zzz: zzz

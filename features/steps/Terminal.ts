@@ -1,9 +1,9 @@
-import { execSync } from 'child_process'
+import { execSync, spawn, type ChildProcess } from 'child_process'
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'fs'
 import { strict as assert } from 'node:assert'
 import { tmpdir } from 'os'
 import { dirname, join } from 'path'
-import { When, Then, Given, Before } from '@cucumber/cucumber'
+import { When, Then, Given, Before, After } from '@cucumber/cucumber'
 import dotenv from 'dotenv'
 import * as YAML from 'js-yaml'
 
@@ -12,10 +12,45 @@ dotenv.config()
 let output: string = ''
 let cwd: string = ''
 
+let openServer: ChildProcess | null = null
+let openExited: Promise<void> | null = null
+let openPort = 0
+let openPage = ''
+let openSaveResponse: any = null
+
 Before(function() {
   // Create a new temp directory for each scenario
   cwd = mkdtempSync(join(tmpdir(), 'intl-test-'))
+  openServer = null
+  openExited = null
+  openPort = 0
+  openPage = ''
+  openSaveResponse = null
 })
+
+After(function() {
+  if (openServer && openServer.exitCode === null)
+    openServer.kill()
+})
+
+async function waitForOpenServer(port: number, timeoutMs = 15000): Promise<string> {
+  const start = Date.now()
+
+  while (Date.now() - start < timeoutMs) {
+    try {
+      const res = await fetch(`http://127.0.0.1:${port}/`)
+
+      if (res.ok)
+        return await res.text()
+    } catch {
+      // server not ready yet
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 150))
+  }
+
+  throw new Error(`open server did not start on port ${port}`)
+}
 
 Given(/a file `([^`]+)`:/, function(rel: string, content: string) {
   const path = join(cwd, rel)
@@ -82,6 +117,48 @@ When(/I modify `([^`]+)` to update `([^`]+)` to `([^`]+)`/, function(file: strin
   const updatedContent = YAML.dump(data)
 
   writeFileSync(path, updatedContent)
+})
+
+When(/I open the editor with `([^`]+)` on port (\d+)/, async function(args: string, portStr: string) {
+  openPort = Number(portStr)
+
+  const cliArgs = args.split(' ').filter(Boolean)
+
+  openServer = spawn('npx', ['intl', 'open', ...cliArgs, '--port', portStr], {
+    cwd,
+    env: { ...process.env, INTL_OPEN_NO_BROWSER: '1' },
+    stdio: 'ignore',
+  })
+
+  openExited = new Promise(resolve => openServer!.on('close', () => resolve()))
+  openPage = await waitForOpenServer(openPort)
+})
+
+Then('the editor page contains:', function(expected: string) {
+  assert(openPage.includes(expected.trim()), `editor page does not include:\n${expected.trim()}`)
+})
+
+When('I save the editor with no changes', async function() {
+  const res = await fetch(`http://127.0.0.1:${openPort}/api/save`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ changes: [] }),
+  })
+
+  openSaveResponse = await res.json()
+  await openExited
+})
+
+Then('the editor save succeeds', function() {
+  assert(openSaveResponse && openSaveResponse.ok === true, `save did not succeed: ${JSON.stringify(openSaveResponse)}`)
+})
+
+Then(/the editor saved (\d+) change\(s\)/, function(count: string) {
+  assert.equal(openSaveResponse.saved, Number(count))
+})
+
+Then('the editor server has stopped', function() {
+  assert(openServer && openServer.exitCode !== null, 'editor server is still running')
 })
 
 When(/I modify `([^`]+)` to add:/, function(file: string, yamlContent: string) {
