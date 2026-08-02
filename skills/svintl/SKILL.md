@@ -68,6 +68,23 @@ npx intl set greeting '!js (count) => `${count || "No"} item${count === 1 ? "" :
 
 Usage in components: `{$dict.greeting(user.name)}`
 
+**Keep the whole phrase in the dictionary.** Never split a sentence around a dynamic value in the template:
+
+```svelte
+<!-- ❌ Wrong: breaks the phrase for translators -->
+<strong>{brand}</strong>{$dict.form.destroyDescription}
+
+<!-- ✅ Right: one entry, function accepts the value -->
+{@html $dict.form.destroyDescription(brand)}
+```
+
+```bash
+npx intl set "apps/form.destroyDescription" \
+  '!js (brand) => `<strong>${brand}</strong> and all accumulated data will be permanently deleted.`'
+```
+
+When a name needs markup and is always at the start of the phrase across languages, put the tags inside the `!js` function and render with `{@html}` — escape user-controlled values before passing them in.
+
 ### Pluralization
 
 Use `npx intl unit` — generates `Intl.PluralRules`-based functions:
@@ -156,3 +173,4 @@ Context is stored in `context.yaml` and used by OpenAI when creating new locales
 - **Editing YAML by hand** — go through the CLI
 - **`npx intl sync` for routine edits** — it's only for reconciling after a manual source edit; use `add`/`set` instead
 - **Non-BCP47 locale codes** — use valid tags like `en-US`, `es`, `pt-BR`
+- **Splitting phrases in the template** — don't concatenate a dynamic value with a dictionary suffix/prefix; use one `{placeholder}` / `!js` entry for the full sentence
