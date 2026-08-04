@@ -8,7 +8,7 @@ import dotenv from 'dotenv'
 import * as YAML from 'js-yaml'
 import { stringify } from '../../source/cli/yaml'
 
-dotenv.config()
+dotenv.config({ path: ['.env.local', '.env'] })
 
 let output: string = ''
 let cwd: string = ''

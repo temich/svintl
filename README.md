@@ -192,7 +192,7 @@ The optional **global** product description (`npx intl context "…"`), stored a
 ## CLI
 
 > Translations are powered by OpenAI. Ensure you set the `OPENAI_API_KEY` in your environment variables.
-> `.env` file is supported.
+> `.env` and `.env.local` are supported (`.env.local` overrides `.env`).
 
 On `add` and `set`, pass `--debug` to print the full translation request (model, system and user messages) to stdout before the OpenAI call.
 
