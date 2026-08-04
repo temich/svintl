@@ -1,3 +1,10 @@
+# [1.17.0](https://github.com/temich/svintl/compare/v1.16.2...v1.17.0) (2026-08-04)
+
+
+### Features
+
+* **cli:** load OPENAI_API_KEY from .env.local over .env ([32724d4](https://github.com/temich/svintl/commit/32724d4cc8fa650ac9ce66870e9f467a03c224a0))
+
 ## [1.16.2](https://github.com/temich/svintl/compare/v1.16.1...v1.16.2) (2026-07-16)
 
 
