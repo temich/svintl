@@ -1,3 +1,10 @@
+# [1.18.0](https://github.com/temich/svintl/compare/v1.17.0...v1.18.0) (2026-09-25)
+
+
+### Features
+
+* **cli:** translate with gpt-6-sol and a 30k output budget ([3ec5b3d](https://github.com/temich/svintl/commit/3ec5b3d63768ce2f42ae66f59f187dcb9baba549))
+
 # [1.17.0](https://github.com/temich/svintl/compare/v1.16.2...v1.17.0) (2026-08-04)
 
 
