@@ -2,13 +2,17 @@ import { execSync, spawn, type ChildProcess } from 'child_process'
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'fs'
 import { strict as assert } from 'node:assert'
 import { tmpdir } from 'os'
-import { dirname, join } from 'path'
+import { dirname, join, resolve } from 'path'
 import { When, Then, Given, Before, After } from '@cucumber/cucumber'
 import dotenv from 'dotenv'
 import * as YAML from 'js-yaml'
 import { stringify } from '../../source/cli/yaml'
 
 dotenv.config({ path: ['.env.local', '.env'] })
+
+// Run the CLI built from this checkout, not whatever `intl` npx resolves globally
+const bin = resolve('bin/intl.cjs')
+const cli = `node ${JSON.stringify(bin)}`
 
 let output: string = ''
 let cwd: string = ''
@@ -72,7 +76,7 @@ Then(/the file `([^`]+)` does not contain:/, function(rel: string, unexpected: s
 
 When(/I run `([^`]+)`/, function(command: string) {
   try {
-    output = execSync(command, {
+    output = execSync(command.replace(/^npx intl\b/, cli), {
       encoding: 'utf8',
       cwd,
     })
@@ -108,6 +112,12 @@ Then(/the file `([^`]+)` contains:/, function(rel: string, expected: string) {
   }
 })
 
+Then(/the file `([^`]+)` matches `([^`]+)`/, function(rel: string, pattern: string) {
+  const content = readFileSync(join(cwd, rel), 'utf8')
+
+  assert.match(content, new RegExp(pattern, 'm'), `${rel} does not match ${pattern}`)
+})
+
 When(/I modify `([^`]+)` to update `([^`]+)` to `([^`]+)`/, function(file: string, key: string, value: string) {
   const path = join(cwd, file)
   const content = readFileSync(path, 'utf8')
@@ -125,7 +135,7 @@ When(/I open the editor with `([^`]+)` on port (\d+)/, async function(args: stri
 
   const cliArgs = args.split(' ').filter(Boolean)
 
-  openServer = spawn('npx', ['intl', 'open', ...cliArgs, '--port', portStr], {
+  openServer = spawn(process.execPath, [bin, 'open', ...cliArgs, '--port', portStr], {
     cwd,
     env: { ...process.env, INTL_OPEN_NO_BROWSER: '1' },
     stdio: 'ignore',
