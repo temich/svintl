@@ -196,6 +196,8 @@ The optional **global** product description (`npx intl context "…"`), stored a
 
 On `add` and `set`, pass `--debug` to print the full translation request (model, system and user messages) to stdout before the OpenAI call.
 
+Each OpenAI request may return up to 30,000 output tokens, reasoning included. Override the limit on any command with `--tokens` (e.g. `npx intl create de --tokens 60000`); a response that hits it fails with a message naming the limit.
+
 ```bash
 npx intl
 ```

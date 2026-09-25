@@ -18,6 +18,9 @@ import { getPartitionPath } from './partition'
 const TRANSLATION_MODEL = 'gpt-6-sol'
 
 export class TranslationService {
+  /** Output-token cap per OpenAI request, reasoning included; set by the global `--tokens` option. */
+  static maxTokens = 30000
+
   private contextManager = new ContextFileManager()
 
   get contextManagerInstance(): ContextFileManager {
@@ -166,13 +169,13 @@ ${batchItems}
 Return ONLY a JSON array of translations in the same order as the items above.`
 
     try {
-      const completion = await openai.chat.completions.create({
+      const completion = await complete(openai, {
         model: TRANSLATION_MODEL,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: `Translate all ${values.length} items to ${targetLang}. Return a JSON array of strings.` },
         ],
-        max_completion_tokens: 30000,
+        max_completion_tokens: TranslationService.maxTokens,
       })
 
       const response = completion.choices[0]?.message?.content
@@ -305,13 +308,13 @@ Return ONLY a JSON array of translations in the same order as the items above.`
           { role: 'system' as const, content: resolvedSystemContent },
           { role: 'user' as const, content: contextPrompt },
         ],
-        max_completion_tokens: 30000,
+        max_completion_tokens: TranslationService.maxTokens,
       }
 
       if (debug)
         console.log('[intl --debug] Translation request:\n', JSON.stringify(requestPayload, null, 2))
 
-      const completion = await openai.chat.completions.create(requestPayload)
+      const completion = await complete(openai, requestPayload)
 
       const response = completion.choices[0]?.message?.content
       if (!response) {
@@ -490,4 +493,26 @@ Return ONLY a JSON array of translations in the same order as the items above.`
     // Auto-build dictionaries
     build(partitionPath, !!partition)
   }
+}
+
+/**
+ * Request a completion, failing with a message naming `--tokens` when the cap cuts it short:
+ * OpenAI either truncates the response (empty when reasoning used it all) or refuses the request.
+ */
+async function complete(openai: OpenAI, body: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming): Promise<OpenAI.Chat.Completions.ChatCompletion> {
+  const exceeded = new Error(`Response exceeded the ${TranslationService.maxTokens} output-token limit; raise it with --tokens`)
+  let completion: OpenAI.Chat.Completions.ChatCompletion
+
+  try {
+    completion = await openai.chat.completions.create(body)
+  } catch (error) {
+    if (error instanceof OpenAI.BadRequestError && /max_tokens or model output limit was reached/.test(error.message))
+      throw exceeded
+    throw error
+  }
+
+  if (completion.choices[0]?.finish_reason === 'length')
+    throw exceeded
+
+  return completion
 }
