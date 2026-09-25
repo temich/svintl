@@ -15,7 +15,7 @@ import { ContextFileManager } from './context'
 import { getPartitionPath } from './partition'
 
 /** OpenAI model used for all translation requests. */
-const TRANSLATION_MODEL = 'gpt-5.5'
+const TRANSLATION_MODEL = 'gpt-6-sol'
 
 export class TranslationService {
   private contextManager = new ContextFileManager()
@@ -37,6 +37,7 @@ export class TranslationService {
 4. A plain phrase containing {placeholder} tokens (e.g. {name}, {itemId}, {price}) is expected to be a function: the translation MUST be a "!js" function whose parameters match those tokens.
 5. If the phrase contains [list] tokens in square brackets (e.g. [names]), treat them as array-of-strings parameters, format them with Intl.ListFormat using style "long" and type "conjunction", and make the surrounding grammar agree with the list length (e.g. singular vs plural verb).
 6. In any "!js" function use double quotes (") for string literals (escape as \\" in JSON), never single quotes (').
+7. If the phrase is already written for a target locale, return it for that locale exactly as given: do not rephrase, repunctuate or correct it. Rules 4 and 5 still apply.
 
 EXAMPLES:
 
@@ -171,7 +172,7 @@ Return ONLY a JSON array of translations in the same order as the items above.`
           { role: 'system', content: systemPrompt },
           { role: 'user', content: `Translate all ${values.length} items to ${targetLang}. Return a JSON array of strings.` },
         ],
-        max_completion_tokens: 4000,
+        max_completion_tokens: 30000,
       })
 
       const response = completion.choices[0]?.message?.content
@@ -304,7 +305,7 @@ Return ONLY a JSON array of translations in the same order as the items above.`
           { role: 'system' as const, content: resolvedSystemContent },
           { role: 'user' as const, content: contextPrompt },
         ],
-        max_completion_tokens: 2000,
+        max_completion_tokens: 30000,
       }
 
       if (debug)
