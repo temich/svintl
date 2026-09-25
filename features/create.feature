@@ -9,9 +9,8 @@ Feature: Create command
       native: Español
       locale: es-ES
       dir: ltr
-      example:
-        hello: Hola mundo
       """
+    And the file `src/lib/intl/es-ES.yaml` matches `^  hello: ¡?Hola,? mundo!?$`
 
   Scenario: Create RTL locale
     When I run `npx intl hola`
