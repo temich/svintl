@@ -42,6 +42,19 @@ const cli = yargs(hideBin(process.argv))
     default: './src/lib/intl/',
     description: 'Path to i18n files directory'
   })
+  .option('tokens', {
+    type: 'number',
+    default: TranslationService.maxTokens,
+    description: 'Max output tokens per translation request, reasoning included'
+  })
+  .check(argv => {
+    if (!Number.isInteger(argv.tokens) || argv.tokens < 1)
+      throw new Error('--tokens must be a positive integer')
+    return true
+  })
+  .middleware(argv => {
+    TranslationService.maxTokens = argv.tokens
+  })
   .command('hola', 'Initialize new intl dictionary project', (yargs) => {
     return yargs.option('js', {
       type: 'boolean',

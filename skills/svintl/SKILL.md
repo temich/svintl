@@ -21,6 +21,7 @@ npx intl add key.path "Value" "context"     # add a new key — fails if it alre
 npx intl set key.path "Updated value"       # update a key that already exists — fails if missing
 npx intl set "mount/key.path" "Value"       # target a mount with the mount/ prefix
 npx intl add key.path "Value" --debug       # --debug (add or set): print the OpenAI request first
+npx intl create de --tokens 60000           # --tokens (any command): output-token limit per OpenAI request, default 30000
 npx intl const key.path "Same everywhere"   # same value across all locales (no translation)
 npx intl unit items.count "item"            # pluralized entry (auto-generates plural forms)
 npx intl move old.key new.key               # rename key/branch
