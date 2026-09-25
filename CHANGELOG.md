@@ -1,3 +1,10 @@
+# [1.19.0](https://github.com/temich/svintl/compare/v1.18.0...v1.19.0) (2026-09-25)
+
+
+### Features
+
+* **cli:** global --tokens option to override the output-token limit ([7da1010](https://github.com/temich/svintl/commit/7da1010442390f6fc51e626212f460acd5d16ff7))
+
 # [1.18.0](https://github.com/temich/svintl/compare/v1.17.0...v1.18.0) (2026-09-25)
 
 
