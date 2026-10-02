@@ -6,12 +6,13 @@
  * untouched. The imported `context.yaml` is never modified.
  */
 
-import { existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'fs'
+import { existsSync, readdirSync, unlinkSync } from 'fs'
 import { join, relative, resolve } from 'path'
 import { writeYaml } from './yaml'
 import { build } from './build'
 import { ContextFileManager } from './context'
 import { CreateCommand } from './CreateCommand'
+import { writeMountIndex } from './mountIndex'
 import { TranslationService } from './TranslationService'
 
 const LOCALE_FILE = /^[a-z]{2}(-[A-Z]{2})?\.yaml$/
@@ -40,18 +41,7 @@ export class ImportCommand {
     if (this.contextManager.getMountPath(i18nPath, name))
       this.error(`Mount '${name}' already exists`)
 
-    // Create an index file from the mount template only when absent.
-    const indexFileName = useJavaScript ? 'index.js' : 'index.ts'
-    const indexFile = join(absImportPath, indexFileName)
-    if (!existsSync(indexFile)) {
-      const templateFile = useJavaScript ? 'mount.js' : 'mount.ts'
-      const templatePath = join(resolve(__dirname, '..'), 'index', templateFile)
-
-      if (!existsSync(templatePath))
-        this.error(`Template file not found: ${templatePath}`)
-
-      writeFileSync(indexFile, readFileSync(templatePath, 'utf8'))
-    }
+    writeMountIndex(absImportPath, useJavaScript)
 
     // Register the mount before reconciling so it participates in `build`.
     this.contextManager.setMountPath(i18nPath, name, relativeImportPath)
