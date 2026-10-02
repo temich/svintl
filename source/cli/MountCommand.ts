@@ -5,10 +5,11 @@
  * @author copilot
  */
 
-import { existsSync, mkdirSync, writeFileSync, readFileSync, readdirSync } from 'fs'
+import { existsSync, mkdirSync, writeFileSync, readdirSync } from 'fs'
 import { resolve, join, relative } from 'path'
 import { build } from './build'
 import { ContextFileManager } from './context'
+import { createMountIndex } from './mountIndex'
 
 export class MountCommand {
   private error(message: string): never {
@@ -66,21 +67,7 @@ inputs: {}
       writeFileSync(mountContextFile, mountContext)
     }
 
-    // Create index file based on template
-    const indexFileName = useJavaScript ? 'index.js' : 'index.ts'
-    const indexFile = join(absoluteMountPath, indexFileName)
-    if (!existsSync(indexFile)) {
-      const templateFile = useJavaScript ? 'mount.js' : 'mount.ts'
-      const packageRoot = resolve(__dirname, '..')
-      const templatePath = join(packageRoot, 'index', templateFile)
-
-      if (!existsSync(templatePath)) {
-        this.error(`Template file not found: ${templatePath}`)
-      }
-
-      const templateContent = readFileSync(templatePath, 'utf8')
-      writeFileSync(indexFile, templateContent)
-    }
+    createMountIndex(absoluteMountPath, useJavaScript)
 
     // Register mount in context.yaml
     contextManager.setMountPath(i18nPath, mountName, relativeMountPath)
