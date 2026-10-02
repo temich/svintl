@@ -1,3 +1,10 @@
+# [1.20.0](https://github.com/temich/svintl/compare/v1.19.0...v1.20.0) (2026-10-02)
+
+
+### Features
+
+* **cli:** support SvelteKit 3 #lib subpath imports in mounts ([e37c07a](https://github.com/temich/svintl/commit/e37c07a9686d2462dcbe849cabdc514630892db6))
+
 # [1.19.0](https://github.com/temich/svintl/compare/v1.18.0...v1.19.0) (2026-09-25)
 
 
