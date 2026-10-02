@@ -10,6 +10,7 @@ import { resolve } from 'path'
 import { load } from './load'
 import { hasPartitions } from './partition'
 import { ContextFileManager } from './context'
+import { rootDictionarySpecifier } from './libAlias'
 
 /**
  * Generate TypeScript type definitions for the dictionary structure
@@ -233,7 +234,7 @@ export function build(i18nPath = './src/lib/intl/', isPartition = false): void {
   ).join(',\n')}\n}`
 
   const dictTypeRef = isPartition
-    ? "Record<import('$lib/intl').Locale, import('./types').Dictionary>"
+    ? `Record<import('${rootDictionarySpecifier()}').Locale, import('./types').Dictionary>`
     : "Record<import('./types').Locale, import('./types').Dictionary>"
   const localesTypeRef = "import('./types').Locale[]"
   const localesExport = isPartition

@@ -12,7 +12,7 @@ import { writeYaml } from './yaml'
 import { build } from './build'
 import { ContextFileManager } from './context'
 import { CreateCommand } from './CreateCommand'
-import { createMountIndex } from './mountIndex'
+import { writeMountIndex } from './mountIndex'
 import { TranslationService } from './TranslationService'
 
 const LOCALE_FILE = /^[a-z]{2}(-[A-Z]{2})?\.yaml$/
@@ -41,7 +41,7 @@ export class ImportCommand {
     if (this.contextManager.getMountPath(i18nPath, name))
       this.error(`Mount '${name}' already exists`)
 
-    createMountIndex(absImportPath, useJavaScript)
+    writeMountIndex(absImportPath, useJavaScript)
 
     // Register the mount before reconciling so it participates in `build`.
     this.contextManager.setMountPath(i18nPath, name, relativeImportPath)

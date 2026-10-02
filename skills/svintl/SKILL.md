@@ -141,7 +141,7 @@ Mount keys use `{mount}/` prefix in CLI commands.
 <h1>{$dict.dashboard.title}</h1>
 ```
 
-**Mount's `intl/index.ts`:**
+**Mount's `intl/index.ts`** (`#lib/intl/index.js` instead of `$lib/intl` when `package.json` maps `#lib/*`, as in SvelteKit 3; `mount` and `import` write the form here, `build` writes it into `built.js`):
 ```typescript
 import { derived } from 'svelte/store'
 import { locale } from '$lib/intl'

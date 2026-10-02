@@ -147,6 +147,8 @@ npx intl import bar ./vendor/bar-intl # adopt an existing dictionary dir as a mo
 
 Mounts are created with the same languages as the root dictionary but start empty (no `native` key). Use `import` instead to adopt a **populated** dictionary directory and reconcile its locales to the root.
 
+A mount imports the root dictionary through the app's lib alias. If `package.json` maps the `#lib/*` subpath import (SvelteKit 3), the specifier is `#lib/intl/index.js`. Otherwise it is `$lib/intl` (SvelteKit 2). `build` writes this specifier into each mount's `built.js`. `mount` and `import` write it into the mount's index file.
+
 Mounts are useful for:
 
 - Organizing large applications by feature/module
@@ -253,7 +255,7 @@ Create a dictionary mount at the specified path with empty dictionaries for all 
 npx intl import <name> <dir> [--js]
 ```
 
-Adopt an existing dictionary directory (must contain `context.yaml`) as a mount and reconcile its locales to the root: drop languages the root lacks, generate languages it has but the mount lacks (translating the imported `inputs` with the root's context and genders), leave shared locales untouched. Errors if `<name>` is already a mount.
+Adopt an existing dictionary directory (must contain `context.yaml`) as a mount and reconcile its locales to the root: drop languages the root lacks, generate languages it has but the mount lacks (translating the imported `inputs` with the root's context and genders), leave shared locales untouched, and point the index file at the app's lib alias. Errors if `<name>` is already a mount.
 
 ```bash
 npx intl unmount <mount>

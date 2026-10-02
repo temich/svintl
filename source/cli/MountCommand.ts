@@ -9,7 +9,7 @@ import { existsSync, mkdirSync, writeFileSync, readdirSync } from 'fs'
 import { resolve, join, relative } from 'path'
 import { build } from './build'
 import { ContextFileManager } from './context'
-import { createMountIndex } from './mountIndex'
+import { writeMountIndex } from './mountIndex'
 
 export class MountCommand {
   private error(message: string): never {
@@ -67,7 +67,7 @@ inputs: {}
       writeFileSync(mountContextFile, mountContext)
     }
 
-    createMountIndex(absoluteMountPath, useJavaScript)
+    writeMountIndex(absoluteMountPath, useJavaScript)
 
     // Register mount in context.yaml
     contextManager.setMountPath(i18nPath, mountName, relativeMountPath)
