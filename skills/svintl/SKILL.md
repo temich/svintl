@@ -27,7 +27,7 @@ npx intl unit items.count "item"            # pluralized entry (auto-generates p
 npx intl move old.key new.key               # rename key/branch
 npx intl del key.path                       # delete key/branch
 npx intl create es                          # add a locale (BCP 47 tag) — auto-translates the whole dictionary into it
-npx intl destroy es                         # delete locale
+npx intl destroy es -y                      # delete locale (without -y it fails)
 npx intl mount foo ./any/path               # create empty mount
 npx intl import foo ./any/path              # adopt existing dict dir as mount, reconcile locales
 npx intl unmount foo                        # remove mount (keeps files)

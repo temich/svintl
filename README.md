@@ -220,7 +220,7 @@ npx intl create en-US
 npx intl create pt-BR
 ```
 
-Creates a new locale dictionary. Locale codes must be valid BCP 47 locale tags. The new dictionary will automatically include a `native` key with the locale name in that locale.
+Creates a new locale dictionary. Locale codes must be valid BCP 47 locale tags. The new dictionary will automatically include a `native` key with the locale name in that locale. Every mount gets the locale too, with its own keys only; a mount that already has it is kept.
 
 Dictionary names must be valid BCP 47 locale tags.
 
@@ -288,10 +288,10 @@ npx intl del example.hello
 Deletes a translation entry or a branch.
 
 ```bash
-npx intl destroy es
+npx intl destroy es -y
 ```
 
-Deletes a locale dictionary.
+Deletes a locale dictionary from the root and every mount. Without `-y` it only lists what would be deleted and fails.
 
 ```bash
 npx intl sync en
@@ -326,4 +326,4 @@ run: |
 npx intl build
 ```
 
-Generates JavaScript dictionaries and TypeScript types from YAML files. Creates `built.js` and `types.ts` files that can be imported in your Svelte application.
+Generates JavaScript dictionaries and TypeScript types from YAML files. Creates `built.js` and `types.ts` files that can be imported in your Svelte application. A mount's `built.js` holds the root's locales only: a locale the root lacks is skipped with a warning.

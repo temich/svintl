@@ -5,281 +5,118 @@
 import { TranslationService } from './TranslationService'
 import { logger } from './logger'
 import { validateLanguageTag, getNativeLanguageName, getTextDirection } from './bcp47'
-import { parsePartitionedKey } from './partition'
+import { getPartitionPath } from './partition'
 import { writeYaml } from './yaml'
 
 export class CreateCommand {
   private translationService = new TranslationService()
 
   async execute(targetLang: string, sourceLang?: string, i18nPath = './src/lib/intl/'): Promise<void> {
-    // Validate BCP 47 language tag
     const validationError = validateLanguageTag(targetLang)
-    if (validationError) {
+    if (validationError)
       logger.error(validationError)
-    }
 
+    const fs = require('fs')
     const { i18nDir } = this.translationService.getLocaleInfo(i18nPath)
     const targetFile = `${i18nDir}/${targetLang}.yaml`
 
-    const fs = require('fs')
-    const yaml = require('js-yaml')
-    const path = require('path')
-
-    // Create directory if it doesn't exist
-    if (!fs.existsSync(i18nDir)) {
-      fs.mkdirSync(i18nDir, { recursive: true })
-      logger.log(`Created directory: ${i18nDir}`)
-    }
-
-    // Check if target language already exists
-    if (fs.existsSync(targetFile)) {
+    if (fs.existsSync(targetFile))
       logger.error(`Language "${targetLang}" already exists at ${targetFile}`)
-    }
 
-    // Get native language name
-    const nativeName = getNativeLanguageName(targetLang)
-    const dir = getTextDirection(targetLang)
-
-    // If no source language is provided, create minimal file with native name
-    if (!sourceLang) {
-      logger.log(`Creating language file for "${targetLang}"...`)
-
-      const initialContent = {
-        native: nativeName,
-        locale: targetLang,
-        dir,
-      }
-
-      writeYaml(targetFile, initialContent)
-
-      require('./build').build(i18nPath)
-      logger.log(`✅ Created ${targetFile} with native name: ${nativeName}`)
-      return
-    }
-
-    // Get existing files to determine source language
-    const existingFiles = fs.readdirSync(i18nDir)
-      .filter((file: string) => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))
-
-    // Validate source language
-    let sourceLanguage = sourceLang
-    if (sourceLang) {
-      const sourceFile = path.join(i18nDir, `${sourceLang}.yaml`)
-      if (!fs.existsSync(sourceFile)) {
-        // If the exact source file doesn't exist and it's 'en', try to find any English variant
-        if (sourceLang === 'en') {
-          const englishFile = existingFiles.find((file: string) => file.startsWith('en') && file.endsWith('.yaml'))
-          if (englishFile) {
-            sourceLanguage = englishFile.replace('.yaml', '')
-            logger.log(`Using "${sourceLanguage}" as source language (found English variant)`)
-          } else {
-            logger.error(`Source language "${sourceLang}" does not exist and no English variants found`)
-          }
-        } else {
-          logger.error(`Source language "${sourceLang}" does not exist`)
-        }
-      } else {
-        sourceLanguage = sourceLang
-      }
-    } else {
-      // If no source language provided, look for any English locale file
-      const englishFile = existingFiles.find((file: string) => file.startsWith('en') && file.endsWith('.yaml'))
-      if (!englishFile) {
-        logger.error(`No English (en*) language found. Please specify source language: npx intl create ${targetLang} <source-lang>`)
-      }
-      sourceLanguage = englishFile.replace('.yaml', '')
-    }
-    logger.log(`Creating "${targetLang}" language from "${sourceLanguage}" source...`)
-
-    // Load source dictionary
-    const sourceFile = path.join(i18nDir, `${sourceLanguage}.yaml`)
-    const sourceContent = fs.readFileSync(sourceFile, 'utf8')
-    const sourceData = yaml.load(sourceContent) as any
-
-    // Extract all key-value pairs for translation (excluding reserved keys)
-    const { native, locale, dir: _dir, ...sourceDataWithoutNative } = sourceData
-    const entries = this.translationService.extractEntries(sourceDataWithoutNative)
-
-    // Get saved contexts for enriched translation
-    const savedContexts = this.translationService.contextManagerInstance.getAllContextEntries(i18nPath)
-
-    logger.log(`Found ${entries.length} entries to translate`)
-    if (Object.keys(savedContexts).length > 0) {
-      logger.log(`Found ${Object.keys(savedContexts).length} saved contexts for enhanced translation`)
-    }
-
-    if (entries.length === 0) {
-      // Create minimal file with just native name
-      const initialContent = {
-        native: nativeName,
-        locale: targetLang,
-        dir,
-      }
-
-      writeYaml(targetFile, initialContent)
-      require('./build').build(i18nPath)
-      logger.log(`✅ Created ${targetFile} with native name: ${nativeName}`)
-      return
-    }
-
+    const sourceLanguage = sourceLang === undefined ? undefined : this.resolveSource(i18nDir, sourceLang)
     const projectContext = this.translationService.getGlobalProjectContext(i18nPath)
 
-    // Translate entries in batches of 10
-    const translatedData: any = {
-      native: nativeName,
-      locale: targetLang,
-      dir,
-    }
+    if (sourceLanguage !== undefined)
+      logger.log(`Creating "${targetLang}" language from "${sourceLanguage}" source...`)
+    else
+      logger.log(`Creating language file for "${targetLang}"...`)
 
-    const batchSize = 10
-    for (let i = 0; i < entries.length; i += batchSize) {
-      const batch = entries.slice(i, i + batchSize)
-      const batchKeys = batch.map(e => e.key)
-      const batchValues = batch.map(e => e.value)
-      const batchContexts = batch.map(e => savedContexts[e.key]?.input)
+    // Translate the root and every mount before writing anything, so a failed translation
+    // leaves no locale half-created across dictionaries.
+    const files: Array<{ file: string, data: Record<string, any> }> = []
 
-      logger.log(`Translating batch ${Math.floor(i / batchSize) + 1}: ${batchKeys.join(', ')}`)
+    const root = await this.translateDictionary(i18nDir, i18nPath, sourceLanguage, targetLang, projectContext)
+    files.push({
+      file: targetFile,
+      data: { native: getNativeLanguageName(targetLang), locale: targetLang, dir: getTextDirection(targetLang), ...root },
+    })
 
-      try {
-        const batchTranslations = await this.translationService.translateBatch({
-          values: batchValues,
-          contexts: batchContexts,
-          targetLang,
-          i18nPath,
-          projectContext,
-        })
+    // Mounts hold only their own keys: `native`, `locale` and `dir` belong to the root dictionary.
+    const mounts = this.translationService.contextManagerInstance.getAllMounts(i18nPath)
+    for (const mountName of Object.keys(mounts)) {
+      const mountDir = getPartitionPath(i18nPath, mountName)
+      const file = `${mountDir}/${targetLang}.yaml`
 
-        // Apply translations to the data structure
-        for (let j = 0; j < batch.length; j++) {
-          const entry = batch[j]
-          const translation = batchTranslations[j]
-          if (translation) {
-            this.translationService.setNestedValue(translatedData, entry.key, translation)
-          } else {
-            // Fallback to original value
-            this.translationService.setNestedValue(translatedData, entry.key, entry.value)
-          }
-        }
-      } catch (error) {
-        logger.error(`Failed to translate batch: ${error}`)
-        // Fallback to original values for the entire batch
-        for (const entry of batch) {
-          this.translationService.setNestedValue(translatedData, entry.key, entry.value)
-        }
-      }
-    }
-
-    writeYaml(targetFile, translatedData)
-    logger.log(`✅ Created ${targetFile} from ${sourceLanguage} with ${entries.length} entries`)
-
-    // Create files in all mounted partitions as well
-    const allMounts = this.translationService.contextManagerInstance.getAllMounts(i18nPath)
-    for (const [mountName, mountPath] of Object.entries(allMounts)) {
-      const partitionI18nDir = `${i18nPath}/${mountPath}`
-      const partitionTargetFile = `${partitionI18nDir}/${targetLang}.yaml`
-
-      // Create directory if it doesn't exist
-      if (!fs.existsSync(partitionI18nDir)) {
-        fs.mkdirSync(partitionI18nDir, { recursive: true })
-        logger.log(`Created partition directory: ${partitionI18nDir}`)
-      }
-
-      // Check if target language already exists in partition
-      if (fs.existsSync(partitionTargetFile)) {
-        logger.error(`Language "${targetLang}" already exists in partition "${mountName}" at ${partitionTargetFile}`)
+      if (fs.existsSync(file)) {
+        logger.log(`Keeping existing ${file} in mount "${mountName}"`)
         continue
       }
 
-      // For partitions, we need to check if they have their own locale files
-      const partitionLocaleFiles = fs.readdirSync(partitionI18nDir)
-        .filter((file: string) => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))
-
-      if (partitionLocaleFiles.length === 0) {
-        // No locale files in partition, create minimal file
-        const minimalContent = {
-          native: nativeName,
-          locale: targetLang,
-          dir,
-        }
-        writeYaml(partitionTargetFile, minimalContent)
-        logger.log(`✅ Created minimal ${partitionTargetFile} in partition "${mountName}"`)
-      } else {
-        // Translate content for partition - use the same source data but check if partition has specific entries
-        const partitionSourceFile = `${partitionI18nDir}/${sourceLanguage}.yaml`
-        if (fs.existsSync(partitionSourceFile)) {
-          // Partition has its own source file, translate from that
-          const partitionSourceContent = fs.readFileSync(partitionSourceFile, 'utf8')
-          const partitionSourceData = yaml.load(partitionSourceContent) as any
-          const partitionSourceDataWithoutNative = { ...partitionSourceData }
-          delete partitionSourceDataWithoutNative.native
-          delete partitionSourceDataWithoutNative.locale
-          delete partitionSourceDataWithoutNative.dir
-
-          const partitionEntries = this.translationService.extractEntries(partitionSourceDataWithoutNative)
-          const partitionTranslatedData: any = {
-            native: nativeName,
-            locale: targetLang,
-            dir,
-          }
-
-          logger.log(`Translating ${partitionEntries.length} entries for partition "${mountName}"...`)
-
-          // Translate partition entries in batches
-          const partitionBatchSize = 10
-          for (let i = 0; i < partitionEntries.length; i += partitionBatchSize) {
-            const batch = partitionEntries.slice(i, i + partitionBatchSize)
-            const batchKeys = batch.map(e => e.key)
-            const batchValues = batch.map(e => e.value)
-            const batchContexts = batch.map(e => savedContexts[e.key]?.input)
-
-            logger.log(`Translating partition batch ${Math.floor(i / partitionBatchSize) + 1}: ${batchKeys.join(', ')}`)
-
-            try {
-              const batchTranslations = await this.translationService.translateBatch({
-                values: batchValues,
-                contexts: batchContexts,
-                targetLang,
-                i18nPath,
-                projectContext,
-              })
-
-              // Apply translations to the partition data structure
-              for (let j = 0; j < batch.length; j++) {
-                const entry = batch[j]
-                const translation = batchTranslations[j]
-                if (translation) {
-                  this.translationService.setNestedValue(partitionTranslatedData, entry.key, translation)
-                } else {
-                  // Fallback to original value
-                  this.translationService.setNestedValue(partitionTranslatedData, entry.key, entry.value)
-                }
-              }
-            } catch (error) {
-              logger.error(`Failed to translate partition batch: ${error}`)
-              // Fallback to original values for the entire batch
-              for (const entry of batch) {
-                this.translationService.setNestedValue(partitionTranslatedData, entry.key, entry.value)
-              }
-            }
-          }
-
-          writeYaml(partitionTargetFile, partitionTranslatedData)
-          logger.log(`✅ Created ${partitionTargetFile} in partition "${mountName}"`)
-        } else {
-          // Partition doesn't have source file, create minimal file
-          const minimalContent = {
-            native: nativeName,
-            locale: targetLang,
-            dir,
-          }
-          writeYaml(partitionTargetFile, minimalContent)
-          logger.log(`✅ Created minimal ${partitionTargetFile} in partition "${mountName}"`)
-        }
-      }
+      logger.log(`Translating mount "${mountName}"...`)
+      const data = await this.translateDictionary(mountDir, i18nPath, sourceLanguage, targetLang, projectContext)
+      files.push({ file, data })
     }
 
-    // Build dictionaries
+    for (const { file, data } of files) {
+      fs.mkdirSync(require('path').dirname(file), { recursive: true })
+      writeYaml(file, data)
+      logger.log(`✅ Created ${file}`)
+    }
+
     require('./build').build(i18nPath)
+  }
+
+  /**
+   * Source locale in the root directory: `sourceLang` itself, or any English variant for `en`.
+   */
+  private resolveSource(i18nDir: string, sourceLang: string): string {
+    const fs = require('fs')
+
+    if (fs.existsSync(`${i18nDir}/${sourceLang}.yaml`))
+      return sourceLang
+
+    if (sourceLang !== 'en')
+      logger.error(`Source language "${sourceLang}" does not exist`)
+
+    const english = fs.readdirSync(i18nDir)
+      .find((file: string) => /^en(-[A-Z]{2})?\.yaml$/.test(file))
+
+    if (!english)
+      logger.error(`Source language "${sourceLang}" does not exist and no English variants found`)
+
+    return english.replace('.yaml', '')
+  }
+
+  /**
+   * Translate the keys of the source dictionary in `dir` (reserved root keys excluded),
+   * using the contexts saved next to it. A missing source dictionary yields no keys.
+   */
+  private async translateDictionary(
+    dir: string,
+    i18nPath: string,
+    sourceLanguage: string | undefined,
+    targetLang: string,
+    projectContext: string | undefined
+  ): Promise<Record<string, any>> {
+    const fs = require('fs')
+    const yaml = require('js-yaml')
+    const file = `${dir}/${sourceLanguage}.yaml`
+
+    if (sourceLanguage === undefined || !fs.existsSync(file))
+      return {}
+
+    const { native, locale, dir: _dir, ...source } = yaml.load(fs.readFileSync(file, 'utf8')) ?? {}
+    const contexts = this.translationService.contextManagerInstance.getAllContextEntries(dir)
+    const entries = this.translationService.extractEntries(source)
+      .map(entry => ({ ...entry, context: contexts[entry.key]?.input }))
+
+    logger.log(`Found ${entries.length} entries to translate in ${file}`)
+
+    try {
+      return overlay(source, await this.translateEntries(entries, targetLang, projectContext, i18nPath))
+    } catch (error) {
+      return logger.error(`Failed to translate ${file}: ${error}`)
+    }
   }
 
   /**
@@ -317,4 +154,21 @@ export class CreateCommand {
 
     return result
   }
+}
+
+/**
+ * The source structure with each string replaced by its translation: keeps lists, such as plural
+ * forms, that the translated object holds as index-keyed objects.
+ */
+function overlay(source: any, translated: any): any {
+  if (typeof source === 'string')
+    return typeof translated === 'string' ? translated : source
+
+  if (Array.isArray(source))
+    return source.map((item, index) => overlay(item, translated?.[index]))
+
+  if (source !== null && typeof source === 'object')
+    return Object.fromEntries(Object.entries(source).map(([key, value]) => [key, overlay(value, translated?.[key])]))
+
+  return source
 }
