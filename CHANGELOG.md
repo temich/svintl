@@ -1,3 +1,11 @@
+## [1.20.1](https://github.com/temich/svintl/compare/v1.20.0...v1.20.1) (2026-10-15)
+
+
+### Bug Fixes
+
+* **cli:** build mounts for the root locales and type function entries ([51a907d](https://github.com/temich/svintl/commit/51a907d3acf6ea7e8d8fc4cfabebb862a6ab820f))
+* **cli:** create a locale in mounts with their own keys only ([bb2936d](https://github.com/temich/svintl/commit/bb2936d0b0ece73c3b50847984372611245f33bd))
+
 # [1.20.0](https://github.com/temich/svintl/compare/v1.19.0...v1.20.0) (2026-10-02)
 
 
