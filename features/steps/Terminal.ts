@@ -15,6 +15,7 @@ const bin = resolve('bin/intl.cjs')
 const cli = `node ${JSON.stringify(bin)}`
 
 let output: string = ''
+let status = 0
 let cwd: string = ''
 
 let openServer: ChildProcess | null = null
@@ -80,8 +81,42 @@ When(/I run `([^`]+)`/, function(command: string) {
       encoding: 'utf8',
       cwd,
     })
+
+    status = 0
   } catch (error: any) {
     output = (error.stdout || '') + (error.stderr || '')
+    status = error.status ?? 1
+  }
+})
+
+Then('the command fails', function() {
+  assert.notEqual(status, 0, `command succeeded:\n${output}`)
+})
+
+// Typecheck every generated dictionary the way an app does: `checkJs` under `strict`
+Then('the dictionaries typecheck', function() {
+  const tsconfig = {
+    compilerOptions: {
+      strict: true,
+      allowJs: true,
+      checkJs: true,
+      noEmit: true,
+      skipLibCheck: true,
+      target: 'ES2022',
+      module: 'ESNext',
+      moduleResolution: 'bundler',
+      types: [],
+      paths: { '$lib/intl': ['./src/lib/intl/types.ts'] },
+    },
+    include: ['src/**/built.js', 'src/**/types.ts'],
+  }
+
+  writeFileSync(join(cwd, 'tsconfig.json'), JSON.stringify(tsconfig))
+
+  try {
+    execSync(`node ${JSON.stringify(resolve('node_modules/typescript/bin/tsc'))} -p tsconfig.json`, { encoding: 'utf8', cwd })
+  } catch (error: any) {
+    assert.fail(`typecheck failed:\n${error.stdout}${error.stderr}`)
   }
 })
 
