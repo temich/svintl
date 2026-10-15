@@ -6,7 +6,7 @@
  */
 
 import { writeFileSync, readdirSync } from 'fs'
-import { resolve } from 'path'
+import { join, resolve } from 'path'
 import { load } from './load'
 import { hasPartitions } from './partition'
 import { ContextFileManager } from './context'
@@ -78,28 +78,10 @@ function generateDictionaryType(obj: any, indent = 0): string {
   const entries = Object.entries(obj).map(([key, value]) => {
     let type: string
 
-    if (typeof value === 'function') {
-      const paramCount = value.length
-      const funcStr = value.toString()
-
-      if (paramCount === 0)
-        type = '() => string'
-      else if (paramCount === 1) {
-        // Check if this is a plural function (contains __LANG__ placeholder)
-        if (funcStr.includes('__LANG__'))
-          // Plural functions always take a single number parameter
-          type = '(value: number) => string'
-        else
-          // !js functions with single argument can take number or string
-          type = '(value: any) => string'
-      } else {
-        const params = Array(paramCount).fill('any').join(', ')
-
-        type = `(...args: [${params}]) => string`
-      }
-    } else if (typeof value === 'string')
+    if (typeof value === 'function')
+      type = functionType(value)
+    else if (typeof value === 'string')
       type = 'string'
-
     else if (typeof value === 'object' && value !== null)
       type = generateDictionaryType(value, indent + 1)
     else
@@ -112,6 +94,20 @@ function generateDictionaryType(obj: any, indent = 0): string {
 }
 
 
+
+/**
+ * TypeScript type of a dictionary function, shared by `types.ts` and the JSDoc casts in `built.js`.
+ */
+function functionType(func: Function): string {
+  if (func.length === 0)
+    return '() => string'
+
+  if (func.length === 1)
+    // Plural functions (with the __LANG__ placeholder) take a number; other !js functions take a number or a string
+    return func.toString().includes('__LANG__') ? '(value: number) => string' : '(value: any) => string'
+
+  return `(...args: [${Array(func.length).fill('any').join(', ')}]) => string`
+}
 
 /**
  * Serialize object with functions to JavaScript code
@@ -137,10 +133,10 @@ function serializeWithFunctions(obj: any, indent = 0, locale?: string): string {
         locale ? `'${locale}'` : "'en'"
       )
 
-      return processedFunc
+      return typed(obj, processedFunc)
     }
 
-    return funcStr
+    return typed(obj, funcStr)
   }
 
   if (Array.isArray(obj)) {
@@ -163,23 +159,38 @@ function serializeWithFunctions(obj: any, indent = 0, locale?: string): string {
 }
 
 /**
- * Build all YAML dictionaries into a single JavaScript file
- * that can be imported in the browser
+ * Cast a function to its dictionary type, so its parameters are typed under `strict`.
  */
-export function build(i18nPath = './src/lib/intl/', isPartition = false): void {
+function typed(func: Function, source: string): string {
+  return `/** @type {${functionType(func)}} */ (${source})`
+}
+
+const LOCALE_FILE = /^[a-z]{2}(-[A-Z]{2})?\.yaml$/
+
+/**
+ * Build all YAML dictionaries into a single JavaScript file
+ * that can be imported in the browser.
+ *
+ * A partition is built for `rootLocales` only: its `built.js` is typed by the root `Locale`,
+ * so a locale the root lacks is skipped and a root locale it lacks is reported.
+ */
+export function build(i18nPath = './src/lib/intl/', isPartition = false, rootLocales?: string[]): void {
   const i18nDir = resolve(process.cwd(), i18nPath)
 
   const fs = require('fs')
   const path = require('path')
 
+  let localeFiles = readdirSync(i18nDir).filter(file => LOCALE_FILE.test(file))
+
   if (!isPartition) {
+    const locales = localeFiles.length > 0 ? localeFiles.map(file => file.replace('.yaml', '')) : undefined
     const contextManager = new (require('./context').ContextFileManager)()
     const allMounts = contextManager.getAllMounts(i18nPath)
 
     for (const [mountName, mountPath] of Object.entries(allMounts)) {
       const partitionI18nDir = path.resolve(i18nDir, mountPath)
       if (fs.existsSync(partitionI18nDir))
-        build(path.relative(process.cwd(), partitionI18nDir), true)
+        build(path.relative(process.cwd(), partitionI18nDir), true, locales)
     }
 
     if (hasPartitions(i18nPath)) {
@@ -191,16 +202,24 @@ export function build(i18nPath = './src/lib/intl/', isPartition = false): void {
           const partitionPath = path.join(i18nPath, entry.name)
 
           const partitionEntries = fs.readdirSync(partitionDir)
-          if (partitionEntries.some((file: string) => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/)))
-            build(partitionPath, true)
+          if (partitionEntries.some((file: string) => LOCALE_FILE.test(file)))
+            build(partitionPath, true, locales)
         }
       }
     }
   }
 
-  // Get all YAML locale files (supporting BCP 47 format like en-US, zh-CN, etc.)
-  const localeFiles = readdirSync(i18nDir)
-    .filter(file => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))
+  if (rootLocales !== undefined) {
+    for (const file of localeFiles)
+      if (!rootLocales.includes(file.replace('.yaml', '')))
+        console.warn(`⚠️  Skipping ${join(i18nPath, file)}: the root dictionary has no such locale`)
+
+    for (const locale of rootLocales)
+      if (!localeFiles.includes(`${locale}.yaml`))
+        console.warn(`⚠️  Missing ${join(i18nPath, `${locale}.yaml`)}: the root dictionary has this locale`)
+
+    localeFiles = localeFiles.filter(file => rootLocales.includes(file.replace('.yaml', '')))
+  }
 
   if (localeFiles.length === 0) {
     console.error('No YAML locale files found')
@@ -215,8 +234,8 @@ export function build(i18nPath = './src/lib/intl/', isPartition = false): void {
     const filePath = resolve(i18nDir, file)
 
     try {
-      const dictionary = load(filePath)
-      dictionaries[lang] = dictionary
+      // A comment-only file loads as undefined
+      dictionaries[lang] = load(filePath) ?? {}
     } catch (error) {
       console.error(`Failed to process ${lang}.yaml:`, error)
       throw error
