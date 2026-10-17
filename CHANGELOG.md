@@ -1,3 +1,15 @@
+# [1.21.0](https://github.com/temich/svintl/compare/v1.20.1...v1.21.0) (2026-10-17)
+
+
+### Bug Fixes
+
+* **cli:** sync writes no reserved keys into mounts, and translates concurrently ([ff0d549](https://github.com/temich/svintl/commit/ff0d549e678e55b92f172b7c1fce989c20e207b9))
+
+
+### Features
+
+* **cli:** add and set many keys with --from ([a8ff505](https://github.com/temich/svintl/commit/a8ff5050df3bceb1ee63bc71665f0e4e78427a8a))
+
 ## [1.20.1](https://github.com/temich/svintl/compare/v1.20.0...v1.20.1) (2026-10-15)
 
 
