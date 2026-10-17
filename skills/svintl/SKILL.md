@@ -20,6 +20,8 @@ npx intl hola -p ./custom/path              # init at custom path
 npx intl add key.path "Value" "context"     # add a new key — fails if it already exists; context optional
 npx intl set key.path "Updated value"       # update a key that already exists — fails if missing
 npx intl set "mount/key.path" "Value"       # target a mount with the mount/ prefix
+npx intl add --from strings.yaml            # many new keys in one run — `key: value` or `key: { value, context }`
+npx intl set --from strings.yaml            # many existing keys in one run; `--from -` reads stdin
 npx intl add key.path "Value" --debug       # --debug (add or set): print the OpenAI request first
 npx intl create de --tokens 60000           # --tokens (any command): output-token limit per OpenAI request, default 30000
 npx intl const key.path "Same everywhere"   # same value across all locales (no translation)
@@ -164,7 +166,7 @@ Context is stored in `context.yaml` and used by OpenAI when creating new locales
 
 ## Workflow
 
-1. Use `npx intl add/set/unit/const` to add/update translations
+1. Use `npx intl add/set/unit/const` to add/update translations — several keys go in one `add --from` / `set --from` file, never in a loop of `npx intl` calls
 2. Run `npx intl build` to generate JS/TS (often auto-runs)
 3. Import `dict` store in components
 4. Use `$dict.key.path` in templates
@@ -172,6 +174,8 @@ Context is stored in `context.yaml` and used by OpenAI when creating new locales
 ## Avoid
 
 - **Editing YAML by hand** — go through the CLI
+- **A loop over `npx intl`** — each call is a process, a translation request and a build; write the keys to a file and run `add --from` once
+- **`const` + `sync` to bulk-add** — `sync` re-translates the whole dictionary; use `add --from`
 - **`npx intl sync` for routine edits** — it's only for reconciling after a manual source edit; use `add`/`set` instead
 - **Non-BCP47 locale codes** — use valid tags like `en-US`, `es`, `pt-BR`
 - **Splitting phrases in the template** — don't concatenate a dynamic value with a dictionary suffix/prefix; use one `{placeholder}` / `!js` entry for the full sentence
