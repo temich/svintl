@@ -234,6 +234,24 @@ npx intl set example.hello "Hello world" --debug   # log OpenAI request before s
 `add` creates an entry; `set` updates an existing one. Optional third argument is context for the translator.
 
 ```bash
+npx intl add --from strings.yaml           # many new keys at once
+npx intl set --from strings.yaml           # many existing keys at once
+cat strings.yaml | npx intl add --from -   # from stdin
+```
+
+```yaml
+example.hello: Hello world
+example.delete:
+  value: Delete this record?
+  context: confirmation before deleting a transaction
+admin/dashboard.title: Admin Dashboard   # a mount by its prefix
+```
+
+With `--from`, every entry is translated in one run and the dictionaries are built once. `add` refuses a key that exists and `set` one that does not; a refused key or a failed translation fails the whole batch, and no file is changed.
+
+Translation requests of one run — the entries of a batch, the locales and mounts of `create`, `sync` and `import` — are sent concurrently, at most 4 at a time.
+
+```bash
 npx intl open                  # whole dictionary as a collapsible tree
 npx intl open example          # a sub-tree
 npx intl open example.hello    # a single entry

@@ -69,10 +69,10 @@ export class ImportCommand {
       // Enrichment comes from the root project, not the external mount.
       const projectContext = this.translationService.getGlobalProjectContext(i18nPath)
 
-      for (const locale of missing) {
-        const data = await this.createCommand.translateEntries(entries, locale, projectContext, i18nPath)
-        writeYaml(join(absImportPath, `${locale}.yaml`), data)
-      }
+      const translated = await Promise.all(missing.map(locale =>
+        this.createCommand.translateEntries(entries, locale, projectContext, i18nPath)))
+
+      missing.forEach((locale, i) => writeYaml(join(absImportPath, `${locale}.yaml`), translated[i]))
     }
 
     build(i18nPath)

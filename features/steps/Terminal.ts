@@ -77,7 +77,7 @@ Then(/the file `([^`]+)` does not contain:/, function(rel: string, unexpected: s
 
 When(/I run `([^`]+)`/, function(command: string) {
   try {
-    output = execSync(command.replace(/^npx intl\b/, cli), {
+    output = execSync(command.replace(/\bnpx intl\b/g, cli), {
       encoding: 'utf8',
       cwd,
     })

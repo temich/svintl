@@ -29,9 +29,21 @@ import { ConstCommand } from './ConstCommand'
 import { ContextCommand } from './ContextCommand'
 import { GendersCommand } from './GendersCommand'
 import { OpenCommand } from './OpenCommand'
+import { batch } from './batch'
 import { build } from './build'
 
 const translationService = new TranslationService()
+
+/** `add` and `set` take one entry as arguments, or many with `--from`, never both. */
+function entries(argv: { key?: string, value?: string, comment?: string, from?: string }): true {
+  if (argv.from !== undefined && (argv.key !== undefined || argv.value !== undefined || argv.comment !== undefined))
+    throw new Error('Give either <key> <value> [comment] or --from, not both')
+
+  if (argv.from === undefined && (argv.key === undefined || argv.value === undefined))
+    throw new Error('Give <key> <value> [comment], or --from <file>')
+
+  return true
+}
 
 const cli = yargs(hideBin(process.argv))
   .scriptName('intl')
@@ -113,7 +125,7 @@ const cli = yargs(hideBin(process.argv))
     const unmountCommand = new UnmountCommand()
     await unmountCommand.execute(argv.mount!, argv.path)
   })
-  .command('add <key> <value> [comment]', 'Add new i18n entry with automatic translation', (yargs) => {
+  .command('add [key] [value] [comment]', 'Add new i18n entry with automatic translation', (yargs) => {
     return yargs
       .positional('key', {
         describe: 'Translation key (e.g., app.title or mount/key)',
@@ -132,11 +144,20 @@ const cli = yargs(hideBin(process.argv))
         default: false,
         describe: 'Print the AI translation request to stdout before sending'
       })
+      .option('from', {
+        type: 'string',
+        requiresArg: true,
+        describe: 'YAML file of entries (`key: value` or `key: { value, context }`), or - for stdin'
+      })
+      .check(argv => entries(argv))
   }, async (argv) => {
+    if (argv.from !== undefined)
+      return batch('add', argv.from, argv.path)
+
     const addCommand = new AddCommand()
     await addCommand.execute(argv.key!, argv.value!, argv.comment, argv.path, argv.debug)
   })
-  .command('set <key> <value> [comment]', 'Update existing i18n entry with automatic translation', (yargs) => {
+  .command('set [key] [value] [comment]', 'Update existing i18n entry with automatic translation', (yargs) => {
     return yargs
       .positional('key', {
         describe: 'Translation key (e.g., app.title or mount/key)',
@@ -155,7 +176,16 @@ const cli = yargs(hideBin(process.argv))
         default: false,
         describe: 'Print the AI translation request to stdout before sending'
       })
+      .option('from', {
+        type: 'string',
+        requiresArg: true,
+        describe: 'YAML file of entries (`key: value` or `key: { value, context }`), or - for stdin'
+      })
+      .check(argv => entries(argv))
   }, async (argv) => {
+    if (argv.from !== undefined)
+      return batch('set', argv.from, argv.path)
+
     const setCommand = new SetCommand()
     await setCommand.execute(argv.key!, argv.value!, argv.comment, argv.path, argv.debug)
   })

@@ -6,6 +6,7 @@ import { TranslationService } from './TranslationService'
 import { logger } from './logger'
 import { validateLanguageTag, getNativeLanguageName, getTextDirection } from './bcp47'
 import { parsePartitionedKey, getPartitionPath } from './partition'
+import { overlay } from './CreateCommand'
 import { writeYaml } from './yaml'
 
 interface SyncEntry {
@@ -162,62 +163,27 @@ export class SyncCommand {
 
     const projectContext = this.translationService.getGlobalProjectContext(i18nPath)
 
-    // For each target locale, translate all entries in batches of 10
-    for (const targetLang of targetLocales) {
-      logger.log(`Syncing to "${targetLang}"...`)
-
-      const targetFile = `${i18nDir}/${targetLang}.yaml`
-      const nativeName = getNativeLanguageName(targetLang)
-      const translatedData: any = {
-        native: nativeName,
-        locale: targetLang,
-        dir: getTextDirection(targetLang),
+    // Every request of the root and the mounts runs concurrently; the files are written once all
+    // are translated, so a failed batch leaves every dictionary as it was.
+    const translate = async (entries: Array<{ key: string, value: string, context?: string }>, targetLang: string): Promise<Record<string, any>> => {
+      try {
+        return await this.translationService.translateEntries(entries, targetLang, projectContext, i18nPath)
+      } catch (error) {
+        return logger.error(`Failed to translate batch: ${error}`)
       }
-
-      // Translate entries in batches of 10
-      const batchSize = 10
-      for (let i = 0; i < sourceEntries.length; i += batchSize) {
-        const batch = sourceEntries.slice(i, i + batchSize)
-        const batchKeys = batch.map(e => e.key)
-        const batchValues = batch.map(e => e.value)
-        const batchContexts = batch.map(e => savedContexts[e.key]?.input)
-
-        logger.log(`Translating batch ${Math.floor(i / batchSize) + 1}: ${batchKeys.join(', ')}`)
-
-        try {
-          const batchTranslations = await this.translationService.translateBatch({
-            values: batchValues,
-            contexts: batchContexts,
-            targetLang,
-            i18nPath,
-            projectContext,
-          })
-
-          // Apply translations to the data structure
-          for (let j = 0; j < batch.length; j++) {
-            const entry = batch[j]
-            const translation = batchTranslations[j]
-            if (translation) {
-              this.translationService.setNestedValue(translatedData, entry.key, translation)
-            } else {
-              // Fallback to original value
-              this.translationService.setNestedValue(translatedData, entry.key, entry.value)
-            }
-          }
-        } catch (error) {
-          logger.error(`Failed to translate batch: ${error}`)
-          // Fallback to original values for the entire batch
-          for (const entry of batch) {
-            this.translationService.setNestedValue(translatedData, entry.key, entry.value)
-          }
-        }
-      }
-
-      writeYaml(targetFile, translatedData)
-      logger.log(`✅ Synced ${targetLang} with ${sourceEntries.length} entries`)
     }
 
-    // Sync files in all mounted partitions as well
+    const rootEntries = sourceEntries.map(entry => ({ ...entry, context: savedContexts[entry.key]?.input }))
+
+    const root = Promise.all(targetLocales.map(async targetLang => {
+      logger.log(`Syncing ${sourceEntries.length} entries to "${targetLang}"...`)
+
+      return { targetLang, data: overlay(sourceDataWithoutNative, await translate(rootEntries, targetLang)) }
+    }))
+
+    const files: Array<Promise<{ file: string, data: Record<string, any>, mount: string }>> = []
+
+    // Mounts hold only their own keys: `native`, `locale` and `dir` belong to the root dictionary.
     const allMounts = this.translationService.contextManagerInstance.getAllMounts(i18nPath)
     for (const [mountName, mountPath] of Object.entries(allMounts)) {
       const partitionI18nDir = `${i18nPath}/${mountPath}`
@@ -233,116 +199,50 @@ export class SyncCommand {
         .filter((file: string) => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))
 
       if (partitionLocaleFiles.length === 0) {
-        // No locale files in partition, skip syncing
         logger.log(`Skipping partition "${mountName}" - no locale files found`)
         continue
       }
 
-      // Sync each target locale to partition
-      for (const targetLang of targetLocales) {
-        const partitionTargetFile = `${partitionI18nDir}/${targetLang}.yaml`
-        const nativeName = getNativeLanguageName(targetLang)
-        const partitionTranslatedData: any = {
-          native: nativeName,
-          locale: targetLang,
-          dir: getTextDirection(targetLang),
-        }
+      const partitionSourceFile = `${partitionI18nDir}/${sourceLang}.yaml`
 
-        // Check if partition has its own source file
-        const partitionSourceFile = `${partitionI18nDir}/${sourceLang}.yaml`
-        if (fs.existsSync(partitionSourceFile)) {
-          // Partition has its own source file, sync from that
-          const partitionSourceContent = fs.readFileSync(partitionSourceFile, 'utf8')
-          const partitionSourceData = yaml.load(partitionSourceContent) as any
-          const partitionSourceDataWithoutNative = { ...partitionSourceData }
-          delete partitionSourceDataWithoutNative.native
-          delete partitionSourceDataWithoutNative.locale
-          delete partitionSourceDataWithoutNative.dir
+      if (fs.existsSync(partitionSourceFile)) {
+        // Partition has its own source file, sync from that
+        const { native: _native, locale: _locale, dir: _partitionDir, ...partitionSource } = yaml.load(fs.readFileSync(partitionSourceFile, 'utf8')) ?? {}
+        const partitionSavedContexts = this.translationService.contextManagerInstance.getAllContextEntries(partitionI18nDir)
+        const partitionEntries = this.translationService.extractEntries(partitionSource)
+          .map(entry => ({ ...entry, context: partitionSavedContexts[entry.key]?.input }))
 
-          const partitionEntries = this.translationService.extractEntries(partitionSourceDataWithoutNative)
-          const partitionSavedContexts = this.translationService.contextManagerInstance.getAllContextEntries(partitionI18nDir)
-
+        for (const targetLang of targetLocales) {
           logger.log(`Syncing ${partitionEntries.length} entries for partition "${mountName}" to "${targetLang}"...`)
-
-          // Translate partition entries in batches
-          const partitionBatchSize = 10
-          for (let i = 0; i < partitionEntries.length; i += partitionBatchSize) {
-            const batch = partitionEntries.slice(i, i + partitionBatchSize)
-            const batchKeys = batch.map(e => e.key)
-            const batchValues = batch.map(e => e.value)
-            const batchContexts = batch.map(e => partitionSavedContexts[e.key]?.input)
-
-            logger.log(`Translating partition batch ${Math.floor(i / partitionBatchSize) + 1}: ${batchKeys.join(', ')}`)
-
-            if (!process.env.OPENAI_API_KEY) {
-              // Copy source values without translation
-              for (const entry of batch) {
-                this.translationService.setNestedValue(partitionTranslatedData, entry.key, entry.value)
-              }
-            } else {
-              try {
-                const batchTranslations = await this.translationService.translateBatch({
-                  values: batchValues,
-                  contexts: batchContexts,
-                  targetLang,
-                  i18nPath,
-                  projectContext,
-                })
-
-                // Apply translations to the partition data structure
-                for (let j = 0; j < batch.length; j++) {
-                  const entry = batch[j]
-                  const translation = batchTranslations[j]
-                  if (translation) {
-                    this.translationService.setNestedValue(partitionTranslatedData, entry.key, translation)
-                  } else {
-                    // Fallback to original value
-                    this.translationService.setNestedValue(partitionTranslatedData, entry.key, entry.value)
-                  }
-                }
-              } catch (error) {
-                logger.error(`Failed to translate partition batch: ${error}`)
-                // Fallback to original values for the entire batch
-                for (const entry of batch) {
-                  this.translationService.setNestedValue(partitionTranslatedData, entry.key, entry.value)
-                }
-              }
-            }
-          }
-        } else {
-          // Partition doesn't have source file, copy from main source
-          if (!process.env.OPENAI_API_KEY) {
-            // Copy source values without translation
-            for (const entry of sourceEntries) {
-              this.translationService.setNestedValue(partitionTranslatedData, entry.key, entry.value)
-            }
-          } else {
-            // Use already translated data from main sync
-            const mainTranslatedFile = `${i18nDir}/${targetLang}.yaml`
-            if (fs.existsSync(mainTranslatedFile)) {
-              const mainTranslatedContent = fs.readFileSync(mainTranslatedFile, 'utf8')
-              const mainTranslatedData = yaml.load(mainTranslatedContent) as any
-              const mainTranslatedDataWithoutNative = { ...mainTranslatedData }
-              delete mainTranslatedDataWithoutNative.native
-              delete mainTranslatedDataWithoutNative.locale
-              delete mainTranslatedDataWithoutNative.dir
-
-              const mainTranslatedEntries = this.translationService.extractEntries(mainTranslatedDataWithoutNative)
-              for (const entry of mainTranslatedEntries) {
-                this.translationService.setNestedValue(partitionTranslatedData, entry.key, entry.value)
-              }
-            } else {
-              // Fallback to source values
-              for (const entry of sourceEntries) {
-                this.translationService.setNestedValue(partitionTranslatedData, entry.key, entry.value)
-              }
-            }
-          }
+          files.push(translate(partitionEntries, targetLang)
+            .then(data => ({ file: `${partitionI18nDir}/${targetLang}.yaml`, data: overlay(partitionSource, data), mount: mountName })))
         }
-
-        writeYaml(partitionTargetFile, partitionTranslatedData)
-        logger.log(`✅ Synced ${partitionTargetFile} in partition "${mountName}"`)
+      } else {
+        // Partition doesn't have source file: it takes the root's translations
+        for (const targetLang of targetLocales)
+          files.push(root.then(translated => ({
+            file: `${partitionI18nDir}/${targetLang}.yaml`,
+            data: translated.find(t => t.targetLang === targetLang)!.data,
+            mount: mountName,
+          })))
       }
+    }
+
+    const rootFiles = (await root).map(({ targetLang, data }) => ({
+      file: `${i18nDir}/${targetLang}.yaml`,
+      data: { native: getNativeLanguageName(targetLang), locale: targetLang, dir: getTextDirection(targetLang), ...data },
+    }))
+
+    const mountFiles = await Promise.all(files)
+
+    for (const { file, data } of rootFiles) {
+      writeYaml(file, data)
+      logger.log(`✅ Synced ${file} with ${sourceEntries.length} entries`)
+    }
+
+    for (const { file, data, mount } of mountFiles) {
+      writeYaml(file, data)
+      logger.log(`✅ Synced ${file} in partition "${mount}"`)
     }
   }
 

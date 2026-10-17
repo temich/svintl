@@ -18,3 +18,19 @@ Feature: Sync command
       """
       dir: ltr
       """
+
+  Scenario: Sync writes no reserved keys into a mount
+    When I run `npx intl hola`
+    And I run `npx intl create pt-BR`
+    And I run `npx intl mount foo ./src/foo`
+    And I run `npx intl add foo/title "Admin dashboard"`
+    And I run `npx intl sync en-US`
+    Then the file `src/foo/pt-BR.yaml` matches `^title: .+`
+    And the file `src/foo/pt-BR.yaml` does not contain:
+      """
+      native:
+      """
+    And the file `src/lib/intl/pt-BR.yaml` contains:
+      """
+      native: Português
+      """
