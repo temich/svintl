@@ -32,17 +32,17 @@ export class CreateCommand {
       logger.log(`Creating language file for "${targetLang}"...`)
 
     // Translate the root and every mount before writing anything, so a failed translation
-    // leaves no locale half-created across dictionaries.
-    const files: Array<{ file: string, data: Record<string, any> }> = []
-
-    const root = await this.translateDictionary(i18nDir, i18nPath, sourceLanguage, targetLang, projectContext)
-    files.push({
-      file: targetFile,
-      data: { native: getNativeLanguageName(targetLang), locale: targetLang, dir: getTextDirection(targetLang), ...root },
-    })
-
+    // leaves no locale half-created across dictionaries. Their requests run concurrently.
     // Mounts hold only their own keys: `native`, `locale` and `dir` belong to the root dictionary.
     const mounts = this.translationService.contextManagerInstance.getAllMounts(i18nPath)
+    const pending: Array<Promise<{ file: string, data: Record<string, any> }>> = []
+
+    pending.push(this.translateDictionary(i18nDir, i18nPath, sourceLanguage, targetLang, projectContext)
+      .then(root => ({
+        file: targetFile,
+        data: { native: getNativeLanguageName(targetLang), locale: targetLang, dir: getTextDirection(targetLang), ...root },
+      })))
+
     for (const mountName of Object.keys(mounts)) {
       const mountDir = getPartitionPath(i18nPath, mountName)
       const file = `${mountDir}/${targetLang}.yaml`
@@ -53,9 +53,11 @@ export class CreateCommand {
       }
 
       logger.log(`Translating mount "${mountName}"...`)
-      const data = await this.translateDictionary(mountDir, i18nPath, sourceLanguage, targetLang, projectContext)
-      files.push({ file, data })
+      pending.push(this.translateDictionary(mountDir, i18nPath, sourceLanguage, targetLang, projectContext)
+        .then(data => ({ file, data })))
     }
+
+    const files = await Promise.all(pending)
 
     for (const { file, data } of files) {
       fs.mkdirSync(require('path').dirname(file), { recursive: true })
@@ -122,37 +124,15 @@ export class CreateCommand {
   /**
    * Batch-translate a flat list of entries (with per-key context) into a nested
    * object of translated keys only — no reserved native/locale/dir keys.
-   * Reuses the same OpenAI batch logic as `execute`. Empty input → empty object.
    * Shared with ImportCommand to avoid duplicating the translation pipeline.
    */
-  async translateEntries(
+  translateEntries(
     entries: Array<{ key: string; value: string; context?: string }>,
     targetLang: string,
     projectContext?: string,
     i18nPath = './src/lib/intl/'
   ): Promise<Record<string, any>> {
-    const result: any = {}
-
-    if (entries.length === 0)
-      return result
-
-    const batchSize = 10
-    for (let i = 0; i < entries.length; i += batchSize) {
-      const batch = entries.slice(i, i + batchSize)
-
-      const batchTranslations = await this.translationService.translateBatch({
-        values: batch.map(e => e.value),
-        contexts: batch.map(e => e.context),
-        targetLang,
-        i18nPath,
-        projectContext,
-      })
-
-      for (let j = 0; j < batch.length; j++)
-        this.translationService.setNestedValue(result, batch[j].key, batchTranslations[j] ?? batch[j].value)
-    }
-
-    return result
+    return this.translationService.translateEntries(entries, targetLang, projectContext, i18nPath)
   }
 }
 
@@ -160,7 +140,7 @@ export class CreateCommand {
  * The source structure with each string replaced by its translation: keeps lists, such as plural
  * forms, that the translated object holds as index-keyed objects.
  */
-function overlay(source: any, translated: any): any {
+export function overlay(source: any, translated: any): any {
   if (typeof source === 'string')
     return typeof translated === 'string' ? translated : source
 

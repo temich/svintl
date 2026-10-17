@@ -17,6 +17,19 @@ import { getPartitionPath } from './partition'
 /** OpenAI model used for all translation requests. */
 const TRANSLATION_MODEL = 'gpt-6-sol'
 
+/** Phrases per batch request. */
+export const BATCH_SIZE = 10
+
+/** `items` split into consecutive slices of `size`. */
+export function chunk<T>(items: T[], size: number): T[][] {
+  const chunks: T[][] = []
+
+  for (let i = 0; i < items.length; i += size)
+    chunks.push(items.slice(i, i + size))
+
+  return chunks
+}
+
 export class TranslationService {
   /** Output-token cap per OpenAI request, reasoning included; set by the global `--tokens` option. */
   static maxTokens = 30000
@@ -258,6 +271,36 @@ Return ONLY a JSON array of translations in the same order as the items above.`
    */
   getGlobalProjectContext(i18nPath: string): string | undefined {
     return this.contextManager.getGlobalContext(i18nPath)
+  }
+
+  /**
+   * Batch-translate a flat list of entries (with per-key context) into a nested object of the
+   * translated keys, falling back to the source value where a translation is missing. The
+   * batches are requested concurrently; empty input yields an empty object.
+   */
+  async translateEntries(
+    entries: Array<{ key: string; value: string; context?: string }>,
+    targetLang: string,
+    projectContext?: string,
+    i18nPath = './src/lib/intl/'
+  ): Promise<Record<string, any>> {
+    const result: any = {}
+    const batches = chunk(entries, BATCH_SIZE)
+
+    const translations = await Promise.all(batches.map(batch => this.translateBatch({
+      values: batch.map(e => e.value),
+      contexts: batch.map(e => e.context),
+      targetLang,
+      i18nPath,
+      projectContext,
+    })))
+
+    batches.forEach((batch, i) => {
+      for (let j = 0; j < batch.length; j++)
+        this.setNestedValue(result, batch[j].key, translations[i][j] ?? batch[j].value)
+    })
+
+    return result
   }
 
   /**
@@ -504,7 +547,7 @@ async function complete(openai: OpenAI, body: OpenAI.Chat.Completions.ChatComple
   let completion: OpenAI.Chat.Completions.ChatCompletion
 
   try {
-    completion = await openai.chat.completions.create(body)
+    completion = await slot(() => openai.chat.completions.create(body))
   } catch (error) {
     if (error instanceof OpenAI.BadRequestError && /max_tokens or model output limit was reached/.test(error.message))
       throw exceeded
@@ -515,4 +558,32 @@ async function complete(openai: OpenAI, body: OpenAI.Chat.Completions.ChatComple
     throw exceeded
 
   return completion
+}
+
+/** OpenAI requests in flight at once, across every command of the process. */
+const CONCURRENCY = 4
+
+let active = 0
+const waiting: Array<() => void> = []
+
+/**
+ * Run `request` once fewer than `CONCURRENCY` requests are in flight. A finished request hands
+ * its place straight to the next one waiting, so none is overtaken by a newcomer.
+ */
+async function slot<T>(request: () => Promise<T>): Promise<T> {
+  if (active < CONCURRENCY)
+    active++
+  else
+    await new Promise<void>(resolve => waiting.push(resolve))
+
+  try {
+    return await request()
+  } finally {
+    const next = waiting.shift()
+
+    if (next)
+      next()
+    else
+      active--
+  }
 }
