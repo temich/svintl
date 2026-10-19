@@ -1,3 +1,10 @@
+# [1.22.0](https://github.com/temich/svintl/compare/v1.21.0...v1.22.0) (2026-10-19)
+
+
+### Features
+
+* **cli:** add --from and set --from take nested keys, as a dictionary has them ([1270d08](https://github.com/temich/svintl/commit/1270d0878afebd50ad6fa1273aaedfc3ef1a658b))
+
 # [1.21.0](https://github.com/temich/svintl/compare/v1.20.1...v1.21.0) (2026-10-17)
 
 
