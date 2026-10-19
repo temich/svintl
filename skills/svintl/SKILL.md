@@ -20,7 +20,7 @@ npx intl hola -p ./custom/path              # init at custom path
 npx intl add key.path "Value" "context"     # add a new key — fails if it already exists; context optional
 npx intl set key.path "Updated value"       # update a key that already exists — fails if missing
 npx intl set "mount/key.path" "Value"       # target a mount with the mount/ prefix
-npx intl add --from strings.yaml            # many new keys in one run — `key: value` or `key: { value, context }`
+npx intl add --from strings.yaml            # many new keys in one run — `key: value` or `key: { value, context }`, flat (`a.b: …`) or nested (`a: { b: … }`)
 npx intl set --from strings.yaml            # many existing keys in one run; `--from -` reads stdin
 npx intl add key.path "Value" --debug       # --debug (add or set): print the OpenAI request first
 npx intl create de --tokens 60000           # --tokens (any command): output-token limit per OpenAI request, default 30000

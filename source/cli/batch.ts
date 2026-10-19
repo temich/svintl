@@ -119,7 +119,9 @@ export async function batch(mode: 'add' | 'set', from: string, i18nPath = './src
 }
 
 /**
- * Flat keys mapped to a phrase, or to `{ value, context }`.
+ * Keys mapped to a phrase, or to `{ value, context }`; any other map is a group of keys under its
+ * own, as in a dictionary: `app: { title: Hello }` is `app.title: Hello`, and
+ * `foo/: { title: Hello }` is `foo/title: Hello`.
  */
 function parse(from: string): Entry[] {
   let data: unknown
@@ -130,25 +132,42 @@ function parse(from: string): Entry[] {
     return logger.error(`Failed to read ${from === '-' ? 'stdin' : from}: ${error}`)
   }
 
-  if (data === null || typeof data !== 'object' || Array.isArray(data))
+  if (!isMap(data))
     logger.error('Expected a map of keys to phrases, e.g. `app.title: Hello`')
 
-  const entries = Object.entries(data as Record<string, unknown>).map(([fullKey, item]): Entry => {
-    const { key } = parsePartitionedKey(fullKey)
-
-    if (typeof item === 'string')
-      return { fullKey, key, value: item }
-
-    if (item !== null && typeof item === 'object' && typeof (item as any).value === 'string' &&
-      ['undefined', 'string'].includes(typeof (item as any).context) &&
-      Object.keys(item).every(name => name === 'value' || name === 'context'))
-      return { fullKey, key, value: (item as any).value, context: (item as any).context }
-
-    return logger.error(`Entry "${fullKey}" must be a phrase or { value, context }`)
-  })
+  const entries = flatten(data as Record<string, unknown>)
 
   if (entries.length === 0)
     logger.error('No entries to translate')
 
   return entries
+}
+
+function flatten(map: Record<string, unknown>, prefix = ''): Entry[] {
+  return Object.entries(map).flatMap(([name, item]): Entry[] => {
+    const fullKey = prefix + name
+    const { key } = parsePartitionedKey(fullKey)
+
+    if (typeof item === 'string')
+      return [{ fullKey, key, value: item }]
+
+    if (isPhrase(item))
+      return [{ fullKey, key, value: item.value, context: item.context }]
+
+    // a mount's prefix, `foo/`, groups the mount's keys
+    if (isMap(item) && Object.keys(item).length > 0)
+      return flatten(item, fullKey.endsWith('/') ? fullKey : fullKey + '.')
+
+    return logger.error(`Entry "${fullKey}" must be a phrase, { value, context } or a map of entries`)
+  })
+}
+
+function isPhrase(item: unknown): item is { value: string, context?: string } {
+  return isMap(item) && typeof item.value === 'string' &&
+    ['undefined', 'string'].includes(typeof item.context) &&
+    Object.keys(item).every(name => name === 'value' || name === 'context')
+}
+
+function isMap(item: unknown): item is Record<string, unknown> {
+  return item !== null && typeof item === 'object' && !Array.isArray(item)
 }

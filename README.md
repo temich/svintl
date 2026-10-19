@@ -247,6 +247,16 @@ example.delete:
 admin/dashboard.title: Admin Dashboard   # a mount by its prefix
 ```
 
+Keys may be nested as in a dictionary: a map that is not `{ value, context }` groups the keys under its own, and a mount's prefix groups the mount's keys.
+
+```yaml
+example:
+  hello: Hello world
+admin/:
+  dashboard:
+    title: Admin Dashboard
+```
+
 With `--from`, every entry is translated in one run and the dictionaries are built once. `add` refuses a key that exists and `set` one that does not; a refused key or a failed translation fails the whole batch, and no file is changed.
 
 Translation requests of one run — the entries of a batch, the locales and mounts of `create`, `sync` and `import` — are sent concurrently, at most 4 at a time.

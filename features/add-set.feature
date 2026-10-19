@@ -66,6 +66,40 @@ Feature: Add and Set commands
       """
     And the dictionaries typecheck
 
+  Scenario: Add nested keys from a file
+    Given a file `strings.yaml`:
+      """
+      example:
+        hello: Hello world
+        actions:
+          delete:
+            value: Delete this record?
+            context: confirmation before deleting a transaction
+      foo/:
+        title: Admin dashboard
+      """
+    When I run `npx intl hola`
+    And I run `npx intl mount foo ./src/foo`
+    And I run `npx intl add --from strings.yaml`
+    Then the file `src/lib/intl/en-US.yaml` contains:
+      """
+      example:
+        hello: Hello world
+        actions:
+          delete: Delete this record?
+      """
+    And the file `src/foo/en-US.yaml` contains:
+      """
+      title: Admin dashboard
+      """
+    And the file `src/lib/intl/context.yaml` contains:
+      """
+            delete:
+              input: Delete this record?
+              context: confirmation before deleting a transaction
+      """
+    And the dictionaries typecheck
+
   Scenario: A batch with an existing key writes nothing
     Given a file `strings.yaml`:
       """
