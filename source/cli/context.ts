@@ -22,6 +22,15 @@ export interface ContextData {
   genders?: string[]
 }
 
+// A context file that does not parse is refused: read as empty, it would be written back with only the touched key
+function parseContextFile(contextFilePath: string): Partial<ContextData> | undefined {
+  try {
+    return yamlLoad(readFileSync(contextFilePath, 'utf8')) as Partial<ContextData> | undefined
+  } catch (error) {
+    throw new Error(`${contextFilePath} is not valid YAML: ${error instanceof Error ? error.message : error}`)
+  }
+}
+
 export class ContextFileManager {
   private getContextFilePath(i18nPath: string): string {
     const i18nDir = resolve(process.cwd(), i18nPath)
@@ -38,31 +47,25 @@ export class ContextFileManager {
       return { context: undefined, inputs: {} }
     }
 
-    try {
-      const content = readFileSync(contextFilePath, 'utf8')
-      const data = yamlLoad(content) as Partial<ContextData> | undefined
+    const data = parseContextFile(contextFilePath)
 
-      const inputs = data && typeof data === 'object' && data.inputs && typeof data.inputs === 'object'
-        ? data.inputs
-        : {}
+    const inputs = data && typeof data === 'object' && data.inputs && typeof data.inputs === 'object'
+      ? data.inputs
+      : {}
 
-      const context = data && typeof data === 'object' && typeof data.context === 'string'
-        ? data.context
-        : undefined
+    const context = data && typeof data === 'object' && typeof data.context === 'string'
+      ? data.context
+      : undefined
 
-      const mounts = data && typeof data === 'object' && data.mounts && typeof data.mounts === 'object'
-        ? data.mounts
-        : {}
+    const mounts = data && typeof data === 'object' && data.mounts && typeof data.mounts === 'object'
+      ? data.mounts
+      : {}
 
-      const genders = data && typeof data === 'object' && Array.isArray(data.genders)
-        ? data.genders
-        : undefined
+    const genders = data && typeof data === 'object' && Array.isArray(data.genders)
+      ? data.genders
+      : undefined
 
-      return { context, inputs, mounts, genders }
-    } catch (error) {
-      console.warn(`⚠️  Failed to read context file: ${error}`)
-      return { context: undefined, inputs: {}, mounts: {}, genders: undefined }
-    }
+    return { context, inputs, mounts, genders }
   }
 
   /**

@@ -252,6 +252,9 @@ Return ONLY a JSON array of translations in the same order as the items above.`
   getLocaleInfo(i18nPath: string, partition?: string): { localeFiles: string[], allLocales: string[], i18nDir: string } {
     const i18nDir = getPartitionPath(i18nPath, partition)
 
+    // Refuse an unreadable context.yaml before any locale file is written
+    this.contextManager.readContextFile(i18nDir)
+
     // Check if directory exists and provide user-friendly error
     try {
       const localeFiles = readdirSync(i18nDir).filter(file => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))
@@ -526,12 +529,7 @@ Return ONLY a JSON array of translations in the same order as the items above.`
   finalize(i18nPath: string, key: string, input: string, comment?: string, partition?: string): void {
     const partitionPath = getPartitionPath(i18nPath, partition)
 
-    // Store input and context in context.yaml
-    try {
-      this.contextManager.setContextEntry(partitionPath, key, input, comment)
-    } catch (error) {
-      // Context saving failure is not critical
-    }
+    this.contextManager.setContextEntry(partitionPath, key, input, comment)
 
     // Auto-build dictionaries
     build(partitionPath, !!partition)
