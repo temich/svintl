@@ -1,3 +1,10 @@
+## [1.22.1](https://github.com/temich/svintl/compare/v1.22.0...v1.22.1) (2026-11-07)
+
+
+### Bug Fixes
+
+* **cli:** locale files with a script subtag (zh-Hans.yaml, zh-Hant-TW.yaml) are dictionaries too ([9d83728](https://github.com/temich/svintl/commit/9d837289bb1851774663a9a87eef82ccd3342dd5))
+
 # [1.22.0](https://github.com/temich/svintl/compare/v1.21.0...v1.22.0) (2026-10-19)
 
 
