@@ -13,6 +13,7 @@ import OpenAI from 'openai'
 import { build } from './build'
 import { ContextFileManager } from './context'
 import { getPartitionPath } from './partition'
+import { LOCALE_FILE } from './bcp47'
 
 /** OpenAI model used for all translation requests. */
 const TRANSLATION_MODEL = 'gpt-6-sol'
@@ -254,7 +255,7 @@ Return ONLY a JSON array of translations in the same order as the items above.`
 
     // Check if directory exists and provide user-friendly error
     try {
-      const localeFiles = readdirSync(i18nDir).filter(file => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))
+      const localeFiles = readdirSync(i18nDir).filter(file => file.match(LOCALE_FILE))
       const allLocales = localeFiles.map(file => file.replace('.yaml', ''))
 
       return { localeFiles, allLocales, i18nDir }

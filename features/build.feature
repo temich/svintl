@@ -153,3 +153,16 @@ Feature: Build
       """
       "0000000": "Zero"
       """
+
+  Scenario: Build a locale with a script subtag
+    When I run `npx intl hola -p ./test`
+    And I run `npx intl add hello "Hello" -p ./test`
+    And a file `test/zh-Hans.yaml`:
+      """
+      hello: 你好
+      """
+    When I run `npx intl build -p ./test`
+    Then the file `test/built.js` contains:
+      """
+      "zh-Hans": {
+      """

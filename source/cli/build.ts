@@ -11,6 +11,7 @@ import { load } from './load'
 import { hasPartitions } from './partition'
 import { ContextFileManager } from './context'
 import { rootDictionarySpecifier } from './libAlias'
+import { LOCALE_FILE } from './bcp47'
 
 /**
  * Generate TypeScript type definitions for the dictionary structure
@@ -165,7 +166,6 @@ function typed(func: Function, source: string): string {
   return `/** @type {${functionType(func)}} */ (${source})`
 }
 
-const LOCALE_FILE = /^[a-z]{2}(-[A-Z]{2})?\.yaml$/
 
 /**
  * Build all YAML dictionaries into a single JavaScript file
