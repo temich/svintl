@@ -6,6 +6,7 @@
 
 import { resolve, join } from 'path'
 import { ContextFileManager } from './context'
+import { LOCALE_FILE } from './bcp47'
 
 export interface PartitionedKey {
   partition?: string
@@ -75,7 +76,7 @@ export function hasPartitions(i18nPath: string): boolean {
         const partitionEntries = fs.readdirSync(partitionDir)
 
         // Check if partition directory contains YAML files
-        if (partitionEntries.some((file: string) => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))) {
+        if (partitionEntries.some((file: string) => file.match(LOCALE_FILE))) {
           return true
         }
       }

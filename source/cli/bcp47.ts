@@ -3,6 +3,12 @@
  */
 
 /**
+ * A locale dictionary's file name: a language, an optional script and an optional region
+ * (en.yaml, pt-BR.yaml, zh-Hans.yaml, zh-Hant-TW.yaml)
+ */
+export const LOCALE_FILE = /^[a-z]{2,3}(-[A-Z][a-z]{3})?(-[A-Z]{2})?\.yaml$/
+
+/**
  * Validates if a string is a valid BCP 47 language tag using Intl.Locale
  * @param languageTag - The language tag to validate
  * @returns true if valid, false otherwise

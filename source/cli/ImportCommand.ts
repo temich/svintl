@@ -14,8 +14,8 @@ import { ContextFileManager } from './context'
 import { CreateCommand } from './CreateCommand'
 import { writeMountIndex } from './mountIndex'
 import { TranslationService } from './TranslationService'
+import { LOCALE_FILE } from './bcp47'
 
-const LOCALE_FILE = /^[a-z]{2}(-[A-Z]{2})?\.yaml$/
 
 export class ImportCommand {
   private contextManager = new ContextFileManager()

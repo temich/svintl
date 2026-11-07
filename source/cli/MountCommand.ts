@@ -10,6 +10,7 @@ import { resolve, join, relative } from 'path'
 import { build } from './build'
 import { ContextFileManager } from './context'
 import { writeMountIndex } from './mountIndex'
+import { LOCALE_FILE } from './bcp47'
 
 export class MountCommand {
   private error(message: string): never {
@@ -38,7 +39,7 @@ export class MountCommand {
 
     // Get all locale files from the main directory
     const localeFiles = readdirSync(i18nDir)
-      .filter(file => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))
+      .filter(file => file.match(LOCALE_FILE))
 
     if (localeFiles.length === 0) {
       this.error(`No locale files found in main directory: ${i18nDir}`)

@@ -4,7 +4,7 @@
 
 import { TranslationService } from './TranslationService'
 import { logger } from './logger'
-import { validateLanguageTag, getNativeLanguageName, getTextDirection } from './bcp47'
+import { validateLanguageTag, getNativeLanguageName, getTextDirection, LOCALE_FILE } from './bcp47'
 import { parsePartitionedKey, getPartitionPath } from './partition'
 import { overlay } from './CreateCommand'
 import { writeYaml } from './yaml'
@@ -196,7 +196,7 @@ export class SyncCommand {
 
       // For partitions, we need to check if they have their own locale files
       const partitionLocaleFiles = fs.readdirSync(partitionI18nDir)
-        .filter((file: string) => file.match(/^[a-z]{2}(-[A-Z]{2})?\.yaml$/))
+        .filter((file: string) => file.match(LOCALE_FILE))
 
       if (partitionLocaleFiles.length === 0) {
         logger.log(`Skipping partition "${mountName}" - no locale files found`)
